@@ -2,8 +2,6 @@
 
 session_start(); // pindahin ke sini, jadi global
 
-echo "ttt";
-
 $page = $_GET['page'] ?? 'dashboard';
 
 //Cek apakah user sudah login (kecuali halaman login & loginaction)
