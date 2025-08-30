@@ -1,0 +1,237 @@
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.d-flex {
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: #2286ea; /* abu muda */
+  border-right: 1px solid #ef0808;
+}
+
+.sidebar a {
+  display: block;
+  padding: 12px 15px;
+  color: #333; /* teks lebih gelap biar terbaca */
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebar a:hover {
+  background: #1261b0;
+  color: #007bff; /* hover jadi biru */
+}
+
+.sidebar a.active {
+  background: #007bff;
+  color: #ddd6d6 !important; /* teks putih saat aktif */
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+.content {
+  flex: 1;
+  background: #f8f9fa;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  text-align: left;
+}
+.qr-box {
+  text-align: center; /* biar QR code di tengah */
+  margin: 20px 0;
+}
+
+.qr-box img {
+  max-width: 250px; /* biar nggak kegedean */
+  height: auto;
+  display: inline-block;
+}
+
+.info {
+  text-align: center; /* biar teks juga rata tengah */
+  margin-top: 15px;
+}
+
+.info p {
+  margin: 5px 0;
+}
+
+/*policies form
+/* === Global Style === */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9fafb;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+h2::before {
+  content: "⚙️ ";
+  margin-right: 6px;
+}
+
+/* === Form Container === */
+.form-container {
+  max-width: 1000px; /* batas lebar form */
+  margin: 20px auto; /* biar center */
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* === Input Field === */
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #16a34a; /* hijau */
+  box-shadow: 0px 0px 4px #16a34a80;
+}
+
+/* === Checkbox === */
+label {
+  display: flex;
+  align-items: left;
+  margin: 8px 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+label input[type="checkbox"] {
+  margin-right: 10px;
+  transform: scale(1.1);
+}
+
+/* === Button === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  background-color: #16a34a; /* hijau */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+.btn i {
+  margin-right: 6px;
+}
+
+.btn:hover {
+  background-color: #15803d;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+/* === Alert Messages === */
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.alert.success {
+  background-color: #dcfce7; /* hijau muda */
+  color: #166534;
+  border: 1px solid #16a34a;
+}
+
+.alert.error {
+  background-color: #fee2e2; /* merah muda */
+  color: #991b1b;
+  border: 1px solid #dc2626;
+}
+/* Biar checkbox selalu rata kiri */
+.form-check {
+  display: flex;
+  align-items: left; /* sejajarkan vertikal */
+  gap: 6px; /* kasih jarak kecil antara kotak dan teks */
+}
+
+.form-check input[type="checkbox"] {
+  margin-left: 0 !important;
+  position: relative;
+  align-items: left;
+}
+.btn-xs {
+  padding: 2px 5px;
+  font-size: 0.7rem; /* lebih kecil dari btn-sm */
+  line-height: 1.2;
+  border-radius: 0.25rem;
+}
+/* Variasi tombol */
+.my-btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  color: white;
+}
+
+.my-btn-secondary {
+  background: #6b7280;
+}
+.my-btn-secondary:hover {
+  background: #4b5563;
+}
+
+.my-btn-danger {
+  background: #dc2626;
+}
+.my-btn-danger:hover {
+  background: #b91c1c;
+}
+
+.my-btn-primary {
+  background: #2563eb;
+}
+.my-btn-primary:hover {
+  background: #1d4ed8;
+}
+.app-list-container {
+  max-height: 300px; /* tinggi maksimal sebelum scroll */
+  overflow-y: auto; /* munculin scroll kalau isinya banyak */
+  background: #f8f9fa; /* biar beda dikit warnanya */
+}
