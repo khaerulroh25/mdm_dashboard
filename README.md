@@ -31,5 +31,5 @@ Config/Db_mdm.php
 ## Live Demo
 https://rengasdengklok.my.id
 
--user admin_rdk
--pass admin
+-user : admin_rdk
+-pass : admin
