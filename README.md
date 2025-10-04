@@ -29,7 +29,7 @@ Config/Db_mdm.php
 
 
 ## Live Demo
-https://rengasdengklok086.my.id
+https://rengasdengklok086.my.id/index.html
 
 -user : demo
 -pass : demo
