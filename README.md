@@ -20,7 +20,7 @@ Dashboard ini dibuat untuk mengelola perangkat Android menggunakan **Android Man
 ![Dashboard Preview](screenshot.png)
 
 ## Database 
-Config/DB.php
+Config/Db_mdm.php
 
 ## Instalasi
 1. Clone repo ini
