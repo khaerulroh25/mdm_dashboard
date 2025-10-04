@@ -26,3 +26,10 @@ Config/Db_mdm.php
 1. Clone repo ini
    ```bash
    git clone https://github.com/khaerulroh25/mdm_dashboard.git
+
+
+## Result
+https://rengasdengklok.my.id
+
+user admin_rdk
+pass admin
