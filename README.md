@@ -17,7 +17,7 @@ Dashboard ini dibuat untuk mengelola perangkat Android menggunakan **Android Man
 - API: Android Management API (Google Cloud)
 
 ## Screenshot
-![Dashboard Preview](screenshot.png)
+![Dashboard Preview] https://github.com/khaerulroh25/mdm_dashboard/issues/1
 
 ## Database 
 Config/Db_mdm.php
