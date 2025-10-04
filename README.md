@@ -28,8 +28,8 @@ Config/Db_mdm.php
    git clone https://github.com/khaerulroh25/mdm_dashboard.git
 
 
-## Result
+## Live Demo
 https://rengasdengklok.my.id
 
-user admin_rdk
-pass admin
+-user admin_rdk
+-pass admin
