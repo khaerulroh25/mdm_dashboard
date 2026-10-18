@@ -135,11 +135,40 @@
                                 <td>
                                     @if($device->imei)
                                         <span class="device-imei text-dark fw-bold">{{ $device->imei }}</span>
+                                    @elseif($device->is_work_profile)
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle font-mono">
+                                            <i class="bi bi-shield-lock me-1"></i>Dibatasi Google (Mode Work Profile)
+                                        </span>
                                     @else
                                         <span class="text-muted small fst-italic">
                                             <i class="bi bi-clock-history me-1"></i>Menunggu sinkronisasi telemetri AMAPI
                                         </span>
                                     @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-secondary fw-normal">Jenis Pendaftaran (Mode)</th>
+                                <td>
+                                    @if($device->is_work_profile)
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle font-mono">
+                                            <i class="bi bi-person-workspace me-1"></i>PROFILE_OWNER (Work Profile / Pribadi)
+                                        </span>
+                                        <div class="small text-danger mt-1">
+                                            <i class="bi bi-info-circle me-1"></i>Google memblokir pembacaan IMEI pada mode Work Profile. Reset & scan saat setup wizard awal untuk beralih ke Fully Managed.
+                                        </div>
+                                    @else
+                                        <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-mono">
+                                            <i class="bi bi-building-check me-1"></i>DEVICE_OWNER (Fully Managed / Perusahaan)
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-secondary fw-normal">Kepemilikan (Ownership)</th>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-mono">
+                                        {{ $device->ownership }}
+                                    </span>
                                 </td>
                             </tr>
                             <tr>

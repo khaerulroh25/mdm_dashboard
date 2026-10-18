@@ -156,5 +156,37 @@ class Device extends Model
 
         return null;
     }
+
+    /**
+     * Get management mode from raw_device_data (e.g. DEVICE_OWNER or PROFILE_OWNER).
+     */
+    public function getManagementModeAttribute(): string
+    {
+        return $this->raw_device_data['managementMode'] ?? 'DEVICE_OWNER';
+    }
+
+    /**
+     * Get ownership from raw_device_data (e.g. COMPANY_OWNED or PERSONALLY_OWNED).
+     */
+    public function getOwnershipAttribute(): string
+    {
+        return $this->raw_device_data['ownership'] ?? 'COMPANY_OWNED';
+    }
+
+    /**
+     * Check if device is enrolled as a personal Work Profile.
+     */
+    public function getIsWorkProfileAttribute(): bool
+    {
+        return $this->management_mode === 'PROFILE_OWNER' || $this->ownership === 'PERSONALLY_OWNED';
+    }
+
+    /**
+     * Human-friendly management mode label.
+     */
+    public function getManagementModeLabelAttribute(): string
+    {
+        return $this->is_work_profile ? 'Work Profile (Pribadi)' : 'Fully Managed (Perusahaan)';
+    }
 }
 

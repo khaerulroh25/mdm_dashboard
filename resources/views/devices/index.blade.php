@@ -106,6 +106,17 @@
                         <span class="text-secondary small font-mono">
                             {{ $device->brand ? ucfirst($device->brand) . ' • ' : '' }}{{ $device->hardware_model ?? '-' }}
                         </span>
+                        <div class="mt-1">
+                            @if($device->is_work_profile)
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle small" title="Work Profile (Personally-Owned) - IMEI dibatasi oleh Google">
+                                    <i class="bi bi-person-workspace me-1"></i>Work Profile
+                                </span>
+                            @else
+                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle small" title="Fully Managed (Device Owner) - Milik Perusahaan">
+                                    <i class="bi bi-building-check me-1"></i>Fully Managed
+                                </span>
+                            @endif
+                        </div>
                     </td>
                     <td>
                         @if($device->imei)

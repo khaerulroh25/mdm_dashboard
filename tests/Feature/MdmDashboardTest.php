@@ -170,4 +170,27 @@ class MdmDashboardTest extends TestCase
         ]);
         $this->assertEquals('861234567890123', $device->imei);
     }
+
+    public function test_device_management_mode_accessors_and_view(): void
+    {
+        $deviceOwner = new Device([
+            'raw_device_data' => ['managementMode' => 'DEVICE_OWNER', 'ownership' => 'COMPANY_OWNED'],
+        ]);
+        $this->assertFalse($deviceOwner->is_work_profile);
+        $this->assertEquals('Fully Managed (Perusahaan)', $deviceOwner->management_mode_label);
+
+        $profileOwner = new Device([
+            'raw_device_data' => ['managementMode' => 'PROFILE_OWNER', 'ownership' => 'PERSONALLY_OWNED'],
+        ]);
+        $this->assertTrue($profileOwner->is_work_profile);
+        $this->assertEquals('Work Profile (Pribadi)', $profileOwner->management_mode_label);
+
+        $operator = User::where('username', 'operator')->first();
+        $this->actingAs($operator);
+
+        $response = $this->get(route('devices.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Work Profile');
+        $response->assertSee('Fully Managed');
+    }
 }
