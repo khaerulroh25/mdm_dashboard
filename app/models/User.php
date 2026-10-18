@@ -62,6 +62,14 @@ class User extends Authenticatable
         return $this->role === 'auditor';
     }
 
+    public function hasRole(string|array $roles): bool
+    {
+        if (is_array($roles)) {
+            return in_array($this->role, $roles);
+        }
+        return $this->role === $roles;
+    }
+
     public function deviceCommands(): HasMany
     {
         return $this->hasMany(DeviceCommand::class, 'issued_by_user_id');

@@ -278,4 +278,21 @@ class MdmDashboardTest extends TestCase
         $this->assertNotNull($app);
         $this->assertEquals('YouTube', $app->app_name);
     }
+
+    public function test_device_index_separates_active_and_deleted_tabs(): void
+    {
+        $admin = User::where('username', 'admin_rdk')->first();
+        $this->actingAs($admin);
+
+        // Active tab (default) should show Perangkat Aktif
+        $response = $this->get(route('devices.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Perangkat Aktif');
+        $response->assertSee('Riwayat Unenroll / Dihapus');
+
+        // Deleted tab should show unenrolled devices
+        $responseDeleted = $this->get(route('devices.index', ['tab' => 'deleted']));
+        $responseDeleted->assertStatus(200);
+        $responseDeleted->assertSee('Riwayat Perangkat Di-unenroll / Dihapus');
+    }
 }

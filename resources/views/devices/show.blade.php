@@ -20,6 +20,10 @@
             <span class="badge badge-compliant fs-6">
                 <i class="bi bi-check-circle-fill me-1"></i> ACTIVE
             </span>
+        @elseif($device->state === 'DELETED')
+            <span class="badge bg-secondary fs-6">
+                <i class="bi bi-archive-fill me-1"></i> DI-UNENROLL (DELETED)
+            </span>
         @else
             <span class="badge badge-warning-custom fs-6">
                 <i class="bi bi-exclamation-circle me-1"></i> {{ $device->state }}
@@ -28,6 +32,31 @@
     </div>
 </div>
 
+@if($device->state === 'DELETED')
+<!-- Notice for Unenrolled Device -->
+<div class="card card-mdm border-0 p-3 mb-4 bg-light">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-secondary bg-opacity-10 p-2 text-secondary">
+                <i class="bi bi-archive-fill fs-4"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-0 text-dark">Perangkat Telah Di-unenroll / Dihapus</h6>
+                <span class="text-secondary small">Perangkat ini sudah tidak aktif di Google Cloud AMAPI. Seluruh perintah remote dinonaktifkan. Data ini disimpan sebagai arsip histori.</span>
+            </div>
+        </div>
+        @if(auth()->user()->isAdmin())
+        <form action="{{ route('devices.destroy-permanent', $device->id) }}" method="POST" onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin menghapus data perangkat ini secara permanen dari database?')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1">
+                <i class="bi bi-trash"></i> Hapus Permanen dari Database
+            </button>
+        </form>
+        @endif
+    </div>
+</div>
+@else
 <!-- Remote Command Quick Action Toolbar -->
 <div class="card card-mdm border-0 p-3 mb-4">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -93,6 +122,7 @@
         </div>
     </div>
 </div>
+@endif
 
 <div class="row g-4 mb-4">
     <!-- Left Column: Hardware & System Specs -->

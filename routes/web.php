@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/{device}/policy', [DeviceController::class, 'updatePolicy'])->name('policy')->middleware('role:admin,operator');
         Route::post('/{device}/rename-model', [DeviceController::class, 'updateMarketingName'])->name('rename-model')->middleware('role:admin,operator');
         Route::delete('/{device}', [DeviceController::class, 'unenroll'])->name('unenroll')->middleware('role:admin');
+        Route::delete('/{device}/permanent', [DeviceController::class, 'destroyPermanent'])->name('destroy-permanent')->middleware('role:admin');
     });
 
     // Device Owners

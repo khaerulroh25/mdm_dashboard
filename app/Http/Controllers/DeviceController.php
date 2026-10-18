@@ -28,7 +28,18 @@ class DeviceController extends Controller
      */
     public function index(Request $request)
     {
+        $currentTab = $request->input('tab', 'active');
         $query = Device::with(['owner', 'policy']);
+
+        // Tab Filter: active (default, excludes DELETED), deleted (only DELETED), or all
+        if ($currentTab === 'deleted') {
+            $query->where('state', 'DELETED');
+        } elseif ($currentTab === 'all') {
+            // all records
+        } else {
+            $currentTab = 'active';
+            $query->where('state', '!=', 'DELETED');
+        }
 
         // Search Keyword
         if ($search = $request->input('search')) {
@@ -47,7 +58,7 @@ class DeviceController extends Controller
             });
         }
 
-        // Filter by State
+        // Filter by State within tab
         if ($state = $request->input('state')) {
             $query->where('state', $state);
         }
@@ -60,7 +71,10 @@ class DeviceController extends Controller
         $devices = $query->latest('last_status_report')->paginate(15)->withQueryString();
         $policies = Policy::select('id', 'name', 'policy_id')->get();
 
-        return view('devices.index', compact('devices', 'policies'));
+        $activeCount = Device::where('state', '!=', 'DELETED')->count();
+        $deletedCount = Device::where('state', 'DELETED')->count();
+
+        return view('devices.index', compact('devices', 'policies', 'currentTab', 'activeCount', 'deletedCount'));
     }
 
     /**
@@ -155,12 +169,35 @@ class DeviceController extends Controller
 
             AuditLog::log('UNENROLL_DEVICE', 'Device', $device->device_id);
 
-            return redirect()->route('devices.index')
-                ->with('success', "Perangkat <strong>{$device->device_id}</strong> berhasil di-unenroll dan dihapus dari pengelolaan.");
+            return redirect()->route('devices.index', ['tab' => 'deleted'])
+                ->with('success', "Perangkat <strong>{$device->device_id}</strong> berhasil di-unenroll dan dipindahkan ke riwayat arsip.");
 
         } catch (Exception $e) {
             return back()->with('error', "Gagal unenroll perangkat: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Permanently remove unenrolled device record from database.
+     */
+    public function destroyPermanent($id)
+    {
+        $device = Device::findOrFail($id);
+
+        if ($device->state !== 'DELETED') {
+            return back()->with('error', 'Hanya perangkat yang sudah berstatus DELETED / di-unenroll yang dapat dihapus permanen.');
+        }
+
+        $deviceId = $device->device_id;
+        $hardwareModel = $device->human_model_name;
+        $device->delete();
+
+        AuditLog::log('PERMANENT_DELETE_DEVICE', 'Device', $deviceId, [
+            'hardware_model' => $hardwareModel
+        ]);
+
+        return redirect()->route('devices.index', ['tab' => 'deleted'])
+            ->with('success', "Data riwayat perangkat <strong>{$deviceId}</strong> berhasil dihapus permanen dari database.");
     }
 
     /**
