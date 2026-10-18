@@ -259,7 +259,7 @@ class MdmDashboardTest extends TestCase
         $response = $this->get(route('apps.search'));
         $response->assertStatus(200);
         $response->assertSee('Managed Google Play');
-        $response->assertSee('Pencarian Cepat & Package Name', false);
+        $response->assertSee('Google Play Store Enterprise');
     }
 
     public function test_google_play_lookup_and_store(): void
