@@ -105,6 +105,24 @@
                                 <option value="OFF" {{ old('location_mode') == 'OFF' ? 'selected' : '' }}>Matikan Lokasi (OFF)</option>
                             </select>
                         </div>
+
+                        <div class="col-12">
+                            <label for="play_store_mode" class="form-label small fw-semibold text-dark">
+                                <i class="bi bi-google-play text-teal me-1"></i>Mode Toko Aplikasi (Google Play Store)
+                            </label>
+                            <select name="play_store_mode" id="play_store_mode" class="form-select form-select-sm">
+                                <option value="BLACKLIST" {{ old('play_store_mode', 'BLACKLIST') == 'BLACKLIST' ? 'selected' : '' }}>
+                                    Buka Penuh Google Play Publik (BLACKLIST) — Rekomendasi Pelanggan Cicilan
+                                </option>
+                                <option value="WHITELIST" {{ old('play_store_mode') == 'WHITELIST' ? 'selected' : '' }}>
+                                    Batasi Hanya Aplikasi Tertentu (WHITELIST) — Mode Kiosk / Enterprise
+                                </option>
+                            </select>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                <i class="bi bi-info-circle me-1"></i>
+                                <strong>Buka Penuh (BLACKLIST):</strong> Pelanggan bisa login akun Gmail sendiri dan bebas mengunduh aplikasi publik (WhatsApp, TikTok, YouTube, Mobile Banking, dll).
+                            </div>
+                        </div>
                     </div>
 
                     <div class="d-flex align-items-center justify-content-end gap-2 border-top pt-3">

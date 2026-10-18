@@ -214,16 +214,7 @@ class AndroidManagementService
     public function createOrPatchPolicy(string $policyId, array $policyData): Policy
     {
         $policyName = $this->formatPolicyName($policyId);
-
-        try {
-            $existingPolicy = $this->getPolicy($policyId);
-            $existingArray = json_decode(json_encode($existingPolicy), true) ?? [];
-        } catch (Exception $e) {
-            $existingArray = [];
-        }
-
-        $merged = array_replace_recursive($existingArray, $policyData);
-        $policy = new Policy($merged);
+        $policy = new Policy($policyData);
 
         return $this->service->enterprises_policies->patch($policyName, $policy);
     }

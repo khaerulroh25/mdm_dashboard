@@ -229,4 +229,22 @@ class MdmDashboardTest extends TestCase
         $response->assertSeeText('Status Daya & Baterai', false);
         $response->assertSeeText('Mode Lokasi & GPS', false);
     }
+
+    public function test_policy_play_store_mode_support_and_views(): void
+    {
+        $admin = User::where('username', 'admin_rdk')->first();
+        $this->actingAs($admin);
+
+        $policy = Policy::where('policy_id', 'Mode_kiosk')->first();
+        $this->assertEquals('BLACKLIST', $policy->play_store_mode);
+
+        $response = $this->get(route('policies.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Google Play');
+        $response->assertSee('Buka Penuh (Publik)');
+
+        $response = $this->get(route('policies.edit', $policy->id));
+        $response->assertStatus(200);
+        $response->assertSee('Buka Penuh Google Play Publik (BLACKLIST)');
+    }
 }

@@ -27,7 +27,7 @@ class PolicyController extends Controller
         $policies = Policy::select([
             'id', 'policy_id', 'name', 'description', 'camera_disabled',
             'factory_reset_disabled', 'wifi_config_disabled', 'install_apps_disabled',
-            'safe_boot_disabled', 'location_mode', 'created_at', 'updated_at'
+            'safe_boot_disabled', 'location_mode', 'play_store_mode', 'created_at', 'updated_at'
         ])->withCount('devices')->latest()->get();
 
         return view('policies.index', compact('policies'));
@@ -56,7 +56,10 @@ class PolicyController extends Controller
             'install_apps_disabled' => ['nullable', 'boolean'],
             'safe_boot_disabled'    => ['nullable', 'boolean'],
             'location_mode'         => ['nullable', 'string', 'in:HIGH_ACCURACY,SENSORS_ONLY,BATTERY_SAVING,OFF'],
+            'play_store_mode'       => ['nullable', 'string', 'in:WHITELIST,BLACKLIST'],
         ]);
+
+        $playStoreMode = $request->input('play_store_mode', 'WHITELIST');
 
         $policyData = [
             'cameraDisabled'       => $request->boolean('camera_disabled'),
@@ -65,6 +68,8 @@ class PolicyController extends Controller
             'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
             'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
             'locationMode'         => $request->input('location_mode') ?: null,
+            'playStoreMode'        => $playStoreMode,
+            'modifyAccountsDisabled' => $playStoreMode === 'BLACKLIST' ? false : true,
             'statusReportingSettings' => [
                 'softwareInfoEnabled' => true,
                 'networkInfoEnabled'  => true,
@@ -88,6 +93,7 @@ class PolicyController extends Controller
                 'install_apps_disabled' => $request->boolean('install_apps_disabled'),
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
                 'location_mode'         => $request->input('location_mode') ?: null,
+                'play_store_mode'       => $playStoreMode,
                 'raw_policy_json'       => $policyData,
             ]);
 
@@ -128,7 +134,10 @@ class PolicyController extends Controller
             'install_apps_disabled' => ['nullable', 'boolean'],
             'safe_boot_disabled'    => ['nullable', 'boolean'],
             'location_mode'         => ['nullable', 'string', 'in:HIGH_ACCURACY,SENSORS_ONLY,BATTERY_SAVING,OFF'],
+            'play_store_mode'       => ['nullable', 'string', 'in:WHITELIST,BLACKLIST'],
         ]);
+
+        $playStoreMode = $request->input('play_store_mode', 'WHITELIST');
 
         $policyData = [
             'cameraDisabled'       => $request->boolean('camera_disabled'),
@@ -137,6 +146,8 @@ class PolicyController extends Controller
             'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
             'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
             'locationMode'         => $request->input('location_mode') ?: null,
+            'playStoreMode'        => $playStoreMode,
+            'modifyAccountsDisabled' => $playStoreMode === 'BLACKLIST' ? false : true,
             'statusReportingSettings' => [
                 'softwareInfoEnabled' => true,
                 'networkInfoEnabled'  => true,
@@ -159,6 +170,7 @@ class PolicyController extends Controller
                 'install_apps_disabled' => $request->boolean('install_apps_disabled'),
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
                 'location_mode'         => $request->input('location_mode') ?: null,
+                'play_store_mode'       => $playStoreMode,
                 'raw_policy_json'       => array_merge($policy->raw_policy_json ?? [], $policyData),
             ]);
 

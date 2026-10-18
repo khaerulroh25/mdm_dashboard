@@ -21,6 +21,7 @@ class Policy extends Model
         'install_apps_disabled',
         'safe_boot_disabled',
         'location_mode',
+        'play_store_mode',
         'raw_policy_json',
     ];
 

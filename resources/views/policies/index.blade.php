@@ -26,6 +26,7 @@
                     <th scope="col">Policy ID (AMAPI)</th>
                     <th scope="col">Perangkat Terhubung</th>
                     <th scope="col">Status Pembatasan</th>
+                    <th scope="col">Google Play</th>
                     <th scope="col">Mode Lokasi (GPS)</th>
                     <th scope="col" class="text-end pe-4">Aksi</th>
                 </tr>
@@ -69,6 +70,17 @@
                                 <span class="badge bg-light text-secondary border small">Standar</span>
                             @endif
                         </div>
+                    </td>
+                    <td>
+                        @if(($policy->play_store_mode ?? 'WHITELIST') === 'BLACKLIST')
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle font-mono small" title="Play Store Terbuka Penuh">
+                                <i class="bi bi-google-play me-1"></i> Buka Penuh (Publik)
+                            </span>
+                        @else
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border font-mono small" title="Play Store Dibatasi Hanya App Tertentu">
+                                <i class="bi bi-shield-lock me-1"></i> Dibatasi (Whitelist)
+                            </span>
+                        @endif
                     </td>
                     <td>
                         @if($policy->location_mode === 'HIGH_ACCURACY')
