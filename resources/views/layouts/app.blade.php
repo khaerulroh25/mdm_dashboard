@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- MDM Enterprise Tosca Theme -->
-    <link rel="stylesheet" href="{{ asset('css/theme-tosca.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/theme-tosca.css') }}?v={{ filemtime(public_path('css/theme-tosca.css')) }}">
 
     @stack('styles')
 </head>

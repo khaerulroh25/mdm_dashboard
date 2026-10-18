@@ -218,3 +218,44 @@ code, kbd, pre, samp,
   padding: 0.35em 0.75em;
   border-radius: 9999px;
 }
+
+/* Policy Badge */
+.badge-policy {
+  background-color: #F0FDFA;
+  color: #0F766E;
+  border: 1px solid #99F6E4;
+  font-weight: 600;
+  padding: 0.35em 0.75em;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+/* Teal Utilities & Badge Overrides */
+.text-teal {
+  color: #0D9488 !important;
+}
+
+.text-teal-dark {
+  color: #0F766E !important;
+}
+
+.border-teal {
+  border-color: #0D9488 !important;
+}
+
+.border-teal-subtle {
+  border-color: #99F6E4 !important;
+}
+
+.badge.text-teal {
+  color: #0F766E !important;
+}
+
+.badge.bg-light.text-teal {
+  background-color: #F0FDFA !important;
+  color: #0F766E !important;
+  border-color: #CCFBF1 !important;
+}
+

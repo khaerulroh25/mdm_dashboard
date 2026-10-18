@@ -38,7 +38,8 @@
                         <span class="text-secondary small">{{ $policy->description ?? 'Tidak ada deskripsi' }}</span>
                     </td>
                     <td>
-                        <span class="badge bg-light text-teal border font-mono">
+                        <span class="badge-policy font-mono">
+                            <i class="bi bi-shield me-1 text-teal"></i>
                             {{ $policy->policy_id }}
                         </span>
                     </td>

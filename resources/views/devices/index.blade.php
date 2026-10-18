@@ -113,8 +113,8 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge bg-light text-teal border border-teal-subtle">
-                            <i class="bi bi-shield me-1"></i>
+                        <span class="badge-policy">
+                            <i class="bi bi-shield-check me-1 text-teal"></i>
                             {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
                         </span>
                     </td>

@@ -154,8 +154,8 @@
                                 <th class="text-secondary fw-normal">Policy Aktif</th>
                                 <td>
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span class="badge bg-light text-teal border border-teal-subtle font-mono fs-6">
-                                            <i class="bi bi-shield me-1"></i>
+                                        <span class="badge-policy font-mono fs-6 py-1 px-3">
+                                            <i class="bi bi-shield-check me-2 text-teal"></i>
                                             {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
                                         </span>
                                         <button type="button" class="btn btn-sm btn-outline-teal py-0 px-2" data-bs-toggle="modal" data-bs-target="#switchPolicyModal" title="Ubah Policy">
