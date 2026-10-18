@@ -89,6 +89,7 @@
                     <th scope="col">ID Anggota</th>
                     <th scope="col">Pemilik Perangkat</th>
                     <th scope="col">Tipe Perangkat</th>
+                    <th scope="col">Policy Aktif</th>
                     <th scope="col">Status AMAPI</th>
                     <th scope="col">Device ID (Resource)</th>
                     <th scope="col" class="text-end pe-4">Aksi</th>
@@ -114,6 +115,12 @@
                     <td>
                         <div class="fw-semibold text-dark">{{ $device->human_model_name }}</div>
                         <span class="text-muted small font-mono">{{ $device->hardware_model ?? '-' }}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-teal border border-teal-subtle">
+                            <i class="bi bi-shield me-1"></i>
+                            {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
+                        </span>
                     </td>
                     <td>
                         @if($device->state === 'ACTIVE')

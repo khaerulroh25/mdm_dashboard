@@ -150,6 +150,20 @@
                                     {{ $device->enrolled_at ? $device->enrolled_at->translatedFormat('d M Y H:i:s') : '-' }}
                                 </td>
                             </tr>
+                            <tr>
+                                <th class="text-secondary fw-normal">Policy Aktif</th>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span class="badge bg-light text-teal border border-teal-subtle font-mono fs-6">
+                                            <i class="bi bi-shield me-1"></i>
+                                            {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
+                                        </span>
+                                        <button type="button" class="btn btn-sm btn-outline-teal py-0 px-2" data-bs-toggle="modal" data-bs-target="#switchPolicyModal" title="Ubah Policy">
+                                            <i class="bi bi-pencil-square me-1"></i> Ubah
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

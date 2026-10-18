@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $totalPolicies = Policy::count();
         $totalApps = App::count();
 
-        $recentDevices = Device::with('owner')
+        $recentDevices = Device::with(['owner', 'policy'])
             ->latest()
             ->take(8)
             ->get();
