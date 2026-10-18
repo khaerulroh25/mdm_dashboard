@@ -13,7 +13,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $totalDevices = Device::count();
+        $totalDevices = Device::where('state', '!=', 'DELETED')->count();
         $activeDevices = Device::where('state', 'ACTIVE')->count();
         $lostModeDevices = DeviceCommand::where('command_type', 'START_LOST_MODE')
             ->where('status', 'SUCCESS')
@@ -21,8 +21,11 @@ class DashboardController extends Controller
         $totalPolicies = Policy::count();
         $totalApps = App::count();
 
+        // Show only active (non-deleted) devices, ordered by newest enrollment first
         $recentDevices = Device::with(['owner', 'policy'])
-            ->latest()
+            ->where('state', '!=', 'DELETED')
+            ->orderByRaw('COALESCE(enrolled_at, created_at) DESC')
+            ->orderByDesc('id')
             ->take(8)
             ->get();
 

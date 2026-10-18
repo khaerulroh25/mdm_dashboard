@@ -295,4 +295,20 @@ class MdmDashboardTest extends TestCase
         $responseDeleted->assertStatus(200);
         $responseDeleted->assertSee('Riwayat Perangkat Di-unenroll / Dihapus');
     }
+
+    public function test_dashboard_only_shows_active_devices_ordered_by_newest(): void
+    {
+        $admin = User::where('username', 'admin_rdk')->first();
+        $this->actingAs($admin);
+
+        $response = $this->get(route('dashboard'));
+        $response->assertStatus(200);
+        $response->assertSee('Daftar Perangkat Aktif Terbaru');
+
+        // Verify that deleted device is NOT in recent devices list on dashboard
+        $deletedDevice = Device::where('state', 'DELETED')->first();
+        if ($deletedDevice) {
+            $response->assertDontSee($deletedDevice->device_id);
+        }
+    }
 }

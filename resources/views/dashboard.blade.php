@@ -71,8 +71,8 @@
 <div class="card card-mdm border-0 overflow-hidden mb-4">
     <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
         <div>
-            <h5 class="fw-bold mb-0 text-dark">Daftar Perangkat Terdaftar</h5>
-            <span class="text-secondary small">Data tersinkronisasi langsung dari database lokal & Google AMAPI</span>
+            <h5 class="fw-bold mb-0 text-dark">Daftar Perangkat Aktif Terbaru</h5>
+            <span class="text-secondary small">Menampilkan perangkat aktif yang baru didaftarkan atau diperbarui</span>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('devices.index') }}" class="btn btn-sm btn-outline-secondary">

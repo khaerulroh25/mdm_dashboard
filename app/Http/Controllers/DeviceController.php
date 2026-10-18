@@ -68,7 +68,10 @@ class DeviceController extends Controller
             $query->where('policy_id', $policy);
         }
 
-        $devices = $query->latest('last_status_report')->paginate(15)->withQueryString();
+        $devices = $query->orderByRaw('COALESCE(enrolled_at, created_at) DESC')
+                         ->orderByDesc('id')
+                         ->paginate(15)
+                         ->withQueryString();
         $policies = Policy::select('id', 'name', 'policy_id')->get();
 
         $activeCount = Device::where('state', '!=', 'DELETED')->count();
