@@ -1,62 +1,74 @@
 <?php
 
-require_once __DIR__ . '/../../config/Database.php';
-class User
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class User extends Authenticatable
 {
-    private $db;
+    use HasFactory, Notifiable;
 
-    public function __construct()
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'username',
+        'name',
+        'email',
+        'password',
+        'role',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
     {
-        $database = new Database();
-        $this->db = $database->getConnection();
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 
-    public function login($username, $password)
+    public function isAdmin(): bool
     {
-        $stmt = $this->db->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($user && password_verify($password, $user['password'])) {
-            return $user;
-        }
-        return false;
+        return $this->role === 'admin';
     }
 
-    public function create($username, $password, $role)
+    public function isOperator(): bool
     {
-        $hashed = password_hash($password, PASSWORD_BCRYPT);
-        $stmt = $this->db->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
-        return $stmt->execute([$username, $hashed, $role]);
-    }
-    public function getAll()
-    {
-        $stmt = $this->db->query("SELECT * FROM users ORDER BY id DESC");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->role === 'operator';
     }
 
-    public function getById($id)
+    public function isAuditor(): bool
     {
-        $stmt = $this->db->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-    public function update($id, $username, $password, $role)
-    {
-        if (!empty($password)) {
-            $hashed = password_hash($password, PASSWORD_BCRYPT);
-            $stmt = $this->db->prepare("UPDATE users SET username=?, password=?, role=? WHERE id=?");
-            return $stmt->execute([$username, $hashed, $role, $id]);
-        } else {
-            $stmt = $this->db->prepare("UPDATE users SET username=?, role=? WHERE id=?");
-            return $stmt->execute([$username, $role, $id]);
-        }
+        return $this->role === 'auditor';
     }
 
-    public function delete($id)
+    public function deviceCommands(): HasMany
     {
-        $stmt = $this->db->prepare("DELETE FROM users WHERE id=?");
-        return $stmt->execute([$id]);
+        return $this->hasMany(DeviceCommand::class, 'issued_by_user_id');
     }
 
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'user_id');
+    }
 }

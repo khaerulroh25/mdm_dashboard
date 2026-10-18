@@ -1,0 +1,220 @@
+/**
+ * MDM Dashboard - Enterprise Tosca Green Theme
+ * Based on docs/UI_DESIGN_SYSTEM.md
+ */
+
+:root {
+  /* Tosca Brand Colors */
+  --bs-primary: #0D9488;
+  --bs-primary-rgb: 13, 148, 136;
+  --bs-primary-hover: #0F766E;
+  --bs-primary-subtle: #F0FDFA;
+  --bs-primary-border-subtle: #CCFBF1;
+
+  /* App Surfaces */
+  --app-bg: #F8FAFC;
+  --app-surface: #FFFFFF;
+  --app-sidebar: #0F172A;
+  --app-border: #E2E8F0;
+
+  /* Typography Families */
+  --font-brand: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Typography Colors */
+  --app-text-primary: #0F172A;
+  --app-text-secondary: #475569;
+  --app-text-muted: #94A3B8;
+
+  /* Border Radius & Shadows */
+  --app-radius-sm: 8px;
+  --app-radius-md: 12px;
+  --app-radius-lg: 16px;
+  --app-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --app-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+}
+
+/* Base Body Styling */
+body {
+  background-color: var(--app-bg);
+  color: var(--app-text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Headings & Brand Elements */
+h1, h2, h3, h4, h5, h6, .brand-title, .modal-title, .nav-heading {
+  font-family: var(--font-brand);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Technical Identifiers & Numbers */
+code, kbd, pre, samp,
+.font-mono,
+.device-imei,
+.device-serial,
+.package-name,
+.amapi-path {
+  font-family: var(--font-mono) !important;
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
+
+/* Custom Tosca Button */
+.btn-primary, .btn-teal {
+  background-color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: var(--app-radius-sm);
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-teal:hover {
+  background-color: var(--bs-primary-hover) !important;
+  border-color: var(--bs-primary-hover) !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 148, 136, 0.25) !important;
+}
+
+.btn-outline-primary, .btn-outline-teal {
+  color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+  font-weight: 600;
+  border-radius: var(--app-radius-sm);
+}
+
+.btn-outline-primary:hover, .btn-outline-teal:hover {
+  background-color: var(--bs-primary) !important;
+  color: #ffffff !important;
+}
+
+/* Card MDM Styling */
+.card-mdm {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  box-shadow: var(--app-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-mdm:hover {
+  box-shadow: var(--app-shadow-hover);
+}
+
+/* Metric Widget Box */
+.metric-icon-box {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--app-radius-md);
+}
+
+.bg-teal-subtle {
+  background-color: var(--bs-primary-subtle) !important;
+  color: var(--bs-primary) !important;
+}
+
+/* Table Header Tosca Styling */
+.table thead.table-tosca th {
+  background-color: var(--bs-primary-subtle);
+  color: var(--bs-primary-hover);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--bs-primary-border-subtle);
+  padding: 12px 16px;
+}
+
+.table tbody td {
+  padding: 14px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--app-border);
+}
+
+/* Sidebar Custom Styling */
+.sidebar-mdm {
+  width: 260px;
+  min-height: 100vh;
+  background-color: var(--app-sidebar);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-mdm .nav-link {
+  color: #94A3B8;
+  font-weight: 500;
+  border-radius: var(--app-radius-sm);
+  padding: 0.65rem 1rem;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.sidebar-mdm .nav-link:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-mdm .nav-link.active {
+  color: #FFFFFF;
+  background-color: var(--bs-primary);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.35);
+  font-weight: 600;
+}
+
+.sidebar-mdm .nav-link i {
+  font-size: 1.15rem;
+}
+
+/* Header Navbar */
+.topbar-mdm {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid var(--app-border);
+  height: 64px;
+}
+
+/* Semantic Badges */
+.badge-compliant {
+  background-color: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+  font-weight: 600;
+  padding: 0.35em 0.75em;
+  border-radius: 9999px;
+}
+
+.badge-lost-mode {
+  background-color: #FFE4E6;
+  color: #9F1239;
+  border: 1px solid #FECDD3;
+  font-weight: 600;
+  padding: 0.35em 0.75em;
+  border-radius: 9999px;
+}
+
+.badge-warning-custom {
+  background-color: #FFFBEB;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+  font-weight: 600;
+  padding: 0.35em 0.75em;
+  border-radius: 9999px;
+}
+
+.badge-pending-custom {
+  background-color: #F0F9FF;
+  color: #075985;
+  border: 1px solid #BAE6FD;
+  font-weight: 600;
+  padding: 0.35em 0.75em;
+  border-radius: 9999px;
+}
