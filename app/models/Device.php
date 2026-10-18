@@ -15,6 +15,7 @@ class Device extends Model
     protected $fillable = [
         'device_id',
         'hardware_model',
+        'marketing_name',
         'brand',
         'manufacturer',
         'serial_number',
@@ -60,24 +61,19 @@ class Device extends Model
     }
 
     /**
-     * Helper to map common hardware codes to human readable names.
+     * Get human friendly marketing name (e.g. Vivo Y29 5G).
      */
     public function getHumanModelNameAttribute(): string
     {
-        $code = $this->hardware_model ?? '';
-        $mapping = [
-            'SM-A528B' => 'Samsung Galaxy A52s',
-            'SM-M326B' => 'Samsung Galaxy M32 5G',
-            'SM-G996B' => 'Samsung Galaxy S21+',
-            'M2101K6G' => 'Xiaomi Redmi Note 10 Pro',
-            'CPH2219'  => 'Oppo Reno 6',
-            'V2434'    => 'Vivo Y29',
-            'V2419'    => 'Vivo 19s',
-            'Infinix X6882' => 'Infinix Hot 50i',
-            'Infinix X6885' => 'Infinix Hot 60 Pro',
-            'RMX3941'  => 'Realme C75',
-        ];
+        if (!empty($this->marketing_name)) {
+            return $this->marketing_name;
+        }
 
-        return $mapping[$code] ?? ($code ?: 'Unknown Android');
+        return $this->hardware_model ?: 'Perangkat Android';
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->getHumanModelNameAttribute();
     }
 }

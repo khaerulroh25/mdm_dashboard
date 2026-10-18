@@ -34,6 +34,7 @@ class DeviceController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('hardware_model', 'like', "%{$search}%")
+                  ->orWhere('marketing_name', 'like', "%{$search}%")
                   ->orWhere('brand', 'like', "%{$search}%")
                   ->orWhere('serial_number', 'like', "%{$search}%")
                   ->orWhere('device_id', 'like', "%{$search}%")
@@ -175,5 +176,36 @@ class DeviceController extends Controller
         } else {
             return back()->with('error', "Sinkronisasi gagal: " . ($result['message'] ?? 'Terjadi kesalahan'));
         }
+    }
+
+    /**
+     * Update marketing name / alias for a device model.
+     */
+    public function updateMarketingName(Request $request, $id)
+    {
+        $device = Device::findOrFail($id);
+
+        $validated = $request->validate([
+            'marketing_name' => ['required', 'string', 'max:100'],
+            'apply_to_all_same_model' => ['nullable', 'boolean'],
+        ]);
+
+        $device->marketing_name = $validated['marketing_name'];
+        $device->save();
+
+        if ($request->boolean('apply_to_all_same_model') && $device->hardware_model) {
+            app(\App\Services\DeviceNameService::class)->setCustomName(
+                $device->hardware_model,
+                $validated['marketing_name'],
+                $device->brand
+            );
+        }
+
+        AuditLog::log('UPDATE_DEVICE_MODEL_NAME', 'Device', (string)$device->id, [
+            'marketing_name' => $device->marketing_name,
+            'hardware_model' => $device->hardware_model,
+        ]);
+
+        return back()->with('success', "Nama model komersial berhasil disimpan sebagai <strong>{$device->marketing_name}</strong>.");
     }
 }

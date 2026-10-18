@@ -108,11 +108,18 @@
                     <table class="table table-sm table-borderless mb-0">
                         <tbody>
                             <tr>
-                                <th class="text-secondary fw-normal w-40">Model Hardware</th>
-                                <td class="fw-semibold text-dark">{{ $device->human_model_name }}</td>
+                                <th class="text-secondary fw-normal w-40">Nama Komersial</th>
+                                <td class="fw-bold text-dark fs-6">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span>{{ $device->human_model_name }}</span>
+                                        <button type="button" class="btn btn-sm btn-outline-teal py-0 px-2" data-bs-toggle="modal" data-bs-target="#editModelNameModal" title="Ubah Nama Komersial">
+                                            <i class="bi bi-pencil me-1"></i> Edit
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
-                                <th class="text-secondary fw-normal">Kode Model</th>
+                                <th class="text-secondary fw-normal">Kode Model Pabrik</th>
                                 <td><span class="font-mono text-dark">{{ $device->hardware_model ?? '-' }}</span></td>
                             </tr>
                             <tr>
@@ -435,6 +442,45 @@
                     <button type="submit" id="btnUnenrollSubmit" class="btn btn-danger btn-sm" disabled>
                         Ya, Unenroll Perangkat Ini
                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 6. Edit Marketing Model Name Modal -->
+<div class="modal fade" id="editModelNameModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ route('devices.rename-model', $device->id) }}" method="POST">
+                @csrf
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-pencil-square text-teal me-2"></i>Ubah Nama Komersial Model</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-secondary">Kode Model Pabrik</label>
+                        <input type="text" class="form-control bg-light font-mono" value="{{ $device->hardware_model ?? '-' }}" readonly>
+                        <span class="text-muted small" style="font-size: 11px;">Kode model hardware bawaan dari Google AMAPI</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="marketing_name" class="form-label small fw-semibold text-secondary">Nama Komersial / Tipe HP <span class="text-danger">*</span></label>
+                        <input type="text" name="marketing_name" id="marketing_name" class="form-control" value="{{ $device->marketing_name ?? $device->human_model_name }}" placeholder="Contoh: Vivo Y29 5G, Samsung Galaxy A55" required>
+                    </div>
+
+                    <div class="form-check p-3 bg-light rounded border">
+                        <input class="form-check-input" type="checkbox" name="apply_to_all_same_model" value="1" id="applyAllCheck" checked>
+                        <label class="form-check-label small text-dark fw-semibold" for="applyAllCheck">
+                            Terapkan ke seluruh perangkat lain dengan kode tipe ini ({{ $device->hardware_model }})
+                        </label>
+                        <span class="text-muted d-block small" style="font-size: 11px;">Otomatis memperbarui nama di semua perangkat sejenis di dashboard</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Simpan Perubahan</button>
                 </div>
             </form>
         </div>

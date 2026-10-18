@@ -87,10 +87,14 @@ class DeviceSyncService
         $lastReport = $gDevice->getLastStatusReportTime() ? date('Y-m-d H:i:s', strtotime($gDevice->getLastStatusReportTime())) : null;
         $enrollmentTime = $gDevice->getEnrollmentTime() ? date('Y-m-d H:i:s', strtotime($gDevice->getEnrollmentTime())) : null;
 
+        $existingDevice = Device::where('device_id', $deviceId)->first();
+        $marketingName = $existingDevice?->marketing_name ?: app(DeviceNameService::class)->resolve($brand, $model);
+
         return Device::updateOrCreate(
             ['device_id' => $deviceId],
             [
                 'hardware_model' => $model,
+                'marketing_name' => $marketingName,
                 'brand' => $brand,
                 'manufacturer' => $manufacturer,
                 'serial_number' => $serial,

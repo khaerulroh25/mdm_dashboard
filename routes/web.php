@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{device}', [DeviceController::class, 'show'])->name('show');
         Route::post('/{device}/command', [DeviceController::class, 'issueCommand'])->name('command')->middleware('role:admin,operator');
         Route::post('/{device}/policy', [DeviceController::class, 'updatePolicy'])->name('policy')->middleware('role:admin,operator');
+        Route::post('/{device}/rename-model', [DeviceController::class, 'updateMarketingName'])->name('rename-model')->middleware('role:admin,operator');
         Route::delete('/{device}', [DeviceController::class, 'unenroll'])->name('unenroll')->middleware('role:admin');
     });
 

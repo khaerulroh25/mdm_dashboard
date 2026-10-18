@@ -123,4 +123,23 @@ class MdmDashboardTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Daftar Pengguna');
     }
+
+    public function test_operator_can_rename_device_marketing_model_name(): void
+    {
+        $operator = User::where('username', 'operator')->first();
+        $this->actingAs($operator);
+
+        $device = Device::first();
+
+        $response = $this->post(route('devices.rename-model', $device->id), [
+            'marketing_name' => 'Vivo Y29 Special Edition',
+            'apply_to_all_same_model' => 1,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('devices', [
+            'id' => $device->id,
+            'marketing_name' => 'Vivo Y29 Special Edition',
+        ]);
+    }
 }

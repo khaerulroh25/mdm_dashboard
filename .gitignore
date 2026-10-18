@@ -21,6 +21,5 @@ yarn-error.log
 # MDM Credentials & Sensitive Keys
 /storage/app/credentials/*
 !/storage/app/credentials/.gitkeep
-/legacy_v1/config/ServiceAccount.json
-/legacy_v1/vendor/
+/storage/app/*.json
 
