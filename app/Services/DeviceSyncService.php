@@ -80,6 +80,10 @@ class DeviceSyncService
         $manufacturer = $hardwareInfo ? $hardwareInfo->getManufacturer() : null;
         $serial = $hardwareInfo ? $hardwareInfo->getSerialNumber() : null;
         $androidVersion = $softwareInfo ? $softwareInfo->getAndroidVersion() : null;
+        if (empty($androidVersion)) {
+            $apiLevel = method_exists($gDevice, 'getApiLevel') ? $gDevice->getApiLevel() : ($gDevice['apiLevel'] ?? null);
+            $androidVersion = Device::mapApiLevelToVersion($apiLevel ? (int)$apiLevel : null);
+        }
 
         $policyName = $gDevice->getPolicyName() ?? $gDevice->getAppliedPolicyName() ?? null;
         $policyId = $policyName ? basename($policyName) : null;

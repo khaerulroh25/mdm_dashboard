@@ -131,10 +131,22 @@
                                 <td><span class="device-serial text-dark fw-bold">{{ $device->serial_number ?? '-' }}</span></td>
                             </tr>
                             <tr>
+                                <th class="text-secondary fw-normal">Nomor IMEI</th>
+                                <td>
+                                    @if($device->imei)
+                                        <span class="device-imei text-dark fw-bold">{{ $device->imei }}</span>
+                                    @else
+                                        <span class="text-muted small fst-italic">
+                                            <i class="bi bi-clock-history me-1"></i>Menunggu sinkronisasi telemetri AMAPI
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
                                 <th class="text-secondary fw-normal">Versi Android OS</th>
                                 <td>
                                     <span class="badge bg-light text-dark border">
-                                        Android {{ $device->android_version ?? 'N/A' }}
+                                        <i class="bi bi-android2 text-success me-1"></i>Android {{ $device->android_version ?? 'N/A' }}
                                     </span>
                                 </td>
                             </tr>

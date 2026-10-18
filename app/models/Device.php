@@ -76,4 +76,72 @@ class Device extends Model
     {
         return $this->getHumanModelNameAttribute();
     }
+
+    /**
+     * Map Android API level to human OS version number.
+     */
+    public static function mapApiLevelToVersion(?int $apiLevel): ?string
+    {
+        if (!$apiLevel) {
+            return null;
+        }
+
+        return match ($apiLevel) {
+            36 => '16',
+            35 => '15',
+            34 => '14',
+            33 => '13',
+            32 => '12L',
+            31 => '12',
+            30 => '11',
+            29 => '10',
+            28 => '9',
+            27 => '8.1',
+            26 => '8.0',
+            25 => '7.1',
+            24 => '7.0',
+            23 => '6.0',
+            22 => '5.1',
+            21 => '5.0',
+            default => (string)$apiLevel,
+        };
+    }
+
+    /**
+     * Accessor for android_version: falls back to apiLevel mapping if not explicitly set.
+     */
+    public function getAndroidVersionAttribute($value): ?string
+    {
+        if (!empty($value)) {
+            return $value;
+        }
+
+        $apiLevel = $this->raw_device_data['apiLevel'] ?? null;
+        return $apiLevel ? self::mapApiLevelToVersion((int)$apiLevel) : null;
+    }
+
+    /**
+     * Accessor for IMEI: extracts from network_info or raw_device_data.
+     */
+    public function getImeiAttribute(): ?string
+    {
+        if (!empty($this->network_info['imei'])) {
+            return $this->network_info['imei'];
+        }
+
+        if (!empty($this->network_info['telephonyInfos']) && is_array($this->network_info['telephonyInfos'])) {
+            foreach ($this->network_info['telephonyInfos'] as $sim) {
+                if (!empty($sim['imei'])) {
+                    return $sim['imei'];
+                }
+            }
+        }
+
+        if (!empty($this->raw_device_data['networkInfo']['imei'])) {
+            return $this->raw_device_data['networkInfo']['imei'];
+        }
+
+        return null;
+    }
 }
+

@@ -142,4 +142,32 @@ class MdmDashboardTest extends TestCase
             'marketing_name' => 'Vivo Y29 Special Edition',
         ]);
     }
+
+    public function test_device_android_version_resolves_and_displays_correctly(): void
+    {
+        $operator = User::where('username', 'operator')->first();
+        $this->actingAs($operator);
+
+        $device = Device::first();
+        $this->assertNotNull($device->android_version);
+        $this->assertNotEquals('N/A', $device->android_version);
+
+        // Verify device detail page displays the real Android version
+        $response = $this->get(route('devices.show', $device->id));
+        $response->assertStatus(200);
+        $response->assertSee('Android ' . $device->android_version);
+    }
+
+    public function test_device_imei_and_api_level_mapping(): void
+    {
+        $this->assertEquals('16', Device::mapApiLevelToVersion(36));
+        $this->assertEquals('15', Device::mapApiLevelToVersion(35));
+        $this->assertEquals('14', Device::mapApiLevelToVersion(34));
+        $this->assertEquals('13', Device::mapApiLevelToVersion(33));
+
+        $device = new Device([
+            'network_info' => ['imei' => '861234567890123'],
+        ]);
+        $this->assertEquals('861234567890123', $device->imei);
+    }
 }

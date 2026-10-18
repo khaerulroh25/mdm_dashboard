@@ -65,6 +65,13 @@ class PolicyController extends Controller
             'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
             'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
             'locationMode'         => $request->input('location_mode') ?: null,
+            'statusReportingSettings' => [
+                'softwareInfoEnabled' => true,
+                'networkInfoEnabled'  => true,
+                'hardwareStatusEnabled' => true,
+                'deviceSettingsEnabled' => true,
+                'memoryInfoEnabled'   => true,
+            ],
         ];
 
         try {
@@ -129,6 +136,13 @@ class PolicyController extends Controller
             'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
             'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
             'locationMode'         => $request->input('location_mode') ?: null,
+            'statusReportingSettings' => [
+                'softwareInfoEnabled' => true,
+                'networkInfoEnabled'  => true,
+                'hardwareStatusEnabled' => true,
+                'deviceSettingsEnabled' => true,
+                'memoryInfoEnabled'   => true,
+            ],
         ];
 
         try {
