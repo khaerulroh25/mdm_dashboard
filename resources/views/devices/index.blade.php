@@ -13,7 +13,7 @@
                 <span class="input-group-text bg-white border-end-0 text-secondary">
                     <i class="bi bi-search"></i>
                 </span>
-                <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari Model, Serial, Nama Pemilik, ID Anggota..." value="{{ request('search') }}">
+                <input type="text" name="search" class="form-control border-start-0 ps-0" placeholder="Cari Model, No. IMEI, Serial, Nama Pemilik, ID Anggota..." value="{{ request('search') }}">
             </div>
         </div>
 
@@ -78,7 +78,7 @@
                     <th scope="col" class="ps-4">No</th>
                     <th scope="col">ID Anggota & Pemilik</th>
                     <th scope="col">Perangkat (Hardware)</th>
-                    <th scope="col">Serial Number</th>
+                    <th scope="col">No. IMEI</th>
                     <th scope="col">Policy Aktif</th>
                     <th scope="col">Status</th>
                     <th scope="col" class="text-end pe-4">Aksi</th>
@@ -108,9 +108,11 @@
                         </span>
                     </td>
                     <td>
-                        <span class="device-serial text-dark fw-medium">
-                            {{ $device->serial_number ?? '-' }}
-                        </span>
+                        @if($device->imei)
+                            <span class="device-imei text-dark fw-medium">{{ $device->imei }}</span>
+                        @else
+                            <span class="text-muted small font-mono">-</span>
+                        @endif
                     </td>
                     <td>
                         <span class="badge-policy">

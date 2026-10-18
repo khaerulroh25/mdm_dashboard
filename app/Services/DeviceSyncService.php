@@ -91,6 +91,23 @@ class DeviceSyncService
         $lastReport = $gDevice->getLastStatusReportTime() ? date('Y-m-d H:i:s', strtotime($gDevice->getLastStatusReportTime())) : null;
         $enrollmentTime = $gDevice->getEnrollmentTime() ? date('Y-m-d H:i:s', strtotime($gDevice->getEnrollmentTime())) : null;
 
+        $networkInfoArray = $networkInfo ? json_decode(json_encode($networkInfo), true) : null;
+        $rawDeviceArray = json_decode(json_encode($gDevice), true);
+
+        $imei = null;
+        if (!empty($networkInfoArray['imei'])) {
+            $imei = $networkInfoArray['imei'];
+        } elseif (!empty($rawDeviceArray['networkInfo']['imei'])) {
+            $imei = $rawDeviceArray['networkInfo']['imei'];
+        } elseif (!empty($networkInfoArray['telephonyInfos']) && is_array($networkInfoArray['telephonyInfos'])) {
+            foreach ($networkInfoArray['telephonyInfos'] as $sim) {
+                if (!empty($sim['imei'])) {
+                    $imei = $sim['imei'];
+                    break;
+                }
+            }
+        }
+
         $existingDevice = Device::where('device_id', $deviceId)->first();
         $marketingName = $existingDevice?->marketing_name ?: app(DeviceNameService::class)->resolve($brand, $model);
 
@@ -102,12 +119,13 @@ class DeviceSyncService
                 'brand' => $brand,
                 'manufacturer' => $manufacturer,
                 'serial_number' => $serial,
+                'imei' => $imei ?? $existingDevice?->imei,
                 'android_version' => $androidVersion,
                 'state' => $gDevice->getState() ?? 'ACTIVE',
                 'policy_id' => $policyId,
-                'network_info' => $networkInfo ? json_decode(json_encode($networkInfo), true) : null,
+                'network_info' => $networkInfoArray,
                 'memory_info' => $memoryInfo ? json_decode(json_encode($memoryInfo), true) : null,
-                'raw_device_data' => json_decode(json_encode($gDevice), true),
+                'raw_device_data' => $rawDeviceArray,
                 'last_status_report' => $lastReport,
                 'enrolled_at' => $enrollmentTime ?? now(),
             ]

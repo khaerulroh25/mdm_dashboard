@@ -37,6 +37,7 @@ class DeviceController extends Controller
                   ->orWhere('marketing_name', 'like', "%{$search}%")
                   ->orWhere('brand', 'like', "%{$search}%")
                   ->orWhere('serial_number', 'like', "%{$search}%")
+                  ->orWhere('imei', 'like', "%{$search}%")
                   ->orWhere('device_id', 'like', "%{$search}%")
                   ->orWhereHas('owner', function ($oq) use ($search) {
                       $oq->where('nama', 'like', "%{$search}%")

@@ -19,6 +19,7 @@ class Device extends Model
         'brand',
         'manufacturer',
         'serial_number',
+        'imei',
         'android_version',
         'state',
         'policy_id',
@@ -121,12 +122,20 @@ class Device extends Model
     }
 
     /**
-     * Accessor for IMEI: extracts from network_info or raw_device_data.
+     * Accessor for IMEI: returns column value or extracts from network_info / raw_device_data.
      */
-    public function getImeiAttribute(): ?string
+    public function getImeiAttribute($value = null): ?string
     {
+        if (!empty($value)) {
+            return $value;
+        }
+
         if (!empty($this->network_info['imei'])) {
             return $this->network_info['imei'];
+        }
+
+        if (!empty($this->raw_device_data['networkInfo']['imei'])) {
+            return $this->raw_device_data['networkInfo']['imei'];
         }
 
         if (!empty($this->network_info['telephonyInfos']) && is_array($this->network_info['telephonyInfos'])) {
@@ -137,8 +146,12 @@ class Device extends Model
             }
         }
 
-        if (!empty($this->raw_device_data['networkInfo']['imei'])) {
-            return $this->raw_device_data['networkInfo']['imei'];
+        if (!empty($this->raw_device_data['networkInfo']['telephonyInfos']) && is_array($this->raw_device_data['networkInfo']['telephonyInfos'])) {
+            foreach ($this->raw_device_data['networkInfo']['telephonyInfos'] as $sim) {
+                if (!empty($sim['imei'])) {
+                    return $sim['imei'];
+                }
+            }
         }
 
         return null;
