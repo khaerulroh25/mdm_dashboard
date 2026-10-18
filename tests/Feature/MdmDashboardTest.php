@@ -237,14 +237,17 @@ class MdmDashboardTest extends TestCase
 
         $policy = Policy::where('policy_id', 'Mode_kiosk')->first();
         $this->assertEquals('BLACKLIST', $policy->play_store_mode);
+        $this->assertTrue($policy->allow_untrusted_apps);
 
         $response = $this->get(route('policies.index'));
         $response->assertStatus(200);
         $response->assertSee('Google Play');
         $response->assertSee('Buka Penuh (Publik)');
+        $response->assertSee('Allow APK');
 
         $response = $this->get(route('policies.edit', $policy->id));
         $response->assertStatus(200);
         $response->assertSee('Buka Penuh Google Play Publik (BLACKLIST)');
+        $response->assertSee('Izinkan Instalasi APK Luar (Sideloading)');
     }
 }

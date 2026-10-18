@@ -97,6 +97,16 @@
                         </div>
 
                         <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="allow_untrusted_apps" value="1" id="allow_untrusted_apps" {{ old('allow_untrusted_apps', true) ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="allow_untrusted_apps">
+                                    Izinkan Instalasi APK Luar (Sideloading)
+                                </label>
+                                <div class="form-text" style="font-size: 11px;">Pengguna bisa memasang APK di luar Play Store (misal: APK ujian/CBT).</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
                             <label for="location_mode" class="form-label small fw-semibold text-dark">Mode Lokasi (GPS)</label>
                             <select name="location_mode" id="location_mode" class="form-select form-select-sm">
                                 <option value="">Default (Sesuai Pengguna)</option>

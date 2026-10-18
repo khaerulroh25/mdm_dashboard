@@ -27,7 +27,8 @@ class PolicyController extends Controller
         $policies = Policy::select([
             'id', 'policy_id', 'name', 'description', 'camera_disabled',
             'factory_reset_disabled', 'wifi_config_disabled', 'install_apps_disabled',
-            'safe_boot_disabled', 'location_mode', 'play_store_mode', 'created_at', 'updated_at'
+            'allow_untrusted_apps', 'safe_boot_disabled', 'location_mode', 'play_store_mode',
+            'created_at', 'updated_at'
         ])->withCount('devices')->latest()->get();
 
         return view('policies.index', compact('policies'));
@@ -54,12 +55,14 @@ class PolicyController extends Controller
             'wifi_config_disabled'  => ['nullable', 'boolean'],
             'factory_reset_disabled'=> ['nullable', 'boolean'],
             'install_apps_disabled' => ['nullable', 'boolean'],
+            'allow_untrusted_apps'  => ['nullable', 'boolean'],
             'safe_boot_disabled'    => ['nullable', 'boolean'],
             'location_mode'         => ['nullable', 'string', 'in:HIGH_ACCURACY,SENSORS_ONLY,BATTERY_SAVING,OFF'],
             'play_store_mode'       => ['nullable', 'string', 'in:WHITELIST,BLACKLIST'],
         ]);
 
         $playStoreMode = $request->input('play_store_mode', 'WHITELIST');
+        $allowUntrusted = $request->boolean('allow_untrusted_apps');
 
         $policyData = [
             'cameraDisabled'       => $request->boolean('camera_disabled'),
@@ -70,6 +73,9 @@ class PolicyController extends Controller
             'locationMode'         => $request->input('location_mode') ?: null,
             'playStoreMode'        => $playStoreMode,
             'modifyAccountsDisabled' => $playStoreMode === 'BLACKLIST' ? false : true,
+            'advancedSecurityOverrides' => [
+                'untrustedAppsPolicy' => $allowUntrusted ? 'ALLOW_INSTALL_DEVICE_WIDE' : 'DISALLOW_INSTALL',
+            ],
             'statusReportingSettings' => [
                 'softwareInfoEnabled' => true,
                 'networkInfoEnabled'  => true,
@@ -91,6 +97,7 @@ class PolicyController extends Controller
                 'wifi_config_disabled'  => $request->boolean('wifi_config_disabled'),
                 'factory_reset_disabled'=> $request->boolean('factory_reset_disabled'),
                 'install_apps_disabled' => $request->boolean('install_apps_disabled'),
+                'allow_untrusted_apps'  => $allowUntrusted,
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
                 'location_mode'         => $request->input('location_mode') ?: null,
                 'play_store_mode'       => $playStoreMode,
@@ -132,12 +139,14 @@ class PolicyController extends Controller
             'wifi_config_disabled'  => ['nullable', 'boolean'],
             'factory_reset_disabled'=> ['nullable', 'boolean'],
             'install_apps_disabled' => ['nullable', 'boolean'],
+            'allow_untrusted_apps'  => ['nullable', 'boolean'],
             'safe_boot_disabled'    => ['nullable', 'boolean'],
             'location_mode'         => ['nullable', 'string', 'in:HIGH_ACCURACY,SENSORS_ONLY,BATTERY_SAVING,OFF'],
             'play_store_mode'       => ['nullable', 'string', 'in:WHITELIST,BLACKLIST'],
         ]);
 
         $playStoreMode = $request->input('play_store_mode', 'WHITELIST');
+        $allowUntrusted = $request->boolean('allow_untrusted_apps');
 
         $policyData = [
             'cameraDisabled'       => $request->boolean('camera_disabled'),
@@ -148,6 +157,9 @@ class PolicyController extends Controller
             'locationMode'         => $request->input('location_mode') ?: null,
             'playStoreMode'        => $playStoreMode,
             'modifyAccountsDisabled' => $playStoreMode === 'BLACKLIST' ? false : true,
+            'advancedSecurityOverrides' => [
+                'untrustedAppsPolicy' => $allowUntrusted ? 'ALLOW_INSTALL_DEVICE_WIDE' : 'DISALLOW_INSTALL',
+            ],
             'statusReportingSettings' => [
                 'softwareInfoEnabled' => true,
                 'networkInfoEnabled'  => true,
@@ -168,6 +180,7 @@ class PolicyController extends Controller
                 'wifi_config_disabled'  => $request->boolean('wifi_config_disabled'),
                 'factory_reset_disabled'=> $request->boolean('factory_reset_disabled'),
                 'install_apps_disabled' => $request->boolean('install_apps_disabled'),
+                'allow_untrusted_apps'  => $allowUntrusted,
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
                 'location_mode'         => $request->input('location_mode') ?: null,
                 'play_store_mode'       => $playStoreMode,

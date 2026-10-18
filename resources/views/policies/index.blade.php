@@ -66,7 +66,12 @@
                                     <i class="bi bi-wifi-off"></i> Lock Wi-Fi
                                 </span>
                             @endif
-                            @if(!$policy->camera_disabled && !$policy->factory_reset_disabled && !$policy->wifi_config_disabled)
+                            @if($policy->allow_untrusted_apps)
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle small" title="Instalasi APK Luar Diizinkan">
+                                    <i class="bi bi-file-earmark-arrow-down"></i> Allow APK
+                                </span>
+                            @endif
+                            @if(!$policy->camera_disabled && !$policy->factory_reset_disabled && !$policy->wifi_config_disabled && !$policy->allow_untrusted_apps)
                                 <span class="badge bg-light text-secondary border small">Standar</span>
                             @endif
                         </div>

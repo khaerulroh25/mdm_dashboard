@@ -19,6 +19,7 @@ class Policy extends Model
         'wifi_config_disabled',
         'factory_reset_disabled',
         'install_apps_disabled',
+        'allow_untrusted_apps',
         'safe_boot_disabled',
         'location_mode',
         'play_store_mode',
@@ -32,6 +33,7 @@ class Policy extends Model
             'wifi_config_disabled' => 'boolean',
             'factory_reset_disabled' => 'boolean',
             'install_apps_disabled' => 'boolean',
+            'allow_untrusted_apps' => 'boolean',
             'safe_boot_disabled' => 'boolean',
             'raw_policy_json' => 'array',
         ];
