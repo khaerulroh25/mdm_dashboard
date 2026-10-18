@@ -9,6 +9,7 @@ use Google\Service\AndroidManagement\Command;
 use Google\Service\AndroidManagement\Policy;
 use Google\Service\AndroidManagement\EnrollmentToken;
 use Google\Service\AndroidManagement\ApplicationPolicy;
+use Google\Service\AndroidManagement\WebToken;
 use Illuminate\Support\Facades\Log;
 
 class AndroidManagementService
@@ -295,5 +296,40 @@ class AndroidManagementService
             $this->enterpriseId,
             $tokenConfig
         );
+    }
+
+    // =========================================================================
+    // MANAGED GOOGLE PLAY & APP METADATA (OFFICIAL)
+    // =========================================================================
+
+    /**
+     * Create an official Google AMAPI Web Token for embedding Managed Google Play iframe.
+     * Note: $parentFrameUrl must be an HTTPS URL.
+     */
+    public function createWebToken(string $parentFrameUrl, array $features = ['PLAY_SEARCH', 'PRIVATE_APPS', 'WEB_APPS', 'STORE_BUILDER']): WebToken
+    {
+        $token = new WebToken();
+        $token->setParentFrameUrl($parentFrameUrl);
+        $token->setEnabledFeatures($features);
+        $token->setPermissions(['APPROVE_APPS']);
+
+        return $this->service->enterprises_webTokens->create(
+            $this->enterpriseId,
+            $token
+        );
+    }
+
+    /**
+     * Fetch official application metadata directly from Google Android Management API.
+     */
+    public function getApplication(string $packageName)
+    {
+        try {
+            $name = "{$this->enterpriseId}/applications/{$packageName}";
+            return $this->service->enterprises_applications->get($name);
+        } catch (\Throwable $e) {
+            Log::warning("AMAPI getApplication failed for {$packageName}: " . $e->getMessage());
+            return null;
+        }
     }
 }

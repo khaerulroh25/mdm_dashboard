@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('apps')->name('apps.')->group(function () {
         Route::get('/', [GooglePlayController::class, 'index'])->name('index');
         Route::get('/search', [GooglePlayController::class, 'search'])->name('search');
+        Route::get('/lookup', [GooglePlayController::class, 'lookup'])->name('lookup');
         Route::post('/', [GooglePlayController::class, 'store'])->name('store')->middleware('role:admin,operator');
         Route::delete('/{id}', [GooglePlayController::class, 'destroy'])->name('destroy')->middleware('role:admin');
     });

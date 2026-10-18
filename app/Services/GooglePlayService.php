@@ -10,10 +10,12 @@ use Illuminate\Support\Facades\Log;
 class GooglePlayService
 {
     protected GPlayApps $gplay;
+    protected AndroidManagementService $amapi;
 
-    public function __construct()
+    public function __construct(AndroidManagementService $amapi)
     {
         $this->gplay = new GPlayApps();
+        $this->amapi = $amapi;
     }
 
     /**
@@ -29,15 +31,32 @@ class GooglePlayService
         $cacheKey = 'gplay_search_' . md5(strtolower($keyword));
 
         return Cache::remember($cacheKey, now()->addHours(6), function () use ($keyword, $limit) {
+            $apps = [];
+
+            // If keyword looks like a package name (e.g. com.whatsapp), resolve via official AMAPI first
+            if (str_contains($keyword, '.')) {
+                try {
+                    $directApp = $this->getAppInfo($keyword);
+                    if ($directApp) {
+                        $apps[] = $directApp;
+                    }
+                } catch (\Throwable $e) {
+                    Log::info("Direct package lookup error: " . $e->getMessage());
+                }
+            }
+
             try {
                 $results = @$this->gplay->search($keyword, 100);
-                $apps = [];
 
                 foreach ($results as $app) {
                     if ($app) {
+                        $pkg = $app->getId() ?? '';
+                        if (!empty($apps) && $apps[0]['package_name'] === $pkg) {
+                            continue; // Avoid duplicate
+                        }
                         $apps[] = [
                             'app_name'     => $app->getName() ?? 'Unknown',
-                            'package_name' => $app->getId() ?? '',
+                            'package_name' => $pkg,
                             'icon'         => $app->getIcon() ? $app->getIcon()->getUrl() : null,
                             'developer'    => $app->getDeveloper() ? $app->getDeveloper()->getName() : 'Unknown',
                         ];
@@ -80,12 +99,36 @@ class GooglePlayService
 
     /**
      * Get detailed metadata for a specific package.
+     * Uses official Google AMAPI first, then falls back to scraper.
      */
     public function getAppInfo(string $packageName): ?array
     {
+        $packageName = trim($packageName);
+        if (empty($packageName)) {
+            return null;
+        }
+
         $cacheKey = 'gplay_app_' . md5($packageName);
 
         return Cache::remember($cacheKey, now()->addDays(1), function () use ($packageName) {
+            // 1. Try official Google Android Management API first
+            try {
+                $amapiApp = $this->amapi->getApplication($packageName);
+                if ($amapiApp && $amapiApp->getTitle()) {
+                    return [
+                        'app_name'     => $amapiApp->getTitle(),
+                        'package_name' => $packageName,
+                        'icon'         => $amapiApp->getIconUrl() ?: $amapiApp->getSmallIconUrl(),
+                        'developer'    => $amapiApp->getAuthor() ?: 'Google Play Store',
+                        'description'  => $amapiApp->getFullDescription() ?: $amapiApp->getDescription() ?: '',
+                        'is_official'  => true,
+                    ];
+                }
+            } catch (\Throwable $e) {
+                Log::info("AMAPI official getApplication fallback for {$packageName}: " . $e->getMessage());
+            }
+
+            // 2. Scraper fallback
             try {
                 $app = $this->gplay->getAppInfo($packageName);
                 return [
@@ -94,6 +137,7 @@ class GooglePlayService
                     'icon'         => $app->getIcon() ? $app->getIcon()->getUrl() : null,
                     'developer'    => $app->getDeveloper() ? $app->getDeveloper()->getName() : null,
                     'description'  => $app->getDescription(),
+                    'is_official'  => false,
                 ];
             } catch (Exception $e) {
                 Log::warning("GooglePlayService getAppInfo error for '{$packageName}': " . $e->getMessage());

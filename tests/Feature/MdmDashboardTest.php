@@ -250,4 +250,32 @@ class MdmDashboardTest extends TestCase
         $response->assertSee('Buka Penuh Google Play Publik (BLACKLIST)');
         $response->assertSee('Izinkan Instalasi APK Luar (Sideloading)');
     }
+
+    public function test_google_play_search_view_and_tabs(): void
+    {
+        $admin = User::where('username', 'admin_rdk')->first();
+        $this->actingAs($admin);
+
+        $response = $this->get(route('apps.search'));
+        $response->assertStatus(200);
+        $response->assertSee('Managed Google Play');
+        $response->assertSee('Pencarian Cepat & Package Name', false);
+    }
+
+    public function test_google_play_lookup_and_store(): void
+    {
+        $admin = User::where('username', 'admin_rdk')->first();
+        $this->actingAs($admin);
+
+        // Store an app with auto-fetch metadata
+        $response = $this->post(route('apps.store'), [
+            'package_name' => 'com.google.android.youtube',
+            'app_name'     => 'YouTube',
+        ]);
+        $response->assertRedirect();
+
+        $app = \App\Models\App::where('package_name', 'com.google.android.youtube')->first();
+        $this->assertNotNull($app);
+        $this->assertEquals('YouTube', $app->app_name);
+    }
 }
