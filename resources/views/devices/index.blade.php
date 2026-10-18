@@ -92,11 +92,14 @@
                     </td>
                     <td>
                         @if($device->owner)
-                            <div class="fw-semibold text-dark">{{ $device->owner->nama }}</div>
+                            <div class="d-flex align-items-center gap-1">
+                                <span class="rounded-circle {{ $device->is_online ? 'bg-success' : 'bg-secondary' }}" style="width: 8px; height: 8px; display: inline-block;" title="{{ $device->online_status_label }}"></span>
+                                <div class="fw-semibold text-dark">{{ $device->owner->nama }}</div>
+                            </div>
                             <span class="badge bg-light text-secondary border font-mono small">{{ $device->owner->id_anggota }}</span>
-                            @if($device->owner->telepon)
-                            <span class="text-muted small d-block font-mono">{{ $device->owner->telepon }}</span>
-                            @endif
+                            <div class="small font-mono {{ $device->is_online ? 'text-success' : 'text-muted' }}" style="font-size: 11px;">
+                                <i class="bi bi-circle-fill me-1" style="font-size: 6px;"></i>{{ $device->online_status_label }}
+                            </div>
                         @else
                             <span class="badge bg-light text-muted border">Belum Ditautkan</span>
                         @endif
@@ -144,6 +147,11 @@
                             <span class="badge badge-warning-custom d-inline-flex align-items-center gap-1">
                                 <i class="bi bi-exclamation-circle"></i> {{ $device->state }}
                             </span>
+                        @endif
+                        @if($device->battery_level !== null)
+                            <div class="mt-1 small text-dark fw-medium" title="Level Baterai Terakhir Dilaporkan">
+                                <i class="bi bi-battery-charging text-success me-1"></i>{{ $device->battery_level }}%
+                            </div>
                         @endif
                     </td>
                     <td class="text-end pe-4">

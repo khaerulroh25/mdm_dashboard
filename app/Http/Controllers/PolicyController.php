@@ -71,6 +71,7 @@ class PolicyController extends Controller
                 'hardwareStatusEnabled' => true,
                 'deviceSettingsEnabled' => true,
                 'memoryInfoEnabled'   => true,
+                'powerManagementEventsEnabled' => true,
             ],
         ];
 
@@ -142,6 +143,7 @@ class PolicyController extends Controller
                 'hardwareStatusEnabled' => true,
                 'deviceSettingsEnabled' => true,
                 'memoryInfoEnabled'   => true,
+                'powerManagementEventsEnabled' => true,
             ],
         ];
 

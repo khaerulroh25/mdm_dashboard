@@ -188,5 +188,50 @@ class Device extends Model
     {
         return $this->is_work_profile ? 'Work Profile (Pribadi)' : 'Fully Managed (Perusahaan)';
     }
+
+    /**
+     * Get the latest reported battery level (percentage) if available.
+     */
+    public function getBatteryLevelAttribute(): ?float
+    {
+        $events = $this->raw_device_data['powerManagementEvents'] ?? null;
+        if (!empty($events) && is_array($events)) {
+            for ($i = count($events) - 1; $i >= 0; $i--) {
+                if (isset($events[$i]['batteryLevel']) && $events[$i]['batteryLevel'] !== null) {
+                    return round((float)$events[$i]['batteryLevel'], 1);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if device is actively online (reported status within the last 24 hours).
+     */
+    public function getIsOnlineAttribute(): bool
+    {
+        if (!$this->last_status_report) {
+            return false;
+        }
+
+        return $this->last_status_report->diffInHours(now()) <= 24;
+    }
+
+    /**
+     * Human-friendly online status description.
+     */
+    public function getOnlineStatusLabelAttribute(): string
+    {
+        if ($this->is_online) {
+            return 'Aktif Online';
+        }
+
+        if ($this->last_status_report) {
+            return 'Offline (' . $this->last_status_report->diffForHumans() . ')';
+        }
+
+        return 'Belum Pernah Lapor';
+    }
 }
 

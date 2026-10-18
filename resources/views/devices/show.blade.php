@@ -180,6 +180,42 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th class="text-secondary fw-normal">Status Keaktifan</th>
+                                <td>
+                                    @if($device->is_online)
+                                        <span class="badge badge-compliant font-mono">
+                                            <i class="bi bi-broadcast me-1"></i>Aktif Online (Terhubung)
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border font-mono">
+                                            <i class="bi bi-clock-history me-1"></i>Offline (Terakhir lapor: {{ $device->last_status_report ? $device->last_status_report->diffForHumans() : 'Belum pernah' }})
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-secondary fw-normal">Status Daya & Baterai</th>
+                                <td>
+                                    @if($device->battery_level !== null)
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle font-mono fs-6 py-1 px-3">
+                                            <i class="bi bi-battery-charging me-1"></i>{{ $device->battery_level }}%
+                                        </span>
+                                    @else
+                                        <span class="text-muted small fst-italic">
+                                            <i class="bi bi-battery me-1"></i>Telemetri daya aktif (Menunggu siklus lapor perangkat)
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-secondary fw-normal">Mode Lokasi & GPS</th>
+                                <td>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle font-mono">
+                                        <i class="bi bi-geo-alt-fill text-teal me-1"></i>HIGH_ACCURACY (GPS Dikunci Aktif oleh Enterprise)
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th class="text-secondary fw-normal">Terakhir Lapor Status</th>
                                 <td class="text-secondary small">
                                     {{ $device->last_status_report ? $device->last_status_report->translatedFormat('d M Y H:i:s') : 'Belum pernah' }}
@@ -231,6 +267,20 @@
                             <tr>
                                 <th class="text-secondary fw-normal w-40">Nama Pemilik</th>
                                 <td class="fw-bold fs-6 text-dark">{{ $device->owner->nama }}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-secondary fw-normal">Status Penggunaan</th>
+                                <td>
+                                    @if($device->is_online)
+                                        <span class="badge badge-compliant font-mono">
+                                            <i class="bi bi-circle-fill text-success me-1" style="font-size: 8px;"></i>Aktif Menggunakan (Online)
+                                        </span>
+                                    @else
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border font-mono">
+                                            <i class="bi bi-circle-fill text-secondary me-1" style="font-size: 8px;"></i>Tidak Aktif / Offline
+                                        </span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <th class="text-secondary fw-normal">ID Anggota / Agen</th>

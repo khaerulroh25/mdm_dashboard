@@ -188,9 +188,45 @@ class MdmDashboardTest extends TestCase
         $operator = User::where('username', 'operator')->first();
         $this->actingAs($operator);
 
+        $profileDevice = Device::whereJsonContains('raw_device_data->managementMode', 'PROFILE_OWNER')->first();
+        if ($profileDevice) {
+            $profileDevice->update(['last_status_report' => now()->addHour()]);
+        }
+
         $response = $this->get(route('devices.index'));
         $response->assertStatus(200);
         $response->assertSee('Work Profile');
         $response->assertSee('Fully Managed');
+    }
+
+    public function test_device_battery_and_online_telemetry_accessors_and_view(): void
+    {
+        $deviceWithBattery = new Device([
+            'last_status_report' => now()->subHours(2),
+            'raw_device_data' => [
+                'powerManagementEvents' => [
+                    ['eventType' => 'BATTERY_LEVEL_COLLECTED', 'batteryLevel' => 84.5],
+                ],
+            ],
+        ]);
+
+        $this->assertEquals(84.5, $deviceWithBattery->battery_level);
+        $this->assertTrue($deviceWithBattery->is_online);
+        $this->assertEquals('Aktif Online', $deviceWithBattery->online_status_label);
+
+        $offlineDevice = new Device([
+            'last_status_report' => now()->subDays(3),
+        ]);
+        $this->assertFalse($offlineDevice->is_online);
+
+        $operator = User::where('username', 'operator')->first();
+        $this->actingAs($operator);
+
+        $device = Device::first();
+        $response = $this->get(route('devices.show', $device->id));
+        $response->assertStatus(200);
+        $response->assertSeeText('Status Keaktifan');
+        $response->assertSeeText('Status Daya & Baterai', false);
+        $response->assertSeeText('Mode Lokasi & GPS', false);
     }
 }
