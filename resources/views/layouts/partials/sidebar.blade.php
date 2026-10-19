@@ -1,12 +1,10 @@
 <div class="sidebar-mdm d-flex flex-column p-3 text-white flex-shrink-0">
     <!-- Brand Header -->
     <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-4 px-2 text-decoration-none text-white">
-        <div class="rounded-3 bg-teal p-2 d-flex align-items-center justify-content-center me-2" style="background-color: var(--bs-primary); width: 38px; height: 38px;">
-            <i class="bi bi-shield-check fs-5 text-white"></i>
-        </div>
+        <img src="{{ asset('images/logo-icon.png') }}" alt="Amanin" class="me-2" style="width: 38px; height: 38px; object-fit: contain;">
         <div>
-            <div class="brand-title fs-5 fw-bold lh-1">MDM Core</div>
-            <span class="text-secondary small font-mono" style="font-size: 11px; color: #94A3B8;">AMAPI Enterprise</span>
+            <div class="brand-title fs-5 fw-bold lh-1 text-white">Amanin</div>
+            <span class="text-secondary small font-mono" style="font-size: 10px; color: #94A3B8; letter-spacing: -0.2px;">Device Management</span>
         </div>
     </a>
 

@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login | MDM Core Android Management</title>
+    <title>Login | Amanin - Device Management Platform</title>
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
     <!-- Google Fonts: Inter & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,11 +40,8 @@
     <div class="login-card">
         <!-- Logo & Title -->
         <div class="text-center mb-4">
-            <div class="rounded-4 p-3 d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="background-color: var(--bs-primary); width: 56px; height: 56px;">
-                <i class="bi bi-shield-lock-fill fs-2 text-white"></i>
-            </div>
-            <h3 class="fw-bold text-dark mb-1">MDM Core</h3>
-            <p class="text-secondary small mb-0">Android Management Enterprise Portal</p>
+            <img src="{{ asset('images/logo-amanin-transparent.png') }}" alt="Amanin - Device Management Platform" class="img-fluid mb-2" style="max-height: 64px; object-fit: contain;">
+            <p class="text-secondary small mb-0">Android Enterprise Management Portal</p>
         </div>
 
         <!-- Flash Alerts -->

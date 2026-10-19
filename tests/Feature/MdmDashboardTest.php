@@ -25,7 +25,7 @@ class MdmDashboardTest extends TestCase
     {
         $response = $this->get('/login');
         $response->assertStatus(200);
-        $response->assertSee('MDM Core');
+        $response->assertSee('Amanin');
         $response->assertSee('Masuk ke Dashboard');
     }
 
