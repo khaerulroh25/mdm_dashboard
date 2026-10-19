@@ -108,15 +108,6 @@
             </button>
         </form>
 
-        <!-- Account Helper Info -->
-        <div class="mt-4 pt-3 border-top text-center text-secondary small">
-            <span class="text-muted d-block mb-1" style="font-size: 11px;">Akun Tersedia untuk Pengujian:</span>
-            <div class="d-flex justify-content-center gap-2 font-mono" style="font-size: 11px;">
-                <span class="badge bg-light text-dark border">admin_rdk</span>
-                <span class="badge bg-light text-dark border">operator</span>
-                <span class="badge bg-light text-dark border">auditor</span>
-            </div>
-        </div>
     </div>
 </body>
 </html>
