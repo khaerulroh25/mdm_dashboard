@@ -1,10 +1,8 @@
 <div class="sidebar-mdm d-flex flex-column p-3 text-white flex-shrink-0">
     <!-- Brand Header -->
-    <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-4 px-2 text-decoration-none text-white">
-        <img src="{{ asset('images/logo-icon.png') }}" alt="Amanin" class="me-2" style="width: 38px; height: 38px; object-fit: contain;">
-        <div>
-            <div class="brand-title fs-5 fw-bold lh-1 text-white">Amanin</div>
-            <span class="text-secondary small font-mono" style="font-size: 10px; color: #94A3B8; letter-spacing: -0.2px;">Device Management</span>
+    <a href="{{ route('dashboard') }}" class="d-block mb-4 px-1 text-decoration-none">
+        <div class="bg-white rounded-3 py-2 px-3 d-flex align-items-center justify-content-center shadow-sm">
+            <img src="{{ asset('images/logo-amanin-transparent.png') }}" alt="Amanin - Device Management Platform" class="img-fluid" style="max-height: 38px; width: auto; object-fit: contain;">
         </div>
     </a>
 
