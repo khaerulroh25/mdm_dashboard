@@ -19,7 +19,9 @@ return [
     | Path to the Google Cloud Service Account JSON file with AMAPI permissions.
     |
     */
-    'credentials_path' => base_path(env('GOOGLE_APPLICATION_CREDENTIALS', 'storage/app/credentials/service-account.json')),
+    'credentials_path' => ($path = env('GOOGLE_APPLICATION_CREDENTIALS', 'storage/app/credentials/service-account.json'))
+        ? (str_starts_with($path, '/') || (strlen($path) > 2 && $path[1] === ':') ? $path : base_path($path))
+        : base_path('storage/app/credentials/service-account.json'),
 
     /*
     |--------------------------------------------------------------------------
