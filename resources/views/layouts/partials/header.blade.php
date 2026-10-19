@@ -1,13 +1,22 @@
 <header class="topbar-mdm d-flex align-items-center justify-content-between px-3 px-md-4">
-    <!-- Left: Hamburger Toggle (Mobile) + Page Title & Breadcrumb -->
+    <!-- Left: Hamburger Toggle (Mobile) / Desktop Mini Sidebar Toggle + Page Title & Breadcrumb -->
     <div class="d-flex align-items-center gap-2 gap-md-3 overflow-hidden">
-        <!-- Hamburger Menu Button visible only on < lg -->
+        <!-- Hamburger Menu Button visible only on < lg (Mobile Offcanvas) -->
         <button class="btn btn-outline-secondary btn-sm d-lg-none d-flex align-items-center justify-content-center p-2 rounded-2 flex-shrink-0" 
                 type="button" 
                 data-bs-toggle="offcanvas" 
                 data-bs-target="#sidebarMdm" 
                 aria-controls="sidebarMdm"
                 aria-label="Toggle navigation">
+            <i class="bi bi-list fs-5"></i>
+        </button>
+
+        <!-- Desktop Mini Sidebar Toggle (Icon-only mode on desktop) -->
+        <button id="desktopSidebarToggle" 
+                class="btn btn-outline-secondary btn-sm d-none d-lg-inline-flex align-items-center justify-content-center p-2 rounded-2 flex-shrink-0" 
+                type="button" 
+                title="Ciutkan / Lebarkan Sidebar"
+                aria-label="Toggle Mini Sidebar">
             <i class="bi bi-list fs-5"></i>
         </button>
 

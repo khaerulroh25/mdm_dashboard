@@ -156,6 +156,69 @@ code, kbd, pre, samp,
     position: static !important;
     transform: none !important;
     visibility: visible !important;
+    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), padding 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Mini Sidebar (Icon-Only Mode) */
+  body.sidebar-collapsed .sidebar-mdm {
+    width: 74px !important;
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .brand-full {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .brand-mini {
+    display: block !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .brand-link {
+    justify-content: center !important;
+    padding: 0 !important;
+    width: 100%;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .nav-link {
+    justify-content: center !important;
+    padding: 0.75rem 0 !important;
+    gap: 0 !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .nav-link span {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .nav-link i {
+    font-size: 1.35rem;
+    margin: 0 !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .nav-heading {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .admin-separator {
+    display: block !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .user-details {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .user-profile-section {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.6rem !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  body.sidebar-collapsed .sidebar-mdm .user-info {
+    justify-content: center !important;
+    width: 100%;
   }
 }
 
@@ -192,6 +255,23 @@ code, kbd, pre, samp,
   background-color: #FFFFFF;
   border-bottom: 1px solid var(--app-border);
   min-height: 64px;
+}
+
+/* Custom Tooltip Styling for Sidebar */
+.tooltip.sidebar-tooltip .tooltip-inner {
+  background-color: #0F172A;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border-radius: var(--app-radius-sm);
+}
+
+.tooltip.sidebar-tooltip.bs-tooltip-end .tooltip-arrow::before,
+.tooltip.sidebar-tooltip.bs-tooltip-auto[data-popper-placement^="right"] .tooltip-arrow::before {
+  border-right-color: #0F172A;
 }
 
 /* Semantic Badges */

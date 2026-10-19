@@ -24,6 +24,17 @@
     @stack('styles')
 </head>
 <body>
+    <!-- Instant restoration of mini sidebar state to prevent visual flicker -->
+    <script>
+        (function() {
+            try {
+                if (localStorage.getItem('mdm_sidebar_collapsed') === 'true' && window.innerWidth >= 992) {
+                    document.body.classList.add('sidebar-collapsed');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <div class="d-flex">
         <!-- Sidebar Navigation -->
         @include('layouts.partials.sidebar')
@@ -43,6 +54,48 @@
 
     <!-- Bootstrap 5.3 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Sidebar Mini & Tooltip Controller -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize tooltips for sidebar
+            const sidebarTooltips = [];
+            const tooltipTriggerList = document.querySelectorAll('.sidebar-mdm [data-bs-toggle="tooltip"]');
+            tooltipTriggerList.forEach(function (el) {
+                sidebarTooltips.push(new bootstrap.Tooltip(el, {
+                    customClass: 'sidebar-tooltip',
+                    trigger: 'hover',
+                    fallbackPlacements: ['bottom']
+                }));
+            });
+
+            // Only show sidebar tooltips when sidebar is collapsed on desktop
+            document.addEventListener('show.bs.tooltip', function (e) {
+                if (e.target.closest('.sidebar-mdm')) {
+                    if (!document.body.classList.contains('sidebar-collapsed') || window.innerWidth < 992) {
+                        e.preventDefault();
+                    }
+                }
+            });
+
+            // Toggle mini sidebar on desktop
+            const desktopToggle = document.getElementById('desktopSidebarToggle');
+            if (desktopToggle) {
+                desktopToggle.addEventListener('click', function () {
+                    document.body.classList.toggle('sidebar-collapsed');
+                    const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+                    try {
+                        localStorage.setItem('mdm_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+                    } catch (e) {}
+
+                    // Hide any active tooltips immediately upon toggle
+                    sidebarTooltips.forEach(function (t) {
+                        t.hide();
+                    });
+                });
+            }
+        });
+    </script>
 
     @stack('scripts')
 </body>
