@@ -141,10 +141,22 @@ code, kbd, pre, samp,
 
 /* Sidebar Custom Styling */
 .sidebar-mdm {
-  width: 260px;
-  min-height: 100vh;
-  background-color: var(--app-sidebar);
+  width: 280px;
+  max-width: 85vw;
+  background-color: var(--app-sidebar) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
+  overflow-y: auto;
+}
+
+@media (min-width: 992px) {
+  .sidebar-mdm {
+    width: 260px !important;
+    min-height: 100vh;
+    flex-shrink: 0 !important;
+    position: static !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
 }
 
 .sidebar-mdm .nav-link {
@@ -179,7 +191,7 @@ code, kbd, pre, samp,
 .topbar-mdm {
   background-color: #FFFFFF;
   border-bottom: 1px solid var(--app-border);
-  height: 64px;
+  min-height: 64px;
 }
 
 /* Semantic Badges */

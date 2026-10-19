@@ -15,7 +15,7 @@
         <div>
             <a href="{{ route('devices.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
                 <i class="bi bi-phone"></i>
-                <span>Lihat Armada Perangkat</span>
+                <span>Lihat Daftar Perangkat</span>
             </a>
         </div>
     </div>

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Devices Fleet')
-@section('page_title', 'Manajemen Armada Perangkat')
+@section('title', 'Daftar Perangkat')
+@section('page_title', 'Manajemen Perangkat')
 
 @section('content')
 <!-- Navigation Tabs: Perangkat Aktif vs Riwayat Unenroll / Dihapus -->
@@ -100,13 +100,13 @@
                 <span class="text-secondary small">Perangkat yang telah dicabut pengelolaannya atau dihapus dari Google Cloud</span>
             @elseif($currentTab === 'all')
                 <h5 class="fw-bold mb-0 text-dark">Seluruh Data Perangkat ({{ $devices->total() }})</h5>
-                <span class="text-secondary small">Menampilkan data armada gabungan aktif dan riwayat unenroll</span>
+                <span class="text-secondary small">Menampilkan data perangkat gabungan aktif dan riwayat unenroll</span>
             @else
                 <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
                     <i class="bi bi-phone-fill text-teal"></i>
                     <span>Daftar Perangkat Aktif ({{ $devices->total() }})</span>
                 </h5>
-                <span class="text-secondary small">Menampilkan armada aktif yang terhubung dengan Google Cloud</span>
+                <span class="text-secondary small">Menampilkan perangkat aktif yang terhubung dengan Google Cloud</span>
             @endif
         </div>
         <div>

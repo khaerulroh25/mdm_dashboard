@@ -68,7 +68,7 @@ class MdmDashboardTest extends TestCase
         // Devices
         $devicesResponse = $this->get('/devices');
         $devicesResponse->assertStatus(200);
-        $devicesResponse->assertSee('Manajemen Armada Perangkat');
+        $devicesResponse->assertSee('Manajemen Perangkat');
 
         // Policies
         $policiesResponse = $this->get('/policies');

@@ -29,12 +29,12 @@
         @include('layouts.partials.sidebar')
 
         <!-- Main Wrapper -->
-        <div class="d-flex flex-column flex-grow-1 overflow-hidden" style="min-height: 100vh;">
+        <div class="d-flex flex-column flex-grow-1 w-100 overflow-hidden" style="min-height: 100vh; min-width: 0;">
             <!-- Topbar Header -->
             @include('layouts.partials.header')
 
             <!-- Main Page Content -->
-            <main class="flex-grow-1 p-4 overflow-y-auto">
+            <main class="flex-grow-1 p-3 p-md-4 overflow-y-auto">
                 @include('layouts.partials.alerts')
                 @yield('content')
             </main>

@@ -1,8 +1,13 @@
-<div class="sidebar-mdm d-flex flex-column p-3 text-white flex-shrink-0">
-    <!-- Brand Header -->
-    <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-4 px-2 text-decoration-none">
-        <img src="{{ asset('images/logo-amanin-transparent.png') }}" alt="Amanin - Device Management Platform" class="img-fluid" style="max-height: 46px; width: auto; object-fit: contain;">
-    </a>
+<div class="sidebar-mdm offcanvas-lg offcanvas-start d-flex flex-column p-3 text-white flex-shrink-0" tabindex="-1" id="sidebarMdm" aria-labelledby="sidebarMdmLabel">
+    <!-- Brand Header & Mobile Close Button -->
+    <div class="d-flex align-items-center justify-content-between mb-4 px-2">
+        <a href="{{ route('dashboard') }}" class="d-flex align-items-center text-decoration-none">
+            <img src="{{ asset('images/logo-amanin-transparent.png') }}" alt="Amanin - Device Management Platform" class="img-fluid" style="max-height: 44px; width: auto; object-fit: contain;">
+        </a>
+        <button type="button" class="btn btn-link text-white-50 p-1 d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMdm" aria-label="Tutup Menu">
+            <i class="bi bi-x-lg fs-5"></i>
+        </button>
+    </div>
 
     <!-- Navigation Menu -->
     <ul class="nav nav-pills flex-column mb-auto">
@@ -15,7 +20,7 @@
         <li class="nav-item">
             <a href="{{ route('devices.index') }}" class="nav-link {{ request()->routeIs('devices.*') ? 'active' : '' }}">
                 <i class="bi bi-phone"></i>
-                <span>Devices Fleet</span>
+                <span>Devices</span>
             </a>
         </li>
         <li class="nav-item">

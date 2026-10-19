@@ -133,7 +133,7 @@
                                         <span class="badge badge-compliant">OPERATOR</span>
                                     </div>
                                     <p class="text-secondary mb-0" style="font-size: 11.5px; line-height: 1.4;">
-                                        Dapat memonitor armada perangkat, mengeksekusi perintah jarak jauh (Lock/Reboot/Wipe), menerapkan kebijakan, dan membuat QR Code enrollment.
+                                        Dapat memonitor perangkat, mengeksekusi perintah jarak jauh (Lock/Reboot/Wipe), menerapkan kebijakan, dan membuat QR Code enrollment.
                                     </p>
                                 </div>
 
@@ -147,7 +147,7 @@
                                         <span class="badge bg-light text-secondary border">AUDITOR</span>
                                     </div>
                                     <p class="text-secondary mb-0" style="font-size: 11.5px; line-height: 1.4;">
-                                        Hak akses baca (<em>read-only</em>). Dapat melihat seluruh data armada, status kepatuhan, dan catatan log aktivitas sistem tanpa hak eksekusi.
+                                        Hak akses baca (<em>read-only</em>). Dapat melihat seluruh data perangkat, status kepatuhan, dan catatan log aktivitas sistem tanpa hak eksekusi.
                                     </p>
                                 </div>
 

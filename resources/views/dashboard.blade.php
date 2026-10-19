@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
 @section('title', 'Dashboard Overview')
-@section('page_title', 'Enterprise Fleet Overview')
+@section('page_title', 'Dashboard Overview')
 
 @section('content')
 <!-- Metric Cards -->
 <div class="row g-3 mb-4">
-    <!-- Metric 1: Total Armada -->
+    <!-- Metric 1: Total Perangkat -->
     <div class="col-12 col-sm-6 col-xl-3">
         <div class="card card-mdm border-0 h-100 p-3">
             <div class="d-flex align-items-center gap-3">
@@ -14,7 +14,7 @@
                     <i class="bi bi-phone-fill fs-4"></i>
                 </div>
                 <div>
-                    <span class="text-secondary small text-uppercase fw-semibold" style="letter-spacing: 0.5px; font-size: 11px;">Total Armada</span>
+                    <span class="text-secondary small text-uppercase fw-semibold" style="letter-spacing: 0.5px; font-size: 11px;">Total Perangkat</span>
                     <h3 class="fw-bold mb-0 text-dark">{{ number_format($totalDevices) }}</h3>
                 </div>
             </div>

@@ -10,7 +10,7 @@
     <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-2">
         <div>
             <h5 class="fw-bold mb-0 text-dark">Buat Kebijakan (Policy) Baru</h5>
-            <span class="text-secondary small">Konfigurasi aturan pembatasan, kontrol sistem, dan mode Google Play untuk armada perangkat</span>
+            <span class="text-secondary small">Konfigurasi aturan pembatasan, kontrol sistem, dan mode Google Play untuk perangkat</span>
         </div>
         <div>
             <a href="{{ route('policies.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">

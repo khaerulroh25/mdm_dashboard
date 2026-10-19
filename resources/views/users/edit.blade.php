@@ -163,7 +163,7 @@
                                         @if($user->role === 'admin')
                                             Akun memiliki wewenang penuh untuk mengelola pengguna lain, konfigurasi global AMAPI, audit trail, serta remote actions.
                                         @elseif($user->role === 'operator')
-                                            Akun berwenang mengelola armada perangkat, mengirim perintah wipe/lock/reboot, dan membuat QR code pendaftaran.
+                                            Akun berwenang mengelola perangkat, mengirim perintah wipe/lock/reboot, dan membuat QR code pendaftaran.
                                         @else
                                             Akun memiliki hak akses pantau dan peninjauan riwayat audit tanpa wewenang mengubah data atau perangkat.
                                         @endif
