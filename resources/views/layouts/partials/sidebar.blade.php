@@ -1,9 +1,7 @@
 <div class="sidebar-mdm d-flex flex-column p-3 text-white flex-shrink-0">
     <!-- Brand Header -->
-    <a href="{{ route('dashboard') }}" class="d-block mb-4 px-1 text-decoration-none">
-        <div class="bg-white rounded-3 py-2 px-3 d-flex align-items-center justify-content-center shadow-sm">
-            <img src="{{ asset('images/logo-amanin-transparent.png') }}" alt="Amanin - Device Management Platform" class="img-fluid" style="max-height: 38px; width: auto; object-fit: contain;">
-        </div>
+    <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-4 px-2 text-decoration-none">
+        <img src="{{ asset('images/logo-amanin-transparent.png') }}" alt="Amanin - Device Management Platform" class="img-fluid" style="max-height: 46px; width: auto; object-fit: contain;">
     </a>
 
     <!-- Navigation Menu -->
