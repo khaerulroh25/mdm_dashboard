@@ -207,17 +207,34 @@ class DeviceSyncService
                 $policyName = $gPolicy->getName();
                 $policyId = basename($policyName);
 
+                // Auto-heal if statusReportingSettings is missing on Google AMAPI policy
+                if ($gPolicy->getStatusReportingSettings() === null) {
+                    try {
+                        $gPolicy = $this->amapi->enableStatusReportingOnPolicy($policyId);
+                    } catch (Exception $e) {
+                        Log::warning("DeviceSyncService auto-enable statusReportingSettings failed for {$policyId}: " . $e->getMessage());
+                    }
+                }
+
+                $rawPolicyArray = json_decode(json_encode($gPolicy), true);
+                $existingLocal = \App\Models\Policy::where('policy_id', $policyId)->first();
+                $untrustedPolicy = $rawPolicyArray['advancedSecurityOverrides']['untrustedAppsPolicy'] ?? null;
+
                 \App\Models\Policy::updateOrCreate(
                     ['policy_id' => $policyId],
                     [
-                        'name' => ucwords(str_replace('_', ' ', $policyId)),
+                        'name' => $existingLocal?->name ?: ucwords(str_replace('_', ' ', $policyId)),
                         'camera_disabled' => (bool)$gPolicy->getCameraDisabled(),
                         'wifi_config_disabled' => (bool)$gPolicy->getWifiConfigDisabled(),
                         'factory_reset_disabled' => (bool)$gPolicy->getFactoryResetDisabled(),
                         'install_apps_disabled' => (bool)$gPolicy->getInstallAppsDisabled(),
+                        'allow_untrusted_apps' => $untrustedPolicy
+                            ? ($untrustedPolicy === 'ALLOW_INSTALL_DEVICE_WIDE')
+                            : ($existingLocal?->allow_untrusted_apps ?? false),
                         'safe_boot_disabled' => (bool)$gPolicy->getSafeBootDisabled(),
                         'location_mode' => $gPolicy->getLocationMode(),
-                        'raw_policy_json' => json_decode(json_encode($gPolicy), true),
+                        'play_store_mode' => $gPolicy->getPlayStoreMode() ?: ($existingLocal?->play_store_mode ?? 'WHITELIST'),
+                        'raw_policy_json' => $rawPolicyArray,
                     ]
                 );
                 $policyCount++;

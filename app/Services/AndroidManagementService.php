@@ -210,11 +210,62 @@ class AndroidManagementService
     }
 
     /**
-     * Create or patch an existing policy with array config.
+     * Default status reporting settings so IMEI, battery, and hardware telemetry are always collected.
+     */
+    public function defaultStatusReportingSettings(): array
+    {
+        return [
+            'softwareInfoEnabled' => true,
+            'networkInfoEnabled' => true,
+            'hardwareStatusEnabled' => true,
+            'deviceSettingsEnabled' => true,
+            'memoryInfoEnabled' => true,
+            'powerManagementEventsEnabled' => true,
+            'displayInfoEnabled' => true,
+        ];
+    }
+
+    /**
+     * Enable statusReportingSettings on an existing policy using updateMask
+     * so no other policy fields (kiosk apps, playStoreMode, security overrides) are modified.
+     */
+    public function enableStatusReportingOnPolicy(string $policyId): Policy
+    {
+        $policyName = $this->formatPolicyName($policyId);
+        $policy = new Policy([
+            'statusReportingSettings' => $this->defaultStatusReportingSettings(),
+        ]);
+
+        return $this->service->enterprises_policies->patch($policyName, $policy, [
+            'updateMask' => 'statusReportingSettings',
+        ]);
+    }
+
+    /**
+     * Create or patch an existing policy with array config while preserving existing applications
+     * and ensuring statusReportingSettings is always active.
      */
     public function createOrPatchPolicy(string $policyId, array $policyData): Policy
     {
         $policyName = $this->formatPolicyName($policyId);
+
+        $policyData['statusReportingSettings'] = array_merge(
+            $this->defaultStatusReportingSettings(),
+            $policyData['statusReportingSettings'] ?? []
+        );
+
+        if (!array_key_exists('applications', $policyData)) {
+            try {
+                $existing = $this->getPolicy($policyId);
+                $existingApps = $existing->getApplications();
+                if (!empty($existingApps)) {
+                    $policyData['applications'] = json_decode(json_encode($existingApps), true);
+                }
+            } catch (Exception $e) {
+                // Policy does not exist yet on AMAPI; safe to proceed
+            }
+        }
+
         $policy = new Policy($policyData);
 
         return $this->service->enterprises_policies->patch($policyName, $policy);
@@ -273,7 +324,9 @@ class AndroidManagementService
 
         $policy->setApplications($newApplications);
         $policyName = $this->formatPolicyName($policyId);
-        return $this->service->enterprises_policies->patch($policyName, $policy);
+        return $this->service->enterprises_policies->patch($policyName, $policy, [
+            'updateMask' => 'applications',
+        ]);
     }
 
     // =========================================================================
