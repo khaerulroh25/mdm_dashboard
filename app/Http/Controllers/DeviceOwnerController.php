@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Device;
 use App\Models\DeviceOwner;
 use App\Models\AuditLog;
 
@@ -21,6 +22,15 @@ class DeviceOwnerController extends Controller
             'departemen' => ['nullable', 'string', 'max:100'],
             'catatan'    => ['nullable', 'string'],
         ]);
+
+        $device = Device::with('branch')->where('device_id', $validated['device_id'])->first();
+        if ($device && !$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah pemilik perangkat dari cabang lain.');
+        }
+
+        if (empty($validated['departemen']) && $device?->branch) {
+            $validated['departemen'] = strtoupper($device->branch->name);
+        }
 
         $owner = DeviceOwner::updateOrCreate(
             ['device_id' => $validated['device_id']],

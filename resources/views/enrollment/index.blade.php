@@ -34,6 +34,42 @@
                         <form action="{{ route('enrollment.generate') }}" method="POST" id="enrollmentForm">
                             @csrf
 
+                            <!-- Branch Selection / Info -->
+                            <div class="mb-3">
+                                <label for="branch_id" class="form-label small fw-semibold text-secondary">
+                                    Cabang Tujuan Pendaftaran Perangkat <span class="text-danger">*</span>
+                                </label>
+                                @if(auth()->user()->isBranchScoped() && auth()->user()->branch)
+                                    <input type="hidden" name="branch_id" value="{{ auth()->user()->branch_id }}">
+                                    <div class="p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-geo-alt-fill text-teal fs-5"></i>
+                                            <div>
+                                                <div class="fw-bold text-dark small">{{ auth()->user()->branch->name }}</div>
+                                                <span class="text-secondary" style="font-size: 11px;">Perangkat yang men-scan QR ini otomatis masuk ke cabang Anda</span>
+                                            </div>
+                                        </div>
+                                        <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-mono">
+                                            {{ auth()->user()->branch->code }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
+                                        @foreach($branches as $b)
+                                        <option value="{{ $b->id }}" {{ old('branch_id') == $b->id ? 'selected' : '' }}>
+                                            📍 {{ $b->name }} ({{ $b->code }})
+                                        </option>
+                                        @endforeach
+                                        <option value="" {{ old('branch_id') === '' ? 'selected' : '' }}>
+                                            🏢 Pusat / Tanpa Cabang Spesifik
+                                        </option>
+                                    </select>
+                                    <div class="form-text mt-1" style="font-size: 11.5px;">
+                                        Pilih cabang agar perangkat yang memindai QR ini otomatis ditempatkan ke cabang tersebut saat sinkronisasi.
+                                    </div>
+                                @endif
+                            </div>
+
                             <!-- Policy Selection -->
                             <div class="mb-4">
                                 <label for="policy_id" class="form-label small fw-semibold text-secondary">

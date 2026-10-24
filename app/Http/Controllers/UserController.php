@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Branch;
 use App\Models\AuditLog;
 
 class UserController extends Controller
@@ -14,7 +15,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::latest()->paginate(15);
+        $users = User::with('branch')->latest()->paginate(15);
         $totalPermissionCount = count(User::allPermissionKeys());
         return view('users.index', compact('users', 'totalPermissionCount'));
     }
@@ -26,7 +27,8 @@ class UserController extends Controller
     {
         $permissionGroups = User::PERMISSION_GROUPS;
         $rolePresets = User::ROLE_PRESETS;
-        return view('users.create', compact('permissionGroups', 'rolePresets'));
+        $branches = Branch::where('is_active', true)->orderBy('name')->get();
+        return view('users.create', compact('permissionGroups', 'rolePresets', 'branches'));
     }
 
     /**
@@ -42,16 +44,21 @@ class UserController extends Controller
             'email'         => ['nullable', 'email', 'max:150', 'unique:users,email'],
             'password'      => ['required', 'string', 'min:6'],
             'role'          => ['required', 'string', 'in:admin,operator,auditor'],
+            'branch_id'     => ['nullable', 'exists:branches,id'],
             'permissions'   => ['nullable', 'array'],
             'permissions.*' => ['string', 'in:' . $validKeys],
         ]);
 
         if ($validated['role'] === 'admin') {
             $permissions = User::allPermissionKeys();
-        } elseif ($request->has('permissions_submitted')) {
-            $permissions = array_values(array_unique($validated['permissions'] ?? []));
+            $branchId = null; // Superadmin is always HQ / all branches
         } else {
-            $permissions = User::defaultPermissionsForRole($validated['role']);
+            $branchId = $validated['branch_id'] ?? null;
+            if ($request->has('permissions_submitted')) {
+                $permissions = array_values(array_unique($validated['permissions'] ?? []));
+            } else {
+                $permissions = User::defaultPermissionsForRole($validated['role']);
+            }
         }
 
         $user = User::create([
@@ -60,12 +67,14 @@ class UserController extends Controller
             'email'       => $validated['email'] ?? null,
             'password'    => Hash::make($validated['password']),
             'role'        => $validated['role'],
+            'branch_id'   => $branchId,
             'permissions' => $permissions,
         ]);
 
         AuditLog::log('CREATE_USER', 'User', (string)$user->id, [
             'username'    => $user->username,
             'role'        => $user->role,
+            'branch_id'   => $user->branch_id,
             'permissions' => $user->getEffectivePermissions(),
         ]);
 
@@ -78,12 +87,13 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with('branch')->findOrFail($id);
         $permissionGroups = User::PERMISSION_GROUPS;
         $rolePresets = User::ROLE_PRESETS;
         $effectivePermissions = $user->getEffectivePermissions();
+        $branches = Branch::orderBy('name')->get();
 
-        return view('users.edit', compact('user', 'permissionGroups', 'rolePresets', 'effectivePermissions'));
+        return view('users.edit', compact('user', 'permissionGroups', 'rolePresets', 'effectivePermissions', 'branches'));
     }
 
     /**
@@ -100,6 +110,7 @@ class UserController extends Controller
             'email'         => ['nullable', 'email', 'max:150', 'unique:users,email,' . $user->id],
             'password'      => ['nullable', 'string', 'min:6'],
             'role'          => ['required', 'string', 'in:admin,operator,auditor'],
+            'branch_id'     => ['nullable', 'exists:branches,id'],
             'permissions'   => ['nullable', 'array'],
             'permissions.*' => ['string', 'in:' . $validKeys],
         ]);
@@ -109,10 +120,14 @@ class UserController extends Controller
 
         if ($newRole === 'admin') {
             $permissions = User::allPermissionKeys();
-        } elseif ($request->has('permissions_submitted')) {
-            $permissions = array_values(array_unique($validated['permissions'] ?? []));
+            $branchId = null;
         } else {
-            $permissions = $user->permissions ?? User::defaultPermissionsForRole($newRole);
+            $branchId = array_key_exists('branch_id', $validated) ? $validated['branch_id'] : $user->branch_id;
+            if ($request->has('permissions_submitted')) {
+                $permissions = array_values(array_unique($validated['permissions'] ?? []));
+            } else {
+                $permissions = $user->permissions ?? User::defaultPermissionsForRole($newRole);
+            }
         }
 
         $updateData = [
@@ -120,6 +135,7 @@ class UserController extends Controller
             'name'        => $validated['name'],
             'email'       => $validated['email'] ?? null,
             'role'        => $newRole,
+            'branch_id'   => $branchId,
             'permissions' => $permissions,
         ];
 

@@ -367,4 +367,79 @@ class MdmDashboardTest extends TestCase
         $this->get(route('enrollment.index'))->assertStatus(403);
         $this->get(route('policies.index'))->assertStatus(403);
     }
+
+    public function test_master_branches_crud_and_multi_branch_device_isolation(): void
+    {
+        $superadmin = User::where('username', 'superadmin')->first();
+        $adminRdk = User::where('username', 'admin_rdk')->first();
+
+        // 1. Verify RDK branch exists and admin_rdk is scoped to it
+        $rdkBranch = \App\Models\Branch::where('code', 'RDK')->first();
+        $this->assertNotNull($rdkBranch);
+        $this->assertEquals($rdkBranch->id, $adminRdk->branch_id);
+        $this->assertTrue($adminRdk->isBranchScoped());
+        $this->assertFalse($superadmin->isBranchScoped());
+
+        // 2. Superadmin can access Master Cabang and create a new Branch B
+        $this->actingAs($superadmin);
+        $this->get(route('branches.index'))->assertStatus(200)->assertSee('Cabang Rengasdengklok');
+
+        $this->post(route('branches.store'), [
+            'code'          => 'CBG-B',
+            'name'          => 'Cabang Karawang Barat',
+            'contact_phone' => '0812-9999-8888',
+            'address'       => 'Jl. Tuparev Karawang',
+            'is_active'     => 1,
+        ])->assertRedirect(route('branches.index'));
+
+        $branchB = \App\Models\Branch::where('code', 'CBG-B')->first();
+        $this->assertNotNull($branchB);
+
+        // 3. Superadmin creates a branch operator for Branch B
+        $this->post(route('users.store'), [
+            'username'              => 'admin_cbg_b',
+            'name'                  => 'Admin Cabang B',
+            'password'              => 'secret123',
+            'role'                  => 'operator',
+            'branch_id'             => $branchB->id,
+            'permissions_submitted' => '1',
+            'permissions'           => ['devices.view', 'devices.command', 'devices.edit'],
+        ])->assertRedirect(route('users.index'));
+
+        $adminBranchB = User::where('username', 'admin_cbg_b')->first();
+        $this->assertEquals($branchB->id, $adminBranchB->branch_id);
+
+        // 4. Create a device assigned to Branch B and pick an existing device in RDK
+        $rdkDevice = Device::where('branch_id', $rdkBranch->id)->where('state', 'ACTIVE')->first();
+        $branchBDevice = Device::create([
+            'branch_id'      => $branchB->id,
+            'device_id'      => 'enterprises/LC041be11h/devices/branchb99999',
+            'hardware_model' => 'V2434',
+            'marketing_name' => 'Vivo Y29 Cabang B',
+            'state'          => 'ACTIVE',
+            'policy_id'      => 'default',
+            'enrolled_at'    => now()->addHours(2),
+        ]);
+
+        // 5. Verify Branch RDK admin can access RDK device, but gets 403 on Branch B device
+        $this->actingAs($adminRdk);
+        $this->get(route('branches.index'))->assertStatus(403);
+        $this->get(route('devices.show', $rdkDevice->id))->assertStatus(200);
+        $this->get(route('devices.show', $branchBDevice->id))->assertStatus(403);
+        $this->get(route('devices.index'))->assertStatus(200)->assertDontSee('Vivo Y29 Cabang B');
+
+        // 6. Verify Branch B admin can access Branch B device, but gets 403 on RDK device
+        $this->actingAs($adminBranchB);
+        $this->get(route('devices.show', $branchBDevice->id))->assertStatus(200)->assertSee('Vivo Y29 Cabang B');
+        $this->get(route('devices.show', $rdkDevice->id))->assertStatus(403);
+        $this->get(route('devices.index'))->assertStatus(200)->assertSee('Vivo Y29 Cabang B');
+
+        // 7. Superadmin can see both and transfer Branch B device to RDK
+        $this->actingAs($superadmin);
+        $this->post(route('devices.branch', $branchBDevice->id), [
+            'branch_id' => $rdkBranch->id,
+        ])->assertRedirect();
+
+        $this->assertEquals($rdkBranch->id, $branchBDevice->fresh()->branch_id);
+    }
 }

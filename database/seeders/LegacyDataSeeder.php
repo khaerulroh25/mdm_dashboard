@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Branch;
 use App\Models\DeviceOwner;
 use App\Models\App;
 use App\Models\Policy;
@@ -20,6 +21,18 @@ class LegacyDataSeeder extends Seeder
     {
         $this->command->info('Starting migration of legacy data...');
 
+        // 0. Seed Initial Branch: Cabang Rengasdengklok (RDK)
+        $rdkBranch = Branch::updateOrCreate(
+            ['code' => 'RDK'],
+            [
+                'name'          => 'Cabang Rengasdengklok',
+                'contact_phone' => '0858-1406-4274',
+                'address'       => 'Rengasdengklok, Karawang',
+                'is_active'     => true,
+            ]
+        );
+        $this->command->info("Seeded Branch: {$rdkBranch->name} ({$rdkBranch->code})");
+
         // 1. Seed Primary Superadmin User (All Access)
         $superAdmin = User::updateOrCreate(
             ['username' => 'superadmin'],
@@ -28,6 +41,7 @@ class LegacyDataSeeder extends Seeder
                 'email'       => 'superadmin@amanin.com',
                 'password'    => Hash::make('SuperAdmin@2026!'),
                 'role'        => 'admin',
+                'branch_id'   => null,
                 'permissions' => User::allPermissionKeys(),
             ]
         );
@@ -54,6 +68,7 @@ class LegacyDataSeeder extends Seeder
                 'email'       => $existingRdk->email ?? 'admin_rdk@amanin.com',
                 'password'    => $existingRdk->password ?? '$2y$10$7j7ECY.nwWYxox7LBphGAOf6ps3DBwURh3viiMalN/eLxEY9SEDuC',
                 'role'        => 'operator',
+                'branch_id'   => $rdkBranch->id,
                 'permissions' => $branchPermissions,
             ]
         );
@@ -130,11 +145,15 @@ class LegacyDataSeeder extends Seeder
         ];
 
         foreach ($productionOwners as $owner) {
+            $owner['departemen'] = 'RENGASDENGKLOK';
             DeviceOwner::updateOrCreate(
                 ['device_id' => $owner['device_id']],
                 $owner
             );
         }
+
+        // Ensure all unassigned devices belong to RDK branch
+        Device::whereNull('branch_id')->update(['branch_id' => $rdkBranch->id]);
 
         // 3. Parse and Seed Owners and Apps from legacy_v1/config/Db_mdm.sql
         $sqlPath = base_path('legacy_v1/config/Db_mdm.sql');

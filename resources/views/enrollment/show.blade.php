@@ -61,7 +61,7 @@
             <div class="col-12 col-lg-7">
                 <div class="p-4 bg-light bg-opacity-50 rounded-3 border h-100 d-flex flex-column justify-content-between">
                     <div>
-                        <!-- Policy Info Badge -->
+                        <!-- Policy & Branch Info Badge -->
                         <div class="p-3 bg-white rounded-3 border mb-4">
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div>
@@ -71,9 +71,16 @@
                                         <span>{{ $policy->name ?? $token->getPolicyName() }}</span>
                                     </h5>
                                 </div>
-                                <span class="badge bg-teal text-white font-mono px-3 py-2">
-                                    ID: {{ $policy->policy_id ?? 'default' }}
-                                </span>
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    @if(!empty($branch))
+                                    <span class="badge bg-teal-subtle text-teal border border-teal-subtle px-3 py-2">
+                                        <i class="bi bi-geo-alt-fill me-1"></i> {{ $branch->name }} ({{ $branch->code }})
+                                    </span>
+                                    @endif
+                                    <span class="badge bg-teal text-white font-mono px-3 py-2">
+                                        ID: {{ $policy->policy_id ?? 'default' }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 

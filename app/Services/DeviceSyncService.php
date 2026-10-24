@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Exception;
 use App\Models\Device;
+use App\Models\Branch;
 use Illuminate\Support\Facades\Log;
 
 class DeviceSyncService
@@ -111,9 +112,37 @@ class DeviceSyncService
         $existingDevice = Device::where('device_id', $deviceId)->first();
         $marketingName = $existingDevice?->marketing_name ?: app(DeviceNameService::class)->resolve($brand, $model);
 
+        // Resolve branch_id from existing device or AMAPI enrollmentTokenData
+        $branchId = $existingDevice?->branch_id;
+        if (!$branchId) {
+            $tokenDataRaw = method_exists($gDevice, 'getEnrollmentTokenData')
+                ? $gDevice->getEnrollmentTokenData()
+                : ($rawDeviceArray['enrollmentTokenData'] ?? null);
+
+            if (!empty($tokenDataRaw) && is_string($tokenDataRaw)) {
+                $decodedTokenData = json_decode($tokenDataRaw, true);
+                if (is_array($decodedTokenData)) {
+                    if (!empty($decodedTokenData['branch_id'])) {
+                        $branch = Branch::find($decodedTokenData['branch_id']);
+                        $branchId = $branch?->id;
+                    }
+                    if (!$branchId && !empty($decodedTokenData['branch_code'])) {
+                        $branch = Branch::where('code', $decodedTokenData['branch_code'])->first();
+                        $branchId = $branch?->id;
+                    }
+                }
+            }
+
+            // Fallback: if synced by a branch-scoped user and still unassigned
+            if (!$branchId && auth()->check() && auth()->user()->isBranchScoped()) {
+                $branchId = auth()->user()->branch_id;
+            }
+        }
+
         return Device::updateOrCreate(
             ['device_id' => $deviceId],
             [
+                'branch_id' => $branchId,
                 'hardware_model' => $model,
                 'marketing_name' => $marketingName,
                 'brand' => $brand,

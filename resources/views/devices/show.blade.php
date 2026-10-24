@@ -277,6 +277,29 @@
                                     </div>
                                 </td>
                             </tr>
+                            <tr>
+                                <th class="text-secondary fw-normal">Cabang Operasional</th>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        @if($device->branch)
+                                            <span class="badge bg-teal-subtle text-teal border border-teal-subtle fs-6 py-1 px-3">
+                                                <i class="bi bi-geo-alt-fill me-1"></i>
+                                                {{ $device->branch->name }} ({{ $device->branch->code }})
+                                            </span>
+                                        @else
+                                            <span class="badge bg-light text-secondary border font-mono">
+                                                Pusat / Belum Ditempatkan
+                                            </span>
+                                        @endif
+
+                                        @if(!auth()->user()->isBranchScoped() && auth()->user()->hasPermission(['branches.manage', 'devices.edit']))
+                                        <button type="button" class="btn btn-sm btn-outline-teal py-0 px-2" data-bs-toggle="modal" data-bs-target="#transferBranchModal" title="Pindahkan Cabang">
+                                            <i class="bi bi-arrow-left-right me-1"></i> Mutasi Cabang
+                                        </button>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -477,7 +500,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="lost_phone" class="form-label small fw-semibold">Nomor Telepon Darurat Admin</label>
-                        <input type="text" name="lost_phone" id="lost_phone" class="form-control font-mono" value="0858-1406-4274" required>
+                        <input type="text" name="lost_phone" id="lost_phone" class="form-control font-mono" value="{{ $device->branch?->contact_phone ?: '0858-1406-4274' }}" required>
                     </div>
                 </div>
                 <div class="modal-footer border-top bg-light">
@@ -631,4 +654,43 @@
         </div>
     </div>
 </div>
+
+@if(!auth()->user()->isBranchScoped() && auth()->user()->hasPermission(['branches.manage', 'devices.edit']))
+<!-- 7. Transfer Branch Modal -->
+<div class="modal fade" id="transferBranchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ route('devices.branch', $device->id) }}" method="POST">
+                @csrf
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-building text-teal me-2"></i>Mutasi / Penempatan Cabang Perangkat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-3">
+                        Pindahkan pengelolaan perangkat ini ke cabang lain. Admin cabang yang dipilih akan memiliki akses penuh atas perangkat ini.
+                    </p>
+                    <div class="mb-3">
+                        <label for="branch_id" class="form-label small fw-semibold">Pilih Cabang Tujuan</label>
+                        <select name="branch_id" id="branch_id" class="form-select">
+                            <option value="" {{ !$device->branch_id ? 'selected' : '' }}>
+                                🏢 Pusat / Tanpa Cabang Spesifik
+                            </option>
+                            @foreach($branches as $b)
+                            <option value="{{ $b->id }}" {{ $device->branch_id == $b->id ? 'selected' : '' }}>
+                                📍 {{ $b->name }} ({{ $b->code }})
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Simpan Cabang</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection

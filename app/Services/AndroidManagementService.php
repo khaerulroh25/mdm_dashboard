@@ -283,14 +283,20 @@ class AndroidManagementService
     /**
      * Create an enrollment token for onboarding devices.
      */
-    public function createEnrollmentToken(?string $policyId = null, int $durationSeconds = 604800): EnrollmentToken
+    public function createEnrollmentToken(?string $policyId = null, int $durationSeconds = 604800, ?string $additionalData = null): EnrollmentToken
     {
         $policyName = $policyId ? $this->formatPolicyName($policyId) : $this->formatPolicyName('default');
 
-        $tokenConfig = new EnrollmentToken([
+        $payload = [
             'policyName' => $policyName,
             'duration' => "{$durationSeconds}s",
-        ]);
+        ];
+
+        if (!empty($additionalData)) {
+            $payload['additionalData'] = $additionalData;
+        }
+
+        $tokenConfig = new EnrollmentToken($payload);
 
         return $this->service->enterprises_enrollmentTokens->create(
             $this->enterpriseId,

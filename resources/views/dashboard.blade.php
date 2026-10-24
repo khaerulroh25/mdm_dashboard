@@ -69,13 +69,32 @@
 
 <!-- Main Fleet Table -->
 <div class="card card-mdm border-0 overflow-hidden mb-4">
-    <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
+    <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-2">
         <div>
-            <h5 class="fw-bold mb-0 text-dark">Daftar Perangkat Aktif Terbaru</h5>
+            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                <span>Daftar Perangkat Aktif Terbaru</span>
+                @if(!empty($currentBranch))
+                    <span class="badge bg-teal-subtle text-teal border border-teal-subtle small fw-semibold" style="font-size: 11px;">
+                        <i class="bi bi-geo-alt-fill me-1"></i>{{ $currentBranch->name }} ({{ $currentBranch->code }})
+                    </span>
+                @endif
+            </h5>
             <span class="text-secondary small">Menampilkan perangkat aktif yang baru didaftarkan atau diperbarui</span>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('devices.index') }}" class="btn btn-sm btn-outline-secondary">
+        <div class="d-flex align-items-center gap-2">
+            @if(!auth()->user()->isBranchScoped() && isset($branches) && $branches->count() > 0)
+            <form method="GET" action="{{ route('dashboard') }}" class="m-0">
+                <select name="branch_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">Semua Cabang (Pusat)</option>
+                    @foreach($branches as $b)
+                    <option value="{{ $b->id }}" {{ ($selectedBranchId ?? '') == $b->id ? 'selected' : '' }}>
+                        {{ $b->name }} ({{ $b->code }})
+                    </option>
+                    @endforeach
+                </select>
+            </form>
+            @endif
+            <a href="{{ route('devices.index', !empty($selectedBranchId) ? ['branch_id' => $selectedBranchId] : []) }}" class="btn btn-sm btn-outline-secondary">
                 <span>Lihat Semua</span>
                 <i class="bi bi-arrow-right ms-1"></i>
             </a>
@@ -108,9 +127,16 @@
                     </td>
                     <td>
                         <div class="fw-semibold text-dark">{{ $device->owner->nama ?? 'Belum Ditautkan' }}</div>
-                        @if($device->owner && $device->owner->telepon)
-                            <span class="text-muted small font-mono">{{ $device->owner->telepon }}</span>
-                        @endif
+                        <div class="d-flex align-items-center gap-1 flex-wrap mt-1">
+                            @if($device->branch)
+                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10px;">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>{{ $device->branch->code }}
+                                </span>
+                            @endif
+                            @if($device->owner && $device->owner->telepon)
+                                <span class="text-muted small font-mono">{{ $device->owner->telepon }}</span>
+                            @endif
+                        </div>
                     </td>
                     <td>
                         <div class="fw-semibold text-dark">{{ $device->human_model_name }}</div>

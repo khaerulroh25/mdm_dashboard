@@ -42,7 +42,7 @@
         <input type="hidden" name="tab" value="{{ $currentTab }}">
 
         <!-- Search Keyword -->
-        <div class="col-12 col-md-5">
+        <div class="col-12 {{ auth()->user()->isBranchScoped() ? 'col-md-5' : 'col-md-4' }}">
             <div class="input-group">
                 <span class="input-group-text bg-white border-end-0 text-secondary">
                     <i class="bi bi-search"></i>
@@ -51,8 +51,22 @@
             </div>
         </div>
 
-        <!-- Filter State -->
+        @if(!auth()->user()->isBranchScoped())
+        <!-- Filter Branch (Pusat / Superadmin) -->
         <div class="col-6 col-md-3">
+            <select name="branch_id" class="form-select" onchange="this.form.submit()">
+                <option value="">Semua Cabang</option>
+                @foreach($branches as $b)
+                <option value="{{ $b->id }}" {{ request('branch_id') == $b->id ? 'selected' : '' }}>
+                    {{ $b->name }} ({{ $b->code }})
+                </option>
+                @endforeach
+            </select>
+        </div>
+        @endif
+
+        <!-- Filter State -->
+        <div class="col-6 {{ auth()->user()->isBranchScoped() ? 'col-md-3' : 'col-md-2' }}">
             <select name="state" class="form-select" onchange="this.form.submit()">
                 <option value="">Semua Status AMAPI</option>
                 <option value="ACTIVE" {{ request('state') == 'ACTIVE' ? 'selected' : '' }}>ACTIVE</option>
@@ -63,7 +77,7 @@
         </div>
 
         <!-- Filter Policy -->
-        <div class="col-6 col-md-3">
+        <div class="col-6 {{ auth()->user()->isBranchScoped() ? 'col-md-3' : 'col-md-2' }}">
             <select name="policy_id" class="form-select" onchange="this.form.submit()">
                 <option value="">Semua Policy</option>
                 @foreach($policies as $p)
@@ -79,7 +93,7 @@
             <button type="submit" class="btn btn-primary w-100" title="Terapkan Filter">
                 <i class="bi bi-funnel-fill"></i>
             </button>
-            @if(request()->hasAny(['search', 'state', 'policy_id']))
+            @if(request()->hasAny(['search', 'state', 'policy_id', 'branch_id']))
             <a href="{{ route('devices.index', ['tab' => $currentTab]) }}" class="btn btn-outline-secondary" title="Reset Filter">
                 <i class="bi bi-x-lg"></i>
             </a>
@@ -159,6 +173,13 @@
                             @endif
                         @else
                             <span class="badge bg-light text-muted border">Belum Ditautkan</span>
+                        @endif
+                        @if($device->branch)
+                            <div class="mt-1">
+                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10.5px;">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>{{ $device->branch->code }}
+                                </span>
+                            </div>
                         @endif
                     </td>
                     <td>

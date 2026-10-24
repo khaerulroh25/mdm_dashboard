@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -70,6 +71,10 @@ class User extends Authenticatable
                 'label' => 'Lihat Riwayat Audit Logs',
                 'desc'  => 'Memantau rekaman jejak aktivitas pengguna dan riwayat perintah sistem.',
             ],
+            'branches.manage' => [
+                'label' => 'Kelola Master Cabang (Branches)',
+                'desc'  => 'Menambah, mengubah data cabang, dan mengatur penempatan cabang perangkat.',
+            ],
             'users.manage' => [
                 'label' => 'Kelola Akun & Permission Pengguna',
                 'desc'  => 'Menambah, mengubah profil/hak akses, dan menghapus akun pengguna dashboard.',
@@ -94,6 +99,7 @@ class User extends Authenticatable
             'apps.delete',
             'enrollment.manage',
             'audit_logs.view',
+            'branches.manage',
             'users.manage',
         ],
         'operator' => [
@@ -125,6 +131,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'branch_id',
         'permissions',
     ];
 
@@ -240,6 +247,20 @@ class User extends Authenticatable
         }
 
         return in_array($permissions, $effective, true);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    /**
+     * Determine whether this user is restricted to a single branch.
+     * Superadmins ('admin') or HQ accounts (branch_id === null) can access all branches.
+     */
+    public function isBranchScoped(): bool
+    {
+        return !$this->isAdmin() && !empty($this->branch_id);
     }
 
     public function deviceCommands(): HasMany

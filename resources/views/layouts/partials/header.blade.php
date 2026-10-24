@@ -22,10 +22,17 @@
 
         <h4 class="mb-0 fw-bold fs-5 text-dark text-truncate">@yield('page_title', 'Dashboard Overview')</h4>
         <div class="vr text-secondary d-none d-md-block" style="height: 20px;"></div>
+        @if(auth()->check() && auth()->user()->isBranchScoped() && auth()->user()->branch)
+        <span class="badge bg-teal-subtle text-teal border border-teal-subtle small d-none d-md-inline-flex align-items-center gap-1">
+            <i class="bi bi-geo-alt-fill"></i>
+            {{ auth()->user()->branch->name }} ({{ auth()->user()->branch->code }})
+        </span>
+        @else
         <span class="badge bg-light text-secondary border font-mono small d-none d-md-inline-flex align-items-center gap-1">
             <i class="bi bi-building"></i>
             {{ config('amapi.enterprise_id') }}
         </span>
+        @endif
     </div>
 
     <!-- Right: Quick Actions -->

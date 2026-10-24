@@ -9,6 +9,7 @@ use App\Http\Controllers\PolicyController;
 use App\Http\Controllers\GooglePlayController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -42,6 +43,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{device}', [DeviceController::class, 'show'])->name('show')->middleware('permission:devices.view');
         Route::post('/{device}/command', [DeviceController::class, 'issueCommand'])->name('command')->middleware('permission:devices.command');
         Route::post('/{device}/policy', [DeviceController::class, 'updatePolicy'])->name('policy')->middleware('permission:devices.command');
+        Route::post('/{device}/branch', [DeviceController::class, 'updateBranch'])->name('branch')->middleware('permission:branches.manage,devices.edit');
         Route::post('/{device}/rename-model', [DeviceController::class, 'updateMarketingName'])->name('rename-model')->middleware('permission:devices.edit');
         Route::delete('/{device}', [DeviceController::class, 'unenroll'])->name('unenroll')->middleware('permission:devices.delete');
         Route::delete('/{device}/permanent', [DeviceController::class, 'destroyPermanent'])->name('destroy-permanent')->middleware('permission:devices.delete');
@@ -78,6 +80,9 @@ Route::middleware('auth')->group(function () {
 
     // Audit Logs
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index')->middleware('permission:audit_logs.view');
+
+    // Master Branches Management
+    Route::resource('branches', BranchController::class)->except(['show'])->middleware('permission:branches.manage');
 
     // Users Management
     Route::resource('users', UserController::class)->middleware('permission:users.manage');

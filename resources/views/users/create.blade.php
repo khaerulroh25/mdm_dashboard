@@ -120,6 +120,29 @@
                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <!-- Branch Assignment -->
+                                <div class="col-12" id="branchSelectWrapper">
+                                    <label for="branch_id" class="form-label small fw-semibold text-secondary">
+                                        Penempatan Cabang (Wilayah Operasional)
+                                    </label>
+                                    <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
+                                        <option value="" {{ old('branch_id') == '' ? 'selected' : '' }}>
+                                            🏢 Pusat / Lintas Cabang (Akses Seluruh Cabang)
+                                        </option>
+                                        @foreach($branches as $b)
+                                        <option value="{{ $b->id }}" {{ old('branch_id') == $b->id ? 'selected' : '' }}>
+                                            📍 {{ $b->name }} ({{ $b->code }})
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="form-text" style="font-size: 11px;">
+                                        Jika cabang dipilih, akun ini <strong>hanya dapat melihat dan mengelola perangkat milik cabang tersebut</strong>.
+                                    </div>
+                                    @error('branch_id')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
@@ -220,6 +243,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const rolePresets = @json($rolePresets);
     const roleSelect = document.getElementById('role');
+    const branchSelect = document.getElementById('branch_id');
     const checkboxes = document.querySelectorAll('.permission-checkbox');
     const superadminBanner = document.getElementById('superadminBanner');
     const quickActions = document.getElementById('permissionQuickActions');
@@ -232,6 +256,10 @@ document.addEventListener('DOMContentLoaded', function () {
             superadminBanner.classList.remove('d-none');
             superadminBanner.classList.add('d-flex');
             quickActions.classList.add('d-none');
+            if (branchSelect) {
+                branchSelect.value = '';
+                branchSelect.disabled = true;
+            }
             checkboxes.forEach(cb => {
                 cb.checked = true;
                 cb.disabled = true;
@@ -240,6 +268,9 @@ document.addEventListener('DOMContentLoaded', function () {
             superadminBanner.classList.add('d-none');
             superadminBanner.classList.remove('d-flex');
             quickActions.classList.remove('d-none');
+            if (branchSelect) {
+                branchSelect.disabled = false;
+            }
             checkboxes.forEach(cb => {
                 cb.disabled = false;
                 if (updateCheckboxes) {

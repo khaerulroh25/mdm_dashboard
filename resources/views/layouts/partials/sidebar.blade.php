@@ -64,11 +64,22 @@
         </li>
         @endif
 
-        @if(auth()->check() && auth()->user()->hasPermission('users.manage'))
+        @if(auth()->check() && auth()->user()->hasPermission(['branches.manage', 'users.manage']))
         <li class="nav-heading text-uppercase text-secondary small fw-bold px-3 mt-4 mb-2" style="font-size: 11px; letter-spacing: 0.5px; color: #64748B;">
             Administrator
         </li>
         <li class="admin-separator d-none" style="border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 0.75rem 0.5rem;"></li>
+
+        @if(auth()->user()->hasPermission('branches.manage'))
+        <li class="nav-item">
+            <a href="{{ route('branches.index') }}" class="nav-link {{ request()->routeIs('branches.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Master Cabang">
+                <i class="bi bi-building"></i>
+                <span>Master Cabang</span>
+            </a>
+        </li>
+        @endif
+
+        @if(auth()->user()->hasPermission('users.manage'))
         <li class="nav-item">
             <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Manage Users">
                 <i class="bi bi-people"></i>
@@ -76,17 +87,20 @@
             </a>
         </li>
         @endif
+        @endif
     </ul>
 
     <!-- User Profile Footer -->
     <div class="user-profile-section border-top border-secondary pt-3 mt-3 px-2 d-flex align-items-center justify-content-between" style="border-color: rgba(255,255,255,0.1) !important;">
         <div class="user-info d-flex align-items-center gap-2 overflow-hidden">
-            <div class="user-avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width: 34px; height: 34px; font-size: 13px;" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ auth()->user()->name ?? auth()->user()->username ?? 'Administrator' }} ({{ ucfirst(auth()->user()->role ?? 'Admin') }})">
+            <div class="user-avatar rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width: 34px; height: 34px; font-size: 13px;" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ auth()->user()->name ?? auth()->user()->username ?? 'Administrator' }} ({{ ucfirst(auth()->user()->role ?? 'Admin') }}{{ auth()->user()?->branch ? ' • ' . auth()->user()->branch->code : ' • Pusat' }})">
                 {{ strtoupper(substr(auth()->user()->name ?? auth()->user()->username ?? 'A', 0, 1)) }}
             </div>
             <div class="user-details overflow-hidden">
                 <div class="fw-semibold text-truncate small">{{ auth()->user()->name ?? auth()->user()->username ?? 'Administrator' }}</div>
-                <div class="text-muted" style="font-size: 11px;">{{ ucfirst(auth()->user()->role ?? 'Admin') }}</div>
+                <div class="text-muted text-truncate" style="font-size: 11px;">
+                    {{ ucfirst(auth()->user()->role ?? 'Admin') }} • {{ auth()->user()?->branch ? auth()->user()->branch->code : 'Pusat' }}
+                </div>
             </div>
         </div>
         <form method="POST" action="{{ route('logout') }}" class="logout-form m-0">

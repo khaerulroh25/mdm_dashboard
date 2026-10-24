@@ -25,7 +25,7 @@
                     <th scope="col" class="ps-4">No</th>
                     <th scope="col">Username</th>
                     <th scope="col">Nama Lengkap</th>
-                    <th scope="col">Email</th>
+                    <th scope="col">Cabang</th>
                     <th scope="col">Peran (Role)</th>
                     <th scope="col">Cakupan Permission</th>
                     <th scope="col">Waktu Dibuat</th>
@@ -42,12 +42,23 @@
                     <td class="ps-4 text-secondary small">{{ $users->firstItem() + $index }}</td>
                     <td>
                         <div class="fw-bold text-dark font-mono">{{ $u->username }}</div>
+                        @if($u->email)
+                            <div class="text-secondary" style="font-size: 11px;">{{ $u->email }}</div>
+                        @endif
                     </td>
                     <td>
                         <div class="text-dark">{{ $u->name }}</div>
                     </td>
                     <td>
-                        <span class="text-secondary small">{{ $u->email ?? '-' }}</span>
+                        @if($u->branch && !$u->isAdmin())
+                            <span class="badge bg-teal-subtle text-teal border border-teal-subtle fw-semibold">
+                                <i class="bi bi-geo-alt-fill me-1"></i> {{ $u->branch->name }} ({{ $u->branch->code }})
+                            </span>
+                        @else
+                            <span class="badge bg-light text-secondary border">
+                                <i class="bi bi-globe2 me-1"></i> Pusat (Semua Cabang)
+                            </span>
+                        @endif
                     </td>
                     <td>
                         @if($u->role === 'admin')

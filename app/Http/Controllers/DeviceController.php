@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use App\Models\Device;
+use App\Models\Branch;
 use App\Models\Policy;
 use App\Models\DeviceCommand;
 use App\Models\AuditLog;
@@ -28,8 +29,21 @@ class DeviceController extends Controller
      */
     public function index(Request $request)
     {
+        $user = auth()->user();
         $currentTab = $request->input('tab', 'active');
-        $query = Device::with(['owner', 'policy']);
+        $query = Device::forUser($user)->with(['owner', 'policy', 'branch']);
+
+        // Filter by Branch (for HQ / Superadmin)
+        $selectedBranchId = $user->isBranchScoped() ? $user->branch_id : $request->input('branch_id');
+        if (!$user->isBranchScoped() && !empty($selectedBranchId)) {
+            $query->where('branch_id', $selectedBranchId);
+        }
+
+        // Base count query respecting branch scope/filter
+        $countBaseQuery = Device::forUser($user);
+        if (!$user->isBranchScoped() && !empty($selectedBranchId)) {
+            $countBaseQuery->where('branch_id', $selectedBranchId);
+        }
 
         // Tab Filter: active (default, excludes DELETED), deleted (only DELETED), or all
         if ($currentTab === 'deleted') {
@@ -53,7 +67,8 @@ class DeviceController extends Controller
                   ->orWhereHas('owner', function ($oq) use ($search) {
                       $oq->where('nama', 'like', "%{$search}%")
                          ->orWhere('id_anggota', 'like', "%{$search}%")
-                         ->orWhere('telepon', 'like', "%{$search}%");
+                         ->orWhere('telepon', 'like', "%{$search}%")
+                         ->orWhere('departemen', 'like', "%{$search}%");
                   });
             });
         }
@@ -73,11 +88,20 @@ class DeviceController extends Controller
                          ->paginate(15)
                          ->withQueryString();
         $policies = Policy::select('id', 'name', 'policy_id')->get();
+        $branches = Branch::orderBy('name')->get();
 
-        $activeCount = Device::where('state', '!=', 'DELETED')->count();
-        $deletedCount = Device::where('state', 'DELETED')->count();
+        $activeCount = (clone $countBaseQuery)->where('state', '!=', 'DELETED')->count();
+        $deletedCount = (clone $countBaseQuery)->where('state', 'DELETED')->count();
 
-        return view('devices.index', compact('devices', 'policies', 'currentTab', 'activeCount', 'deletedCount'));
+        return view('devices.index', compact(
+            'devices',
+            'policies',
+            'branches',
+            'currentTab',
+            'activeCount',
+            'deletedCount',
+            'selectedBranchId'
+        ));
     }
 
     /**
@@ -85,10 +109,16 @@ class DeviceController extends Controller
      */
     public function show($id)
     {
-        $device = Device::with(['owner', 'policy.applications', 'commands.issuedBy'])->findOrFail($id);
-        $allPolicies = Policy::select('id', 'name', 'policy_id')->get();
+        $device = Device::with(['owner', 'branch', 'policy.applications', 'commands.issuedBy'])->findOrFail($id);
 
-        return view('devices.show', compact('device', 'allPolicies'));
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
+
+        $allPolicies = Policy::select('id', 'name', 'policy_id')->get();
+        $branches = Branch::where('is_active', true)->orderBy('name')->get();
+
+        return view('devices.show', compact('device', 'allPolicies', 'branches'));
     }
 
     /**
@@ -96,7 +126,11 @@ class DeviceController extends Controller
      */
     public function issueCommand(Request $request, $id)
     {
-        $device = Device::findOrFail($id);
+        $device = Device::with('branch')->findOrFail($id);
+
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
 
         $validated = $request->validate([
             'command_type' => ['required', 'string', 'in:LOCK,REBOOT,RESET_PASSWORD,START_LOST_MODE,STOP_LOST_MODE'],
@@ -112,8 +146,9 @@ class DeviceController extends Controller
             $params['newPassword'] = $validated['new_password'];
             $params['resetPasswordFlags'] = ['LOCK_NOW', 'REQUIRE_ENTRY'];
         } elseif ($commandType === 'START_LOST_MODE') {
+            $defaultPhone = $device->branch?->contact_phone ?: '0858-1406-4274';
             $params['lostMessage'] = $validated['lost_message'] ?? 'Perangkat ini terkunci karena status tagihan/kehilangan. Hubungi Admin.';
-            $params['lostPhoneNumber'] = $validated['lost_phone'] ?? '0858-1406-4274';
+            $params['lostPhoneNumber'] = $validated['lost_phone'] ?? $defaultPhone;
         }
 
         // Create command record in database
@@ -140,6 +175,10 @@ class DeviceController extends Controller
     {
         $device = Device::findOrFail($id);
 
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
+
         $validated = $request->validate([
             'policy_id' => ['required', 'string'],
         ]);
@@ -159,11 +198,45 @@ class DeviceController extends Controller
     }
 
     /**
+     * Transfer device to another branch (Superadmin / HQ only).
+     */
+    public function updateBranch(Request $request, $id)
+    {
+        if (auth()->user()->isBranchScoped()) {
+            abort(403, 'Akun cabang tidak dapat memindahkan perangkat antar cabang.');
+        }
+
+        $device = Device::with('owner')->findOrFail($id);
+
+        $validated = $request->validate([
+            'branch_id' => ['nullable', 'exists:branches,id'],
+        ]);
+
+        $newBranch = !empty($validated['branch_id']) ? Branch::find($validated['branch_id']) : null;
+        $device->update(['branch_id' => $newBranch?->id]);
+
+        if ($device->owner && $newBranch) {
+            $device->owner->update(['departemen' => strtoupper($newBranch->name)]);
+        }
+
+        AuditLog::log('TRANSFER_DEVICE_BRANCH', 'Device', $device->device_id, [
+            'branch_id'   => $newBranch?->id,
+            'branch_name' => $newBranch?->name ?? 'Pusat / Tanpa Cabang',
+        ]);
+
+        return back()->with('success', 'Penempatan cabang perangkat berhasil diperbarui menjadi <strong>' . ($newBranch?->name ?? 'Pusat / Tanpa Cabang') . '</strong>.');
+    }
+
+    /**
      * Unenroll / Wipe device.
      */
     public function unenroll(Request $request, $id)
     {
         $device = Device::findOrFail($id);
+
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
 
         try {
             $this->amapi->unenrollDevice($device->device_id);
@@ -186,6 +259,10 @@ class DeviceController extends Controller
     public function destroyPermanent($id)
     {
         $device = Device::findOrFail($id);
+
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
 
         if ($device->state !== 'DELETED') {
             return back()->with('error', 'Hanya perangkat yang sudah berstatus DELETED / di-unenroll yang dapat dihapus permanen.');
@@ -225,6 +302,10 @@ class DeviceController extends Controller
     public function updateMarketingName(Request $request, $id)
     {
         $device = Device::findOrFail($id);
+
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
 
         $validated = $request->validate([
             'marketing_name' => ['required', 'string', 'max:100'],

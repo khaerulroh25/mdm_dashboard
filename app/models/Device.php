@@ -13,6 +13,7 @@ class Device extends Model
     use HasFactory;
 
     protected $fillable = [
+        'branch_id',
         'device_id',
         'hardware_model',
         'marketing_name',
@@ -41,6 +42,11 @@ class Device extends Model
         ];
     }
 
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
     public function owner(): HasOne
     {
         return $this->hasOne(DeviceOwner::class, 'device_id', 'device_id');
@@ -54,6 +60,33 @@ class Device extends Model
     public function policy(): BelongsTo
     {
         return $this->belongsTo(Policy::class, 'policy_id', 'policy_id');
+    }
+
+    /**
+     * Scope a query to only include devices accessible by the given user (or current user).
+     */
+    public function scopeForUser($query, ?User $user = null)
+    {
+        $user = $user ?? auth()->user();
+        if ($user && $user->isBranchScoped()) {
+            $query->where('branch_id', $user->branch_id);
+        }
+        return $query;
+    }
+
+    /**
+     * Check if the given user (or current authenticated user) can access this device.
+     */
+    public function canBeAccessedBy(?User $user = null): bool
+    {
+        $user = $user ?? auth()->user();
+        if (!$user) {
+            return false;
+        }
+        if ($user->isBranchScoped()) {
+            return (int) $this->branch_id === (int) $user->branch_id;
+        }
+        return true;
     }
 
     public function getShortIdAttribute(): string
