@@ -181,6 +181,56 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th class="text-secondary fw-normal">Kartu SIM Terpasang</th>
+                                <td>
+                                    @php $simCards = $device->sim_cards; @endphp
+                                    @if(!empty($simCards))
+                                        <div class="d-flex flex-column gap-2">
+                                            @foreach($simCards as $sim)
+                                                <div class="p-2 bg-light rounded-2 border d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                                    <div>
+                                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                            <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-mono" style="font-size: 10.5px;">
+                                                                <i class="bi bi-sim-fill me-1"></i>SIM {{ $sim['slot'] }}
+                                                            </span>
+                                                            @if($sim['phone_number'])
+                                                                <span class="fw-bold text-dark font-mono">{{ $sim['phone_number'] }}</span>
+                                                            @else
+                                                                <span class="text-secondary small fst-italic">Nomor tidak tersimpan di chip SIM</span>
+                                                            @endif
+                                                            <span class="badge bg-white text-secondary border small" style="font-size: 10.5px;">
+                                                                {{ $sim['carrier_name'] }}
+                                                            </span>
+                                                        </div>
+                                                        @if($sim['icc_id'])
+                                                            <div class="text-muted font-mono mt-1" style="font-size: 10.5px;">
+                                                                ICCID: {{ $sim['icc_id'] }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                    @if($sim['phone_number'])
+                                                        <div class="d-flex align-items-center gap-1">
+                                                            <a href="tel:{{ $sim['phone_number'] }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Telepon Nomor SIM {{ $sim['slot'] }}">
+                                                                <i class="bi bi-telephone-fill"></i>
+                                                            </a>
+                                                            @if($sim['whatsapp_phone'])
+                                                                <a href="https://wa.me/{{ $sim['whatsapp_phone'] }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-success py-0 px-2" title="Chat WhatsApp Nomor SIM {{ $sim['slot'] }}">
+                                                                    <i class="bi bi-whatsapp"></i>
+                                                                </a>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-muted small fst-italic">
+                                            <i class="bi bi-sim me-1"></i>Belum ada data kartu SIM terdeteksi dari perangkat
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
                                 <th class="text-secondary fw-normal">Jenis Pendaftaran (Mode)</th>
                                 <td>
                                     @if($device->is_work_profile)
@@ -360,11 +410,41 @@
                                 <th class="text-secondary fw-normal">Nomor Telepon</th>
                                 <td>
                                     @if($device->owner->telepon)
-                                    <a href="tel:{{ $device->owner->telepon }}" class="font-mono text-decoration-none">
-                                        <i class="bi bi-telephone me-1"></i>{{ $device->owner->telepon }}
-                                    </a>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <a href="tel:{{ $device->owner->telepon }}" class="font-mono text-decoration-none fw-semibold">
+                                            <i class="bi bi-telephone me-1"></i>{{ $device->owner->telepon }}
+                                        </a>
+                                        @php $waOwner = \App\Models\Device::formatWhatsappPhone($device->owner->telepon); @endphp
+                                        @if($waOwner)
+                                            <a href="https://wa.me/{{ $waOwner }}" target="_blank" rel="noopener" class="badge bg-success bg-opacity-10 text-success border border-success-subtle text-decoration-none">
+                                                <i class="bi bi-whatsapp me-1"></i>WhatsApp
+                                            </a>
+                                        @endif
+                                    </div>
                                     @else
                                     <span class="text-muted">-</span>
+                                    @endif
+
+                                    @php $detectedPhones = $device->detected_phone_numbers; @endphp
+                                    @if(!empty($detectedPhones))
+                                        <div class="mt-2 p-2 bg-teal-subtle rounded-2 border border-teal-subtle small">
+                                            <div class="fw-semibold text-teal mb-1" style="font-size: 11px;">
+                                                <i class="bi bi-sim-fill me-1"></i>Nomor SIM Terdeteksi di HP:
+                                            </div>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach($detectedPhones as $simNum)
+                                                    @php $waSim = \App\Models\Device::formatWhatsappPhone($simNum); @endphp
+                                                    <span class="badge bg-white text-dark border font-mono d-inline-flex align-items-center gap-2 py-1 px-2">
+                                                        <span>{{ $simNum }}</span>
+                                                        @if($waSim)
+                                                            <a href="https://wa.me/{{ $waSim }}" target="_blank" rel="noopener" class="text-success text-decoration-none" title="Hubungi via WhatsApp">
+                                                                <i class="bi bi-whatsapp"></i>
+                                                            </a>
+                                                        @endif
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </div>
                                     @endif
                                 </td>
                             </tr>

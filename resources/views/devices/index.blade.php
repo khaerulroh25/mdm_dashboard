@@ -143,7 +143,7 @@
                     <th scope="col" class="ps-4">No</th>
                     <th scope="col">ID Anggota & Pemilik</th>
                     <th scope="col">Perangkat (Hardware)</th>
-                    <th scope="col">No. IMEI</th>
+                    <th scope="col">IMEI & Kartu SIM</th>
                     <th scope="col">Policy</th>
                     <th scope="col">Status & Terakhir Lapor</th>
                     <th scope="col" class="text-end pe-4">Aksi</th>
@@ -200,11 +200,32 @@
                         </div>
                     </td>
                     <td>
-                        @if($device->imei)
-                            <span class="device-imei text-dark fw-medium">{{ $device->imei }}</span>
-                        @else
-                            <span class="text-muted small font-mono">-</span>
-                        @endif
+                        <!-- Baris 1: Nomor IMEI -->
+                        <div>
+                            @if($device->imei)
+                                <span class="device-imei text-dark fw-medium">{{ $device->imei }}</span>
+                            @else
+                                <span class="text-muted small font-mono">-</span>
+                            @endif
+                        </div>
+                        <!-- Baris 2: Nomor SIM Terpasang / Operator -->
+                        <div class="small font-mono mt-1" style="font-size: 11px;">
+                            @php
+                                $simPhones = $device->detected_phone_numbers;
+                                $simCards = $device->sim_cards;
+                            @endphp
+                            @if(!empty($simPhones))
+                                <span class="text-teal fw-medium" title="Nomor Kartu SIM Terdeteksi di Perangkat">
+                                    <i class="bi bi-sim-fill me-1"></i>{{ implode(', ', $simPhones) }}
+                                </span>
+                            @elseif(!empty($simCards))
+                                <span class="text-secondary" title="Kartu SIM Terpasang ({{ $simCards[0]['carrier_name'] }})">
+                                    <i class="bi bi-sim me-1"></i>{{ \Illuminate\Support\Str::limit($simCards[0]['carrier_name'], 22) }}
+                                </span>
+                            @else
+                                <span class="text-muted">SIM: -</span>
+                            @endif
+                        </div>
                     </td>
                     <td>
                         <span class="badge-policy">
