@@ -58,7 +58,7 @@
                 <option value="">Semua Cabang</option>
                 @foreach($branches as $b)
                 <option value="{{ $b->id }}" {{ request('branch_id') == $b->id ? 'selected' : '' }}>
-                    {{ $b->name }} ({{ $b->code }})
+                    {{ $b->name }}
                 </option>
                 @endforeach
             </select>
@@ -156,47 +156,47 @@
                         {{ $devices->firstItem() + $index }}
                     </td>
                     <td>
-                        @if($device->owner)
-                            <div class="d-flex align-items-center gap-1">
-                                <span class="rounded-circle {{ $device->state === 'DELETED' ? 'bg-secondary' : ($device->is_online ? 'bg-success' : 'bg-secondary') }}" style="width: 8px; height: 8px; display: inline-block;" title="{{ $device->online_status_label }}"></span>
-                                <div class="fw-semibold {{ $device->state === 'DELETED' ? 'text-muted' : 'text-dark' }}">{{ $device->owner->nama }}</div>
-                            </div>
-                            <span class="badge bg-light text-secondary border font-mono small">{{ $device->owner->id_anggota }}</span>
-                            @if($device->state !== 'DELETED')
-                            <div class="small font-mono {{ $device->is_online ? 'text-success' : 'text-muted' }}" style="font-size: 11px;">
-                                <i class="bi bi-circle-fill me-1" style="font-size: 6px;"></i>{{ $device->online_status_label }}
-                            </div>
+                        <!-- Baris 1: Indikator Online + Nama Pemilik -->
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="rounded-circle flex-shrink-0 {{ $device->state === 'DELETED' ? 'bg-secondary' : ($device->is_online ? 'bg-success' : 'bg-secondary') }}" style="width: 8px; height: 8px; display: inline-block;" title="{{ $device->online_status_label }}"></span>
+                            @if($device->owner)
+                                <span class="fw-semibold {{ $device->state === 'DELETED' ? 'text-muted' : 'text-dark' }}">{{ $device->owner->nama }}</span>
                             @else
-                            <div class="small text-muted font-mono" style="font-size: 11px;">
-                                <i class="bi bi-x-circle me-1"></i>Unenrolled
-                            </div>
+                                <span class="text-muted fst-italic small">Belum Ditautkan</span>
                             @endif
-                        @else
-                            <span class="badge bg-light text-muted border">Belum Ditautkan</span>
-                        @endif
-                        @if($device->branch)
-                            <div class="mt-1">
+                        </div>
+                        <!-- Baris 2: ID Anggota • Nama Cabang -->
+                        <div class="d-flex align-items-center gap-1 flex-wrap mt-1">
+                            @if($device->owner && $device->owner->id_anggota)
+                                <span class="text-secondary small font-mono">{{ $device->owner->id_anggota }}</span>
+                            @endif
+                            @if($device->branch)
+                                @if($device->owner && $device->owner->id_anggota)
+                                    <span class="text-muted small">•</span>
+                                @endif
                                 <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10.5px;">
-                                    <i class="bi bi-geo-alt-fill me-1"></i>{{ $device->branch->code }}
+                                    <i class="bi bi-geo-alt-fill me-1"></i>{{ $device->branch->name }}
                                 </span>
-                            </div>
-                        @endif
+                            @endif
+                        </div>
                     </td>
                     <td>
-                        <div class="fw-semibold {{ $device->state === 'DELETED' ? 'text-muted' : 'text-dark' }}">{{ $device->human_model_name }}</div>
-                        <span class="text-secondary small font-mono">
-                            {{ $device->brand ? ucfirst($device->brand) . ' • ' : '' }}{{ $device->hardware_model ?? '-' }}
-                        </span>
-                        <div class="mt-1">
+                        <!-- Baris 1: Nama Komersial + Badge Mode (Sejajar) -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="fw-semibold {{ $device->state === 'DELETED' ? 'text-muted' : 'text-dark' }}">{{ $device->human_model_name }}</span>
                             @if($device->is_work_profile)
-                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle small" title="Work Profile (Personally-Owned) - IMEI dibatasi oleh Google">
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle" style="font-size: 10px;" title="Work Profile (Personally-Owned) - IMEI dibatasi oleh Google">
                                     <i class="bi bi-person-workspace me-1"></i>Work Profile
                                 </span>
                             @else
-                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle small" title="Fully Managed (Device Owner) - Milik Perusahaan">
+                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10px;" title="Fully Managed (Device Owner) - Milik Perusahaan">
                                     <i class="bi bi-building-check me-1"></i>Fully Managed
                                 </span>
                             @endif
+                        </div>
+                        <!-- Baris 2: Brand • Kode Model Pabrik -->
+                        <div class="text-secondary small font-mono mt-1">
+                            {{ $device->brand ? ucfirst($device->brand) . ' • ' : '' }}{{ $device->hardware_model ?? '-' }}
                         </div>
                     </td>
                     <td>
@@ -213,29 +213,36 @@
                         </span>
                     </td>
                     <td>
-                        @if($device->state === 'ACTIVE')
-                            <span class="badge badge-compliant d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-check-circle-fill"></i> ACTIVE
-                            </span>
-                        @elseif($device->state === 'PROVISIONING')
-                            <span class="badge badge-pending-custom d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-clock-history"></i> PROVISIONING
-                            </span>
-                        @elseif($device->state === 'DELETED')
-                            <span class="badge bg-secondary text-white d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-archive-fill"></i> DI-UNENROLL
-                            </span>
-                        @else
-                            <span class="badge badge-warning-custom d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-exclamation-circle"></i> {{ $device->state }}
-                            </span>
-                        @endif
+                        <!-- Baris 1: Badge Status AMAPI + Level Baterai (Sejajar) -->
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            @if($device->state === 'ACTIVE')
+                                <span class="badge badge-compliant d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-check-circle-fill"></i> ACTIVE
+                                </span>
+                            @elseif($device->state === 'PROVISIONING')
+                                <span class="badge badge-pending-custom d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-clock-history"></i> PROVISIONING
+                                </span>
+                            @elseif($device->state === 'DELETED')
+                                <span class="badge bg-secondary text-white d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-archive-fill"></i> DI-UNENROLL
+                                </span>
+                            @else
+                                <span class="badge badge-warning-custom d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-exclamation-circle"></i> {{ $device->state }}
+                                </span>
+                            @endif
 
-                        @if($device->state !== 'DELETED' && $device->battery_level !== null)
-                            <div class="mt-1 small text-dark fw-medium" title="Level Baterai Terakhir Dilaporkan">
-                                <i class="bi bi-battery-charging text-success me-1"></i>{{ $device->battery_level }}%
-                            </div>
-                        @endif
+                            @if($device->state !== 'DELETED' && $device->battery_level !== null)
+                                <span class="small text-dark fw-medium" title="Level Baterai Terakhir Dilaporkan">
+                                    <i class="bi bi-battery-charging text-success"></i> {{ $device->battery_level }}%
+                                </span>
+                            @endif
+                        </div>
+                        <!-- Baris 2: Keterangan Status Online / Offline -->
+                        <div class="small font-mono mt-1 {{ $device->state === 'DELETED' ? 'text-muted' : ($device->is_online ? 'text-success' : 'text-muted') }}" style="font-size: 11px;">
+                            {{ $device->state === 'DELETED' ? 'Unenrolled' : $device->online_status_label }}
+                        </div>
                     </td>
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-1">

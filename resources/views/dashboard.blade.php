@@ -75,7 +75,7 @@
                 <span>Daftar Perangkat Aktif Terbaru</span>
                 @if(!empty($currentBranch))
                     <span class="badge bg-teal-subtle text-teal border border-teal-subtle small fw-semibold" style="font-size: 11px;">
-                        <i class="bi bi-geo-alt-fill me-1"></i>{{ $currentBranch->name }} ({{ $currentBranch->code }})
+                        <i class="bi bi-geo-alt-fill me-1"></i>{{ $currentBranch->name }}
                     </span>
                 @endif
             </h5>
@@ -88,7 +88,7 @@
                     <option value="">Semua Cabang (Pusat)</option>
                     @foreach($branches as $b)
                     <option value="{{ $b->id }}" {{ ($selectedBranchId ?? '') == $b->id ? 'selected' : '' }}>
-                        {{ $b->name }} ({{ $b->code }})
+                        {{ $b->name }}
                     </option>
                     @endforeach
                 </select>
@@ -129,11 +129,14 @@
                         <div class="fw-semibold text-dark">{{ $device->owner->nama ?? 'Belum Ditautkan' }}</div>
                         <div class="d-flex align-items-center gap-1 flex-wrap mt-1">
                             @if($device->branch)
-                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10px;">
-                                    <i class="bi bi-geo-alt-fill me-1"></i>{{ $device->branch->code }}
+                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10.5px;">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>{{ $device->branch->name }}
                                 </span>
                             @endif
                             @if($device->owner && $device->owner->telepon)
+                                @if($device->branch)
+                                    <span class="text-muted small">•</span>
+                                @endif
                                 <span class="text-muted small font-mono">{{ $device->owner->telepon }}</span>
                             @endif
                         </div>
