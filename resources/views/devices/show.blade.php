@@ -231,8 +231,8 @@
                                 <th class="text-secondary fw-normal">Status Daya & Baterai</th>
                                 <td>
                                     @if($device->battery_level !== null)
-                                        <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle font-mono fs-6 py-1 px-3">
-                                            <i class="bi bi-battery-charging me-1"></i>{{ $device->battery_level }}%
+                                        <span class="badge {{ $device->battery_badge_class }} font-mono fs-6 py-1 px-3">
+                                            <i class="bi {{ $device->battery_icon }} me-1"></i>{{ $device->battery_level }}%
                                         </span>
                                     @else
                                         <span class="text-muted small fst-italic">

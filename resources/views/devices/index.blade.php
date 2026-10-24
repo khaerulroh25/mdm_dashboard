@@ -234,8 +234,8 @@
                             @endif
 
                             @if($device->state !== 'DELETED' && $device->battery_level !== null)
-                                <span class="small text-dark fw-medium" title="Level Baterai Terakhir Dilaporkan">
-                                    <i class="bi bi-battery-charging text-success"></i> {{ $device->battery_level }}%
+                                <span class="small text-dark fw-medium" title="Level Baterai Terakhir Dilaporkan ({{ $device->battery_level }}%)">
+                                    <i class="bi {{ $device->battery_icon }} {{ $device->battery_color_class }}"></i> {{ $device->battery_level }}%
                                 </span>
                             @endif
                         </div>
