@@ -351,3 +351,9 @@ code, kbd, pre, samp,
   border-color: #CCFBF1 !important;
 }
 
+/* Prevent dropdown menus inside responsive tables from triggering table scrollbars */
+.table-responsive .dropdown-menu {
+  position: fixed !important;
+}
+
+

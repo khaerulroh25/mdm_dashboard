@@ -94,6 +94,18 @@
                     });
                 });
             }
+
+            // Prevent dropdown menus inside .table-responsive from causing table scrollbars
+            const fixedDropdowns = document.querySelectorAll('.table-responsive [data-bs-toggle="dropdown"], [data-bs-strategy="fixed"]');
+            fixedDropdowns.forEach(function (el) {
+                new bootstrap.Dropdown(el, {
+                    popperConfig: function (defaultBsPopperConfig) {
+                        return Object.assign({}, defaultBsPopperConfig, {
+                            strategy: 'fixed'
+                        });
+                    }
+                });
+            });
         });
     </script>
 
