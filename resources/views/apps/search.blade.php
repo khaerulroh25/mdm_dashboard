@@ -19,10 +19,25 @@
             <span class="text-secondary small">Jelajahi dan pilih aplikasi langsung dari Google Play Store resmi untuk didistribusikan ke perangkat managed</span>
         </div>
     </div>
-    <div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ route('apps.download-location-apk') }}" class="btn btn-teal btn-sm d-flex align-items-center gap-1">
+            <i class="bi bi-download"></i>
+            <span>Unduh APK Pelacak Lokasi (Private App)</span>
+        </a>
         <a href="{{ route('apps.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-grid me-1"></i> Lihat Katalog Tersimpan
         </a>
+    </div>
+</div>
+
+<!-- Panduan Singkat Upload Private APK Pelacak Lokasi -->
+<div class="alert bg-teal-subtle border border-teal-subtle rounded-3 py-2 px-3 mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div class="small text-dark">
+        <i class="bi bi-geo-alt-fill text-teal me-1"></i>
+        <strong>Cara Mengaktifkan Pelacak Lokasi GPS (Opsi 2):</strong>
+        1) Klik tombol <strong>Unduh APK Pelacak Lokasi</strong> di kanan atas &rarr;
+        2) Pada jendela Google Play di bawah, buka menu kiri <strong>Aplikasi Pribadi (Private Apps)</strong> lalu klik tombol <strong>(+)</strong> untuk upload file <code>amanin-location-agent.apk</code> &rarr;
+        3) Setelah terbit (~5-10 menit), klik aplikasi tersebut dan pasang ke Policy <strong>Mode Kiosk</strong> sebagai <code>FORCE_INSTALLED</code>.
     </div>
 </div>
 

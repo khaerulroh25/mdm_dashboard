@@ -308,6 +308,7 @@ class AndroidManagementService
                 $newApplications[] = [
                     'packageName' => $packageName,
                     'installType' => $installType,
+                    'defaultPermissionPolicy' => 'GRANT',
                 ];
                 $updated = true;
             } else {
@@ -319,6 +320,7 @@ class AndroidManagementService
             $newApplications[] = [
                 'packageName' => $packageName,
                 'installType' => $installType,
+                'defaultPermissionPolicy' => 'GRANT',
             ];
         }
 

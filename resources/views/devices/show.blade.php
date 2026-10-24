@@ -477,6 +477,90 @@
     </div>
 </div>
 
+<!-- Real-Time GPS Location & Interactive Map Card -->
+<div class="card card-mdm border-0 overflow-hidden mb-4">
+    <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-2">
+        <div>
+            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-geo-alt-fill text-teal"></i>
+                <span>Pelacakan Lokasi GPS Perangkat (Real-Time Maps)</span>
+                @if($device->has_location)
+                    <span class="badge badge-compliant font-mono" style="font-size: 11px;">
+                        <i class="bi bi-crosshair me-1"></i>Terkunci GPS
+                    </span>
+                @endif
+            </h6>
+            <span class="text-secondary small">
+                @if($device->has_location)
+                    Diperbarui: <strong>{{ $device->location_updated_at ? $device->location_updated_at->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i:s') . ' WIB (' . $device->location_updated_at->diffForHumans() . ')' : '-' }}</strong>
+                    @if($device->location_accuracy)
+                        • Akurasi ±{{ round($device->location_accuracy) }} meter
+                    @endif
+                @else
+                    Menunggu kiriman titik koordinat dari aplikasi <strong>Amanin Location Service</strong> di perangkat
+                @endif
+            </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            @if($device->has_location)
+                <span class="badge bg-light text-dark border font-mono py-2 px-3">
+                    {{ number_format($device->latitude, 6) }}, {{ number_format($device->longitude, 6) }}
+                </span>
+                <a href="{{ $device->google_maps_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-teal d-flex align-items-center gap-1">
+                    <i class="bi bi-map-fill"></i>
+                    <span>Buka di Google Maps</span>
+                </a>
+            @else
+                <a href="{{ route('apps.search') }}" class="btn btn-sm btn-outline-teal d-flex align-items-center gap-1">
+                    <i class="bi bi-cloud-arrow-up-fill"></i>
+                    <span>Pasang APK Pelacak Lokasi</span>
+                </a>
+            @endif
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if($device->has_location)
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+            <div id="deviceLocationMap" style="height: 360px; width: 100%; z-index: 1;"></div>
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    var lat = {{ (float) $device->latitude }};
+                    var lng = {{ (float) $device->longitude }};
+                    var acc = {{ (float) ($device->location_accuracy ?? 25) }};
+                    var map = L.map('deviceLocationMap').setView([lat, lng], 16);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; OpenStreetMap'
+                    }).addTo(map);
+                    var marker = L.marker([lat, lng]).addTo(map);
+                    marker.bindPopup(
+                        "<strong>{{ addslashes($device->owner->nama ?? $device->human_model_name) }}</strong><br>" +
+                        "<span style='font-size:12px;'>{{ addslashes($device->human_model_name) }} ({{ addslashes($device->imei ?? '-') }})</span><br>" +
+                        "<span style='font-size:11px;color:#0D9488;'>Koordinat: " + lat.toFixed(6) + ", " + lng.toFixed(6) + "</span>"
+                    ).openPopup();
+                    if (acc > 0) {
+                        L.circle([lat, lng], {
+                            color: '#0D9488',
+                            fillColor: '#0D9488',
+                            fillOpacity: 0.12,
+                            radius: acc
+                        }).addTo(map);
+                    }
+                });
+            </script>
+        @else
+            <div class="p-4 text-center text-secondary bg-light bg-opacity-50">
+                <i class="bi bi-geo-alt text-muted fs-2 d-block mb-2"></i>
+                <div class="fw-semibold text-dark mb-1">Titik Koordinat GPS Belum Masuk</div>
+                <p class="small text-secondary mb-0 mx-auto" style="max-width: 620px;">
+                    Pastikan aplikasi <strong>Amanin Location Service (<code>com.amanin.mdm.locationagent</code>)</strong> sudah diunggah ke tab <strong>Aplikasi Pribadi (Private Apps)</strong> dan dipasang sebagai <code>FORCE_INSTALLED</code> pada Policy perangkat ini.
+                </p>
+            </div>
+        @endif
+    </div>
+</div>
+
 <!-- Command History Audit Table -->
 <div class="card card-mdm border-0 overflow-hidden mb-4">
     <div class="card-header bg-white py-3 px-4 border-bottom">

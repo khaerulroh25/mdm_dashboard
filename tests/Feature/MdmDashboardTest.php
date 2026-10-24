@@ -473,4 +473,63 @@ class MdmDashboardTest extends TestCase
         $this->assertEquals('9988776655', $syncedDevice->owner->id_anggota);
         $this->assertEquals('081234567890', $syncedDevice->owner->telepon);
     }
+
+    public function test_device_location_telemetry_api_and_map_view(): void
+    {
+        $device = Device::where('state', 'ACTIVE')->first();
+        $this->assertNotNull($device);
+
+        // 1. Unauthorized token should be rejected
+        $this->postJson('/api/telemetry/location', [
+            'token'     => 'wrong_token',
+            'latitude'  => -6.1615,
+            'longitude' => 107.3012,
+        ])->assertStatus(401);
+
+        // 2. Valid telemetry ping matching by device short_id
+        $response = $this->postJson('/api/telemetry/location', [
+            'token'         => 'amanin_mdm_loc_2026_secret',
+            'latitude'      => -6.161523,
+            'longitude'     => 107.301245,
+            'accuracy'      => 12.5,
+            'android_id'    => 'aid_test_998877',
+            'device_code'   => $device->short_id,
+            'battery_level' => 78,
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'success'   => true,
+                     'matched'   => true,
+                     'device_id' => $device->short_id,
+                 ]);
+
+        $device->refresh();
+        $this->assertTrue($device->has_location);
+        $this->assertEqualsWithDelta(-6.161523, $device->latitude, 0.0001);
+        $this->assertEqualsWithDelta(107.301245, $device->longitude, 0.0001);
+        $this->assertEquals('aid_test_998877', $device->agent_android_id);
+
+        // 3. Subsequent telemetry ping matches automatically by android_id alone
+        $this->postJson('/api/telemetry/location', [
+            'token'      => 'amanin_mdm_loc_2026_secret',
+            'latitude'   => -6.162000,
+            'longitude'  => 107.302000,
+            'accuracy'   => 8.0,
+            'android_id' => 'aid_test_998877',
+        ])->assertStatus(200)->assertJson(['matched' => true]);
+
+        // 4. Verify device detail view displays the interactive map & Google Maps link
+        $superadmin = User::where('username', 'superadmin')->first();
+        $this->actingAs($superadmin);
+
+        $showResp = $this->get(route('devices.show', $device->id));
+        $showResp->assertStatus(200)
+                 ->assertSee('Pelacakan Lokasi GPS Perangkat (Real-Time Maps)')
+                 ->assertSee('Buka di Google Maps');
+
+        // 5. Verify APK download endpoint works
+        $apkResp = $this->get(route('apps.download-location-apk'));
+        $apkResp->assertStatus(200);
+    }
 }

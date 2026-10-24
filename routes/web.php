@@ -11,6 +11,14 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\TelemetryController;
+
+/*
+|--------------------------------------------------------------------------
+| Public Device Telemetry API (No Session/CSRF)
+|--------------------------------------------------------------------------
+*/
+Route::post('/api/telemetry/location', [TelemetryController::class, 'reportLocation'])->name('telemetry.location');
 
 /*
 |--------------------------------------------------------------------------
@@ -68,6 +76,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [GooglePlayController::class, 'index'])->name('index')->middleware('permission:apps.view');
         Route::get('/search', [GooglePlayController::class, 'search'])->name('search')->middleware('permission:apps.create,apps.view');
         Route::get('/lookup', [GooglePlayController::class, 'lookup'])->name('lookup')->middleware('permission:apps.create,apps.view');
+        Route::get('/download-location-apk', [TelemetryController::class, 'downloadApk'])->name('download-location-apk')->middleware('permission:apps.view');
         Route::post('/', [GooglePlayController::class, 'store'])->name('store')->middleware('permission:apps.create');
         Route::delete('/{id}', [GooglePlayController::class, 'destroy'])->name('destroy')->middleware('permission:apps.delete');
     });

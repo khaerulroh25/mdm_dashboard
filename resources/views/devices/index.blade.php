@@ -259,6 +259,12 @@
                                     <i class="bi {{ $device->battery_icon }} {{ $device->battery_color_class }}"></i> {{ $device->battery_level }}%
                                 </span>
                             @endif
+
+                            @if($device->has_location)
+                                <a href="{{ $device->google_maps_url }}" target="_blank" rel="noopener" class="badge bg-teal-subtle text-teal border border-teal-subtle text-decoration-none" style="font-size: 10px;" title="Lokasi GPS Terdeteksi ({{ number_format($device->latitude, 5) }}, {{ number_format($device->longitude, 5) }}) - Klik untuk buka Google Maps">
+                                    <i class="bi bi-geo-alt-fill"></i> Maps
+                                </a>
+                            @endif
                         </div>
                         <!-- Baris 2: Waktu Terakhir Lapor (WIB) & Status Online/Offline -->
                         <div class="small font-mono mt-1 {{ $device->state === 'DELETED' ? 'text-muted' : ($device->is_online ? 'text-success' : 'text-muted') }}" style="font-size: 11px;" title="{{ $device->online_status_label }}">
