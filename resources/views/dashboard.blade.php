@@ -308,19 +308,34 @@
                         </span>
                     </td>
                     <td>
-                        @if($device->state === 'ACTIVE')
-                            <span class="badge badge-compliant d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-check-circle-fill"></i> ACTIVE
-                            </span>
-                        @elseif($device->state === 'PROVISIONING')
-                            <span class="badge badge-pending-custom d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-clock-history"></i> PROVISIONING
-                            </span>
-                        @else
-                            <span class="badge badge-warning-custom d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-exclamation-circle"></i> {{ $device->state }}
-                            </span>
-                        @endif
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            @if($device->state === 'ACTIVE')
+                                <span class="badge badge-compliant d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-check-circle-fill"></i> ACTIVE
+                                </span>
+                            @elseif($device->state === 'PROVISIONING')
+                                <span class="badge badge-pending-custom d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-clock-history"></i> PROVISIONING
+                                </span>
+                            @else
+                                <span class="badge badge-warning-custom d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-exclamation-circle"></i> {{ $device->state }}
+                                </span>
+                            @endif
+
+                            @if($device->battery_level !== null)
+                                <span class="small text-dark fw-medium" title="Level Baterai Terakhir Dilaporkan">
+                                    <i class="bi bi-battery-charging text-success"></i> {{ $device->battery_level }}%
+                                </span>
+                            @endif
+                        </div>
+                        <div class="small font-mono mt-1 {{ $device->is_online ? 'text-success' : 'text-muted' }}" style="font-size: 11px;">
+                            @if($device->last_status_report)
+                                <i class="bi bi-clock me-1"></i>{{ $device->last_status_report->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
+                            @else
+                                <i class="bi bi-clock me-1"></i>Belum Pernah Lapor
+                            @endif
+                        </div>
                     </td>
                     <td>
                         <span class="amapi-path text-muted" title="{{ $device->device_id }}">

@@ -145,7 +145,7 @@
                     <th scope="col">Perangkat (Hardware)</th>
                     <th scope="col">No. IMEI</th>
                     <th scope="col">Policy</th>
-                    <th scope="col">Status</th>
+                    <th scope="col">Status & Terakhir Lapor</th>
                     <th scope="col" class="text-end pe-4">Aksi</th>
                 </tr>
             </thead>
@@ -239,9 +239,13 @@
                                 </span>
                             @endif
                         </div>
-                        <!-- Baris 2: Keterangan Status Online / Offline -->
-                        <div class="small font-mono mt-1 {{ $device->state === 'DELETED' ? 'text-muted' : ($device->is_online ? 'text-success' : 'text-muted') }}" style="font-size: 11px;">
-                            {{ $device->state === 'DELETED' ? 'Unenrolled' : $device->online_status_label }}
+                        <!-- Baris 2: Waktu Terakhir Lapor (WIB) & Status Online/Offline -->
+                        <div class="small font-mono mt-1 {{ $device->state === 'DELETED' ? 'text-muted' : ($device->is_online ? 'text-success' : 'text-muted') }}" style="font-size: 11px;" title="{{ $device->online_status_label }}">
+                            @if($device->last_status_report)
+                                <i class="bi bi-clock me-1"></i>{{ $device->last_status_report->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
+                            @else
+                                <i class="bi bi-clock me-1"></i>{{ $device->state === 'DELETED' ? 'Unenrolled' : 'Belum Pernah Lapor' }}
+                            @endif
                         </div>
                     </td>
                     <td class="text-end pe-4">

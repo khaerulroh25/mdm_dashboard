@@ -90,8 +90,12 @@ class DeviceSyncService
         $policyName = $gDevice->getPolicyName() ?? $gDevice->getAppliedPolicyName() ?? null;
         $policyId = $policyName ? basename($policyName) : null;
 
-        $lastReport = $gDevice->getLastStatusReportTime() ? date('Y-m-d H:i:s', strtotime($gDevice->getLastStatusReportTime())) : null;
-        $enrollmentTime = $gDevice->getEnrollmentTime() ? date('Y-m-d H:i:s', strtotime($gDevice->getEnrollmentTime())) : null;
+        $lastReport = $gDevice->getLastStatusReportTime()
+            ? \Carbon\Carbon::parse($gDevice->getLastStatusReportTime())->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s')
+            : null;
+        $enrollmentTime = $gDevice->getEnrollmentTime()
+            ? \Carbon\Carbon::parse($gDevice->getEnrollmentTime())->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s')
+            : null;
 
         $networkInfoArray = $networkInfo ? json_decode(json_encode($networkInfo), true) : null;
         $rawDeviceArray = json_decode(json_encode($gDevice), true);

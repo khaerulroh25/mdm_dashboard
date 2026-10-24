@@ -252,13 +252,22 @@
                             <tr>
                                 <th class="text-secondary fw-normal">Terakhir Lapor Status</th>
                                 <td class="text-secondary small">
-                                    {{ $device->last_status_report ? $device->last_status_report->translatedFormat('d M Y H:i:s') : 'Belum pernah' }}
+                                    @if($device->last_status_report)
+                                        <span class="fw-semibold text-dark font-mono">{{ $device->last_status_report->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i:s') }} WIB</span>
+                                        <span class="text-muted ms-1">({{ $device->last_status_report->diffForHumans() }})</span>
+                                    @else
+                                        Belum pernah
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
                                 <th class="text-secondary fw-normal">Waktu Pendaftaran</th>
                                 <td class="text-secondary small">
-                                    {{ $device->enrolled_at ? $device->enrolled_at->translatedFormat('d M Y H:i:s') : '-' }}
+                                    @if($device->enrolled_at)
+                                        <span class="font-mono text-dark">{{ $device->enrolled_at->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i:s') }} WIB</span>
+                                    @else
+                                        -
+                                    @endif
                                 </td>
                             </tr>
                             <tr>
