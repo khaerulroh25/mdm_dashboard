@@ -118,7 +118,7 @@ class MdmDashboardTest extends TestCase
 
     public function test_rbac_superadmin_can_access_user_management(): void
     {
-        $admin = User::where('username', 'admin_rdk')->first();
+        $admin = User::where('username', 'superadmin')->first();
         $this->actingAs($admin);
 
         $response = $this->get('/users');
@@ -240,7 +240,7 @@ class MdmDashboardTest extends TestCase
 
     public function test_policy_play_store_mode_support_and_views(): void
     {
-        $admin = User::where('username', 'admin_rdk')->first();
+        $admin = User::where('username', 'superadmin')->first();
         $this->actingAs($admin);
 
         $policy = Policy::where('policy_id', 'Mode_kiosk')->first();
@@ -261,7 +261,7 @@ class MdmDashboardTest extends TestCase
 
     public function test_google_play_search_view_and_tabs(): void
     {
-        $admin = User::where('username', 'admin_rdk')->first();
+        $admin = User::where('username', 'superadmin')->first();
         $this->actingAs($admin);
 
         $response = $this->get(route('apps.search'));
@@ -272,7 +272,7 @@ class MdmDashboardTest extends TestCase
 
     public function test_google_play_lookup_and_store(): void
     {
-        $admin = User::where('username', 'admin_rdk')->first();
+        $admin = User::where('username', 'superadmin')->first();
         $this->actingAs($admin);
 
         // Store an app with auto-fetch metadata
@@ -289,7 +289,7 @@ class MdmDashboardTest extends TestCase
 
     public function test_device_index_separates_active_and_deleted_tabs(): void
     {
-        $admin = User::where('username', 'admin_rdk')->first();
+        $admin = User::where('username', 'superadmin')->first();
         $this->actingAs($admin);
 
         // Active tab (default) should show Perangkat Aktif
@@ -306,7 +306,7 @@ class MdmDashboardTest extends TestCase
 
     public function test_dashboard_only_shows_active_devices_ordered_by_newest(): void
     {
-        $admin = User::where('username', 'admin_rdk')->first();
+        $admin = User::where('username', 'superadmin')->first();
         $this->actingAs($admin);
 
         $response = $this->get(route('dashboard'));
@@ -322,13 +322,23 @@ class MdmDashboardTest extends TestCase
 
     public function test_custom_user_permissions_and_superadmin_full_access(): void
     {
-        $admin = User::where('username', 'admin_rdk')->first();
+        $admin = User::where('username', 'superadmin')->first();
         $this->actingAs($admin);
 
         // 1. Superadmin has all permissions regardless of custom permissions column
         foreach (User::allPermissionKeys() as $permKey) {
             $this->assertTrue($admin->hasPermission($permKey));
         }
+
+        // 1b. Verify admin_rdk is configured as branch operator with Operasional Penuh Cabang permissions
+        $adminRdk = User::where('username', 'admin_rdk')->first();
+        $this->assertNotNull($adminRdk);
+        $this->assertEquals('operator', $adminRdk->role);
+        $this->assertTrue($adminRdk->hasPermission('devices.delete'));
+        $this->assertTrue($adminRdk->hasPermission('enrollment.manage'));
+        $this->assertFalse($adminRdk->hasPermission('policies.manage'));
+        $this->assertFalse($adminRdk->hasPermission('users.manage'));
+        $this->assertFalse($adminRdk->hasPermission('audit_logs.view'));
 
         // 2. Superadmin creates a custom operator with only devices.view and audit_logs.view
         $response = $this->post(route('users.store'), [
