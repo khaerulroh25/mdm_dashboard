@@ -32,18 +32,6 @@
                         </h6>
 
                         <div class="row g-3">
-                            <div class="col-12 col-md-4">
-                                <label for="code" class="form-label small fw-semibold text-secondary">
-                                    Kode Cabang <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" name="code" id="code"
-                                    class="form-control font-mono text-uppercase @error('code') is-invalid @enderror"
-                                    value="{{ old('code', $branch->code) }}" required>
-                                @error('code')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
                             <div class="col-12 col-md-8">
                                 <label for="name" class="form-label small fw-semibold text-secondary">
                                     Nama Cabang <span class="text-danger">*</span>
@@ -54,6 +42,14 @@
                                 @error('name')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label small fw-semibold text-secondary">
+                                    Kode Cabang (Otomatis)
+                                </label>
+                                <input type="text" class="form-control bg-light font-mono fw-bold text-teal" value="{{ $branch->code }}" readonly disabled>
+                                <div class="form-text" style="font-size: 11px;">Kode permanen sistem.</div>
                             </div>
 
                             <div class="col-12">

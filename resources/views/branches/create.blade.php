@@ -31,20 +31,6 @@
                         </h6>
 
                         <div class="row g-3">
-                            <div class="col-12 col-md-4">
-                                <label for="code" class="form-label small fw-semibold text-secondary">
-                                    Kode Cabang <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" name="code" id="code"
-                                    class="form-control font-mono text-uppercase @error('code') is-invalid @enderror"
-                                    value="{{ old('code') }}"
-                                    placeholder="Contoh: RDK, KRW, BKS" required autofocus>
-                                <div class="form-text" style="font-size: 11px;">Kode unik singkat (huruf/angka/strip).</div>
-                                @error('code')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
                             <div class="col-12 col-md-8">
                                 <label for="name" class="form-label small fw-semibold text-secondary">
                                     Nama Cabang <span class="text-danger">*</span>
@@ -52,10 +38,21 @@
                                 <input type="text" name="name" id="name"
                                     class="form-control @error('name') is-invalid @enderror"
                                     value="{{ old('name') }}"
-                                    placeholder="Contoh: Cabang Rengasdengklok" required>
+                                    placeholder="Contoh: Cabang Karawang Barat" required autofocus>
                                 @error('name')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label small fw-semibold text-secondary">
+                                    Kode Cabang (Otomatis)
+                                </label>
+                                <div class="form-control bg-white font-mono fw-bold text-teal d-flex align-items-center justify-content-between" style="border-style: dashed;">
+                                    <span id="codePreview">AUTO</span>
+                                    <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10px;">AUTO</span>
+                                </div>
+                                <div class="form-text" style="font-size: 11px;">Dibuat otomatis dari nama cabang.</div>
                             </div>
 
                             <div class="col-12">
@@ -118,7 +115,7 @@
                                     <div>
                                         <h6 class="fw-bold text-dark mb-1 small">Buat Master Cabang</h6>
                                         <p class="text-secondary mb-0" style="font-size: 12px;">
-                                            Tambahkan cabang baru beserta kode uniknya (misal: <code>CBG-A</code> atau <code>KRW</code>).
+                                            Cukup ketik nama cabang (misal: <code>Cabang Karawang Barat</code>), kode unik cabang akan di-generate secara otomatis oleh sistem.
                                         </p>
                                     </div>
                                 </div>
@@ -158,7 +155,7 @@
 
         <div class="card-footer bg-white py-3 px-4 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="text-secondary small">
-                <i class="bi bi-info-circle text-teal me-1"></i> Pastikan kode cabang singkat dan mudah dikenali.
+                <i class="bi bi-magic text-teal me-1"></i> Kode cabang dibuat dan dijamin unik secara otomatis oleh sistem.
             </div>
             <div class="d-flex align-items-center gap-2">
                 <a href="{{ route('branches.index') }}" class="btn btn-secondary btn-sm px-3">Batal</a>
@@ -170,4 +167,35 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const nameInput = document.getElementById('name');
+    const codePreview = document.getElementById('codePreview');
+
+    function computePreview(rawName) {
+        let cleaned = rawName.trim().replace(/^(cabang|kantor|unit|wilayah|area)\s+/i, '');
+        cleaned = cleaned.replace(/[^a-zA-Z0-9\s]/g, ' ').trim().toUpperCase();
+        const words = cleaned.split(/\s+/).filter(Boolean);
+
+        if (words.length === 0) return 'AUTO';
+        if (words.length === 1) {
+            const w = words[0];
+            const cons = w[0] + w.slice(1).replace(/[AEIOU]/g, '');
+            return (cons.length >= 3 ? cons.slice(0, 3) : w.slice(0, 3)) || 'CBG';
+        }
+        const w1 = words[0];
+        const cons1 = w1[0] + w1.slice(1).replace(/[AEIOU]/g, '');
+        const part1 = cons1.length >= 3 ? cons1.slice(0, 3) : w1.slice(0, 3);
+        const initials = words.slice(1).map(w => w[0]).join('').slice(0, 3);
+        return `${part1}-${initials}`;
+    }
+
+    nameInput.addEventListener('input', function () {
+        codePreview.textContent = computePreview(this.value);
+    });
+});
+</script>
+@endpush
 @endsection

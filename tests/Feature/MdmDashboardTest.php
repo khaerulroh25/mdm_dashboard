@@ -380,20 +380,20 @@ class MdmDashboardTest extends TestCase
         $this->assertTrue($adminRdk->isBranchScoped());
         $this->assertFalse($superadmin->isBranchScoped());
 
-        // 2. Superadmin can access Master Cabang and create a new Branch B
+        // 2. Superadmin can access Master Cabang and create a new Branch B (with automatic branch code generation)
         $this->actingAs($superadmin);
         $this->get(route('branches.index'))->assertStatus(200)->assertSee('Cabang Rengasdengklok');
 
         $this->post(route('branches.store'), [
-            'code'          => 'CBG-B',
             'name'          => 'Cabang Karawang Barat',
             'contact_phone' => '0812-9999-8888',
             'address'       => 'Jl. Tuparev Karawang',
             'is_active'     => 1,
         ])->assertRedirect(route('branches.index'));
 
-        $branchB = \App\Models\Branch::where('code', 'CBG-B')->first();
+        $branchB = \App\Models\Branch::where('name', 'Cabang Karawang Barat')->first();
         $this->assertNotNull($branchB);
+        $this->assertEquals('KRW-B', $branchB->code);
 
         // 3. Superadmin creates a branch operator for Branch B
         $this->post(route('users.store'), [

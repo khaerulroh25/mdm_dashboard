@@ -39,4 +39,48 @@ class Branch extends Model
     {
         return $this->hasMany(Device::class, 'branch_id')->where('state', '!=', 'DELETED');
     }
+
+    /**
+     * Automatically generate a unique, human-readable branch code from the branch name.
+     */
+    public static function generateCode(string $name): string
+    {
+        $cleaned = preg_replace('/^(cabang|kantor|unit|wilayah|area)\s+/i', '', trim($name));
+        $cleaned = preg_replace('/[^a-zA-Z0-9\s]/', ' ', $cleaned);
+        $words = array_values(array_filter(explode(' ', strtoupper(trim($cleaned)))));
+
+        if (empty($words)) {
+            $base = 'CBG';
+        } elseif (count($words) === 1) {
+            $word = $words[0];
+            $consonants = $word[0] . preg_replace('/[AEIOU]/', '', substr($word, 1));
+            $base = substr($consonants, 0, 3);
+            if (strlen($base) < 3) {
+                $base = substr($word, 0, 3);
+            }
+        } else {
+            $firstWord = $words[0];
+            $consonants = $firstWord[0] . preg_replace('/[AEIOU]/', '', substr($firstWord, 1));
+            $firstPart = substr($consonants, 0, 3);
+            if (strlen($firstPart) < 3) {
+                $firstPart = substr($firstWord, 0, 3);
+            }
+            $initials = '';
+            for ($i = 1; $i < count($words); $i++) {
+                $initials .= substr($words[$i], 0, 1);
+            }
+            $base = $firstPart . '-' . substr($initials, 0, 3);
+        }
+
+        $base = strtoupper($base);
+        $code = $base;
+        $counter = 2;
+
+        while (self::where('code', $code)->exists()) {
+            $code = "{$base}-{$counter}";
+            $counter++;
+        }
+
+        return $code;
+    }
 }

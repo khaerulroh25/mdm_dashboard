@@ -38,15 +38,19 @@ class BranchController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code'          => ['required', 'string', 'alpha_dash', 'max:30', 'unique:branches,code'],
+            'code'          => ['nullable', 'string', 'alpha_dash', 'max:30', 'unique:branches,code'],
             'name'          => ['required', 'string', 'max:150'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'address'       => ['nullable', 'string', 'max:500'],
             'is_active'     => ['nullable', 'boolean'],
         ]);
 
+        $code = !empty($validated['code'])
+            ? strtoupper(trim($validated['code']))
+            : Branch::generateCode($validated['name']);
+
         $branch = Branch::create([
-            'code'          => strtoupper(trim($validated['code'])),
+            'code'          => $code,
             'name'          => trim($validated['name']),
             'contact_phone' => $validated['contact_phone'] ?? null,
             'address'       => $validated['address'] ?? null,
@@ -59,7 +63,7 @@ class BranchController extends Controller
         ]);
 
         return redirect()->route('branches.index')
-            ->with('success', "Cabang <strong>{$branch->name} ({$branch->code})</strong> berhasil ditambahkan!");
+            ->with('success', "Cabang <strong>{$branch->name}</strong> berhasil dibuat dengan kode otomatis <strong>{$branch->code}</strong>!");
     }
 
     /**
@@ -86,7 +90,6 @@ class BranchController extends Controller
         $branch = Branch::findOrFail($id);
 
         $validated = $request->validate([
-            'code'          => ['required', 'string', 'alpha_dash', 'max:30', 'unique:branches,code,' . $branch->id],
             'name'          => ['required', 'string', 'max:150'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'address'       => ['nullable', 'string', 'max:500'],
@@ -94,7 +97,6 @@ class BranchController extends Controller
         ]);
 
         $branch->update([
-            'code'          => strtoupper(trim($validated['code'])),
             'name'          => trim($validated['name']),
             'contact_phone' => $validated['contact_phone'] ?? null,
             'address'       => $validated['address'] ?? null,
