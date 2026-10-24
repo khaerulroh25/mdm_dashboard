@@ -312,6 +312,9 @@ class MdmDashboardTest extends TestCase
         $response = $this->get(route('dashboard'));
         $response->assertStatus(200);
         $response->assertSee('Daftar Perangkat Aktif Terbaru');
+        $response->assertSee('Grafik Enrollment & Cek Kesesuaian Data', false);
+        $response->assertSee('Ringkasan Kesesuaian Data');
+        $response->assertSee('enrollmentTodayChart');
 
         // Verify that deleted device is NOT in recent devices list on dashboard
         $deletedDevice = Device::where('state', 'DELETED')->first();

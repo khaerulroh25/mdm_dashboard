@@ -67,6 +67,162 @@
     </div>
 </div>
 
+<!-- Enrollment Chart & Data Reconciliation Card -->
+<div class="card card-mdm border-0 overflow-hidden mb-4">
+    <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-2">
+        <div>
+            <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                <i class="bi bi-bar-chart-steps text-teal"></i>
+                <span>Grafik Enrollment & Cek Kesesuaian Data</span>
+                @if($enrollmentDate === now()->toDateString())
+                    <span class="badge bg-teal-subtle text-teal border border-teal-subtle small" style="font-size: 11px;">Hari Ini</span>
+                @else
+                    <span class="badge bg-light text-secondary border font-mono small" style="font-size: 11px;">{{ \Carbon\Carbon::parse($enrollmentDate)->translatedFormat('d M Y') }}</span>
+                @endif
+            </h5>
+            <span class="text-secondary small">Memantau jumlah perangkat yang di-enroll beserta pemeriksaan kelengkapan data pemiliknya</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Mode Switcher: Per Jam (Hari Ini) vs Tren 7 Hari -->
+            <div class="btn-group btn-group-sm" role="group" aria-label="Mode Grafik">
+                <button type="button" class="btn btn-outline-teal active" id="btnChartHourly">
+                    <i class="bi bi-clock me-1"></i>Per Jam
+                </button>
+                <button type="button" class="btn btn-outline-teal" id="btnChartDaily">
+                    <i class="bi bi-calendar-week me-1"></i>7 Hari Terakhir
+                </button>
+            </div>
+
+            <!-- Date Selector -->
+            <form method="GET" action="{{ route('dashboard') }}" class="d-flex align-items-center gap-1 m-0">
+                @if(!empty($selectedBranchId))
+                    <input type="hidden" name="branch_id" value="{{ $selectedBranchId }}">
+                @endif
+                <input type="date" name="enrollment_date" class="form-control form-control-sm font-mono" value="{{ $enrollmentDate }}" max="{{ now()->toDateString() }}" onchange="this.form.submit()" title="Pilih Tanggal Pengecekan Enrollment">
+                @if($enrollmentDate !== now()->toDateString())
+                    <a href="{{ route('dashboard', !empty($selectedBranchId) ? ['branch_id' => $selectedBranchId] : []) }}" class="btn btn-sm btn-outline-secondary" title="Kembali ke Hari Ini">
+                        Hari Ini
+                    </a>
+                @endif
+            </form>
+        </div>
+    </div>
+
+    <div class="card-body p-4">
+        <div class="row g-4 align-items-stretch">
+            <!-- Left Column: Interactive Chart -->
+            <div class="col-12 col-lg-8">
+                <div class="p-3 bg-light bg-opacity-50 rounded-3 border h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2 px-1">
+                        <span class="small fw-semibold text-secondary" id="chartSubtitle">
+                            Distribusi Jam Enrollment ({{ \Carbon\Carbon::parse($enrollmentDate)->translatedFormat('d F Y') }})
+                        </span>
+                        <div class="d-flex align-items-center gap-3 small">
+                            <span class="d-inline-flex align-items-center gap-1 text-dark">
+                                <span class="rounded-circle d-inline-block" style="width: 10px; height: 10px; background-color: #0D9488;"></span>
+                                Data Sesuai (Ada Pemilik)
+                            </span>
+                            <span class="d-inline-flex align-items-center gap-1 text-dark">
+                                <span class="rounded-circle d-inline-block" style="width: 10px; height: 10px; background-color: #F59E0B;"></span>
+                                Belum Ditautkan
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="position: relative; height: 240px; width: 100%;">
+                        <canvas id="enrollmentTodayChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Data Consistency & Reconciliation Summary -->
+            <div class="col-12 col-lg-4">
+                <div class="p-3 bg-light bg-opacity-50 rounded-3 border h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-clipboard2-check text-teal fs-5"></i>
+                            <span>Ringkasan Kesesuaian Data</span>
+                        </h6>
+
+                        <!-- Today's Enrollment Reconciliation Box -->
+                        <div class="bg-white p-3 rounded-3 border mb-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-secondary small fw-semibold">
+                                    Enrollment {{ $enrollmentDate === now()->toDateString() ? 'Hari Ini' : \Carbon\Carbon::parse($enrollmentDate)->translatedFormat('d M Y') }}
+                                </span>
+                                <span class="badge bg-teal text-white font-mono">{{ $todayTotalCount }} Perangkat</span>
+                            </div>
+
+                            <div class="row g-2 text-center mt-1">
+                                <div class="col-6">
+                                    <div class="p-2 rounded-2 border" style="background-color: #ECFDF5;">
+                                        <div class="fw-bold fs-5" style="color: #059669;">{{ $todayMatchedCount }}</div>
+                                        <span class="text-secondary d-block" style="font-size: 11px;">Sudah Ada Pemilik</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 rounded-2 border" style="background-color: {{ $todayUnassignedCount > 0 ? '#FFFBEB' : '#F8FAFC' }};">
+                                        <div class="fw-bold fs-5" style="color: {{ $todayUnassignedCount > 0 ? '#D97706' : '#64748B' }};">{{ $todayUnassignedCount }}</div>
+                                        <span class="text-secondary d-block" style="font-size: 11px;">Belum Ditautkan</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Active Fleet Consistency Box -->
+                        @php
+                            $overallPercentage = $totalDevices > 0 ? round(($overallMatchedDevices / $totalDevices) * 100) : 100;
+                        @endphp
+                        <div class="bg-white p-3 rounded-3 border">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="text-secondary small fw-semibold">Kesesuaian Total Perangkat Aktif</span>
+                                <span class="fw-bold small {{ $overallUnassignedDevices === 0 ? 'text-success' : 'text-warning' }}">
+                                    {{ $overallPercentage }}% Sesuai
+                                </span>
+                            </div>
+
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-teal" role="progressbar" style="width: {{ $overallPercentage }}%" aria-valuenow="{{ $overallPercentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+
+                            <div class="d-flex align-items-center justify-content-between text-secondary" style="font-size: 11.5px;">
+                                <span><strong class="text-dark">{{ $overallMatchedDevices }}</strong> Lengkap</span>
+                                <span>•</span>
+                                <span><strong class="text-dark">{{ $overallUnassignedDevices }}</strong> Belum Ada Pemilik</span>
+                                <span>•</span>
+                                <span>Total <strong class="text-dark">{{ $totalDevices }}</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reconciliation Status Alert -->
+                    <div class="mt-3">
+                        @if($overallUnassignedDevices === 0 && $totalDevices > 0)
+                            <div class="alert border-0 rounded-3 p-2 px-3 mb-0 d-flex align-items-center gap-2" style="background-color: #ECFDF5; color: #065F46; font-size: 12px;">
+                                <i class="bi bi-check-circle-fill fs-6 text-success"></i>
+                                <span><strong>Data Sesuai 100%:</strong> Seluruh perangkat aktif telah memiliki data pemilik.</span>
+                            </div>
+                        @elseif($overallUnassignedDevices > 0)
+                            <div class="alert border-0 rounded-3 p-2 px-3 mb-0 d-flex align-items-center justify-content-between gap-2" style="background-color: #FFFBEB; color: #92400E; font-size: 12px;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-exclamation-triangle-fill fs-6 text-warning"></i>
+                                    <span>Ada <strong>{{ $overallUnassignedDevices }} perangkat</strong> belum ditautkan ke pemilik.</span>
+                                </div>
+                                <a href="{{ route('devices.index') }}" class="btn btn-sm btn-warning py-0 px-2 fw-semibold" style="font-size: 11px;">Cek</a>
+                            </div>
+                        @else
+                            <div class="alert alert-light border rounded-3 p-2 px-3 mb-0 small text-secondary">
+                                Belum ada perangkat aktif pada filter ini.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Main Fleet Table -->
 <div class="card card-mdm border-0 overflow-hidden mb-4">
     <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-2">
@@ -212,7 +368,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center py-5 text-secondary">
+                    <td colspan="8" class="text-center py-5 text-secondary">
                         <i class="bi bi-phone text-muted fs-1 d-block mb-2"></i>
                         Belum ada data perangkat yang tersimpan. Klik tombol <strong>Sync AMAPI</strong> di atas untuk sinkronisasi.
                     </td>
@@ -222,4 +378,133 @@
         </table>
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ctx = document.getElementById('enrollmentTodayChart');
+    if (!ctx) return;
+
+    const hourlyData = {
+        labels: @json($hourlyLabels),
+        matched: @json($hourlyMatched),
+        unassigned: @json($hourlyUnassigned),
+        subtitle: 'Distribusi Jam Enrollment ({{ \Carbon\Carbon::parse($enrollmentDate)->translatedFormat("d F Y") }})'
+    };
+
+    const dailyData = {
+        labels: @json($dailyLabels),
+        matched: @json($dailyMatched),
+        unassigned: @json($dailyUnassigned),
+        subtitle: 'Tren Enrollment 7 Hari Terakhir (s/d {{ \Carbon\Carbon::parse($enrollmentDate)->translatedFormat("d M Y") }})'
+    };
+
+    const chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: hourlyData.labels,
+            datasets: [
+                {
+                    label: 'Data Sesuai (Ada Pemilik)',
+                    data: hourlyData.matched,
+                    backgroundColor: '#0D9488',
+                    borderRadius: 4,
+                    maxBarThickness: 28
+                },
+                {
+                    label: 'Belum Ditautkan',
+                    data: hourlyData.unassigned,
+                    backgroundColor: '#F59E0B',
+                    borderRadius: 4,
+                    maxBarThickness: 28
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        footer: function (tooltipItems) {
+                            let total = 0;
+                            tooltipItems.forEach(function (item) {
+                                total += item.parsed.y;
+                            });
+                            return 'Total Enroll: ' + total + ' Perangkat';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 11
+                        },
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 12
+                    }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        stepSize: 1,
+                        font: {
+                            size: 11
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.15)'
+                    }
+                }
+            }
+        }
+    });
+
+    const btnHourly = document.getElementById('btnChartHourly');
+    const btnDaily = document.getElementById('btnChartDaily');
+    const subtitleEl = document.getElementById('chartSubtitle');
+
+    function switchChartMode(source) {
+        chartInstance.data.labels = source.labels;
+        chartInstance.data.datasets[0].data = source.matched;
+        chartInstance.data.datasets[1].data = source.unassigned;
+        chartInstance.update();
+        if (subtitleEl) {
+            subtitleEl.textContent = source.subtitle;
+        }
+    }
+
+    if (btnHourly && btnDaily) {
+        btnHourly.addEventListener('click', function () {
+            btnHourly.classList.add('active');
+            btnDaily.classList.remove('active');
+            switchChartMode(hourlyData);
+        });
+
+        btnDaily.addEventListener('click', function () {
+            btnDaily.classList.add('active');
+            btnHourly.classList.remove('active');
+            switchChartMode(dailyData);
+        });
+    }
+});
+</script>
+@endpush
 @endsection
