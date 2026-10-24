@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\Device;
 use App\Models\Policy;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class MdmDashboardTest extends TestCase
 {
+    use DatabaseTransactions;
     public function test_guest_is_redirected_to_login(): void
     {
         $response = $this->get('/dashboard');
@@ -188,9 +190,15 @@ class MdmDashboardTest extends TestCase
         $operator = User::where('username', 'operator')->first();
         $this->actingAs($operator);
 
-        $profileDevice = Device::whereJsonContains('raw_device_data->managementMode', 'PROFILE_OWNER')->first();
+        $profileDevice = Device::where('state', 'ACTIVE')->first();
         if ($profileDevice) {
-            $profileDevice->update(['last_status_report' => now()->addHour()]);
+            $raw = $profileDevice->raw_device_data ?? [];
+            $raw['managementMode'] = 'PROFILE_OWNER';
+            $raw['ownership'] = 'PERSONALLY_OWNED';
+            $profileDevice->update([
+                'raw_device_data' => $raw,
+                'enrolled_at' => now()->addHour(),
+            ]);
         }
 
         $response = $this->get(route('devices.index'));
