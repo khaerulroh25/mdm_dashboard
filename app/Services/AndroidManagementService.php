@@ -342,7 +342,7 @@ class AndroidManagementService
         ?string $additionalData = null,
         bool $oneTimeOnly = false
     ): EnrollmentToken {
-        $policyName = $policyId ? $this->formatPolicyName($policyId) : $this->formatPolicyName('default');
+        $policyName = $policyId ? $this->formatPolicyName($policyId) : $this->formatPolicyName('Mode_kiosk');
 
         $payload = [
             'policyName' => $policyName,

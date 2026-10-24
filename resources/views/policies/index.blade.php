@@ -104,7 +104,6 @@
                             <a href="{{ route('policies.edit', $policy->id) }}" class="btn btn-sm btn-outline-teal" title="Konfigurasi & Kelola Aplikasi">
                                 <i class="bi bi-gear-fill"></i> Konfigurasi
                             </a>
-                            @if($policy->policy_id !== 'default')
                             <form action="{{ route('policies.destroy', $policy->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus policy {{ $policy->name }}?')">
                                 @csrf
                                 @method('DELETE')
@@ -112,7 +111,6 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
-                            @endif
                         </div>
                         @else
                         <span class="badge bg-light text-secondary border small">Read-Only</span>

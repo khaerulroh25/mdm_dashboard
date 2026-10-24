@@ -203,9 +203,16 @@ class DeviceSyncService
             $policiesResp = $this->amapi->listPolicies();
             $policies = $policiesResp->getPolicies() ?? [];
 
+            // Remove unused 'default' policy from local DB
+            \App\Models\Policy::where('policy_id', 'default')->whereDoesntHave('devices')->delete();
+
             foreach ($policies as $gPolicy) {
                 $policyName = $gPolicy->getName();
                 $policyId = basename($policyName);
+
+                if ($policyId === 'default') {
+                    continue;
+                }
 
                 // Auto-heal if statusReportingSettings is missing on Google AMAPI policy
                 if ($gPolicy->getStatusReportingSettings() === null) {

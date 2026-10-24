@@ -77,7 +77,7 @@
                                 </label>
                                 <select name="policy_id" id="policy_id" class="form-select @error('policy_id') is-invalid @enderror" required>
                                     @foreach($policies as $policy)
-                                    <option value="{{ $policy->policy_id }}" {{ (old('policy_id') ?? 'default') == $policy->policy_id ? 'selected' : '' }}>
+                                    <option value="{{ $policy->policy_id }}" {{ (old('policy_id') ?? 'Mode_kiosk') == $policy->policy_id ? 'selected' : '' }}>
                                         {{ $policy->name }} ({{ $policy->policy_id }})
                                     </option>
                                     @endforeach

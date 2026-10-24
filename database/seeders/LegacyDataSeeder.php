@@ -95,18 +95,38 @@ class LegacyDataSeeder extends Seeder
             ]
         );
 
-        // 2. Seed Default Policy Placeholder
+        // 2. Remove unused 'default' policy and ensure primary policies exist
+        Policy::where('policy_id', 'default')->delete();
+
         Policy::firstOrCreate(
-            ['policy_id' => 'default'],
+            ['policy_id' => 'Mode_kiosk'],
             [
-                'name' => 'Default Policy Enterprise',
+                'name' => 'Mode Kiosk',
                 'description' => 'Policy standar untuk seluruh perangkat aktif organisasi.',
                 'camera_disabled' => false,
                 'wifi_config_disabled' => false,
                 'factory_reset_disabled' => true,
                 'install_apps_disabled' => false,
+                'allow_untrusted_apps' => true,
                 'safe_boot_disabled' => true,
                 'location_mode' => 'HIGH_ACCURACY',
+                'play_store_mode' => 'BLACKLIST',
+            ]
+        );
+
+        Policy::firstOrCreate(
+            ['policy_id' => 'Gagal_bayar'],
+            [
+                'name' => 'Gagal Bayar',
+                'description' => 'Policy pembatasan perangkat saat terjadi kendala tagihan.',
+                'camera_disabled' => false,
+                'wifi_config_disabled' => false,
+                'factory_reset_disabled' => true,
+                'install_apps_disabled' => false,
+                'allow_untrusted_apps' => false,
+                'safe_boot_disabled' => true,
+                'location_mode' => 'HIGH_ACCURACY',
+                'play_store_mode' => 'WHITELIST',
             ]
         );
 
@@ -193,7 +213,7 @@ class LegacyDataSeeder extends Seeder
                             ['device_id' => $device],
                             [
                                 'state' => 'ACTIVE',
-                                'policy_id' => 'default',
+                                'policy_id' => 'Mode_kiosk',
                                 'enrolled_at' => now(),
                             ]
                         );
