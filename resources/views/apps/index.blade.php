@@ -22,6 +22,7 @@
             @endif
         </form>
 
+        @if(auth()->user()->hasPermission('apps.create'))
         <div class="d-flex gap-2">
             <a href="{{ route('apps.search') }}" class="btn btn-teal d-flex align-items-center gap-1">
                 <i class="bi bi-google-play"></i>
@@ -31,6 +32,7 @@
                 <i class="bi bi-plus-lg"></i> Manual
             </button>
         </div>
+        @endif
     </div>
 </div>
 
@@ -79,6 +81,7 @@
                         </span>
                     </td>
                     <td class="text-end pe-4">
+                        @if(auth()->user()->hasPermission('apps.delete'))
                         <form action="{{ route('apps.destroy', $app->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus aplikasi {{ $app->app_name }} dari katalog?')">
                             @csrf
                             @method('DELETE')
@@ -86,6 +89,9 @@
                                 <i class="bi bi-trash"></i>
                             </button>
                         </form>
+                        @else
+                        <span class="badge bg-light text-secondary border small">Tersimpan</span>
+                        @endif
                     </td>
                 </tr>
                 @empty

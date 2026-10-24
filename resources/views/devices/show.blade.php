@@ -45,7 +45,7 @@
                 <span class="text-secondary small">Perangkat ini sudah tidak aktif di Google Cloud AMAPI. Seluruh perintah remote dinonaktifkan. Data ini disimpan sebagai arsip histori.</span>
             </div>
         </div>
-        @if(auth()->user()->isAdmin())
+        @if(auth()->user()->hasPermission('devices.delete'))
         <form action="{{ route('devices.destroy-permanent', $device->id) }}" method="POST" onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin menghapus data perangkat ini secara permanen dari database?')">
             @csrf
             @method('DELETE')
@@ -56,7 +56,7 @@
         @endif
     </div>
 </div>
-@else
+@elseif(auth()->user()->hasPermission(['devices.command', 'devices.delete']))
 <!-- Remote Command Quick Action Toolbar -->
 <div class="card card-mdm border-0 p-3 mb-4">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -64,6 +64,7 @@
             <span class="fw-semibold text-secondary small text-uppercase" style="font-size: 11px;">Perintah Jarak Jauh:</span>
         </div>
         <div class="d-flex flex-wrap gap-2">
+            @if(auth()->user()->hasPermission('devices.command'))
             <!-- 1. Lock Screen -->
             <form action="{{ route('devices.command', $device->id) }}" method="POST" class="d-inline">
                 @csrf
@@ -111,9 +112,10 @@
                 <i class="bi bi-shield-shaded"></i>
                 <span>Ubah Policy</span>
             </button>
+            @endif
 
             <!-- 7. Unenroll Modal Trigger -->
-            @if(auth()->user()->isAdmin())
+            @if(auth()->user()->hasPermission('devices.delete'))
             <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#unenrollModal">
                 <i class="bi bi-trash3"></i>
                 <span>Unenroll</span>
@@ -142,9 +144,11 @@
                                 <td class="fw-bold text-dark fs-6">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <span>{{ $device->human_model_name }}</span>
+                                        @if(auth()->user()->hasPermission('devices.edit'))
                                         <button type="button" class="btn btn-sm btn-outline-teal py-0 px-2" data-bs-toggle="modal" data-bs-target="#editModelNameModal" title="Ubah Nama Komersial">
                                             <i class="bi bi-pencil me-1"></i> Edit
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -265,9 +269,11 @@
                                             <i class="bi bi-shield-check me-2 text-teal"></i>
                                             {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
                                         </span>
+                                        @if(auth()->user()->hasPermission('devices.command'))
                                         <button type="button" class="btn btn-sm btn-outline-teal py-0 px-2" data-bs-toggle="modal" data-bs-target="#switchPolicyModal" title="Ubah Policy">
                                             <i class="bi bi-pencil-square me-1"></i> Ubah
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -285,9 +291,11 @@
                 <h6 class="fw-bold mb-0 text-dark">
                     <i class="bi bi-person-badge text-teal me-2"></i>Informasi Pemilik / Anggota
                 </h6>
+                @if(auth()->user()->hasPermission('devices.edit'))
                 <button type="button" class="btn btn-sm btn-outline-teal" data-bs-toggle="modal" data-bs-target="#editOwnerModal">
                     <i class="bi bi-pencil"></i> Edit
                 </button>
+                @endif
             </div>
             <div class="card-body p-4">
                 @if($device->owner)
@@ -343,11 +351,13 @@
                 <div class="text-center py-4 text-secondary">
                     <i class="bi bi-person-x fs-1 text-muted d-block mb-2"></i>
                     Perangkat ini belum ditautkan ke data pemilik/anggota manapun.
+                    @if(auth()->user()->hasPermission('devices.edit'))
                     <div class="mt-3">
                         <button type="button" class="btn btn-sm btn-teal" data-bs-toggle="modal" data-bs-target="#editOwnerModal">
                             <i class="bi bi-plus-circle me-1"></i>Tautkan Pemilik Sekarang
                         </button>
                     </div>
+                    @endif
                 </div>
                 @endif
             </div>

@@ -319,4 +319,42 @@ class MdmDashboardTest extends TestCase
             $response->assertDontSee($deletedDevice->device_id);
         }
     }
+
+    public function test_custom_user_permissions_and_superadmin_full_access(): void
+    {
+        $admin = User::where('username', 'admin_rdk')->first();
+        $this->actingAs($admin);
+
+        // 1. Superadmin has all permissions regardless of custom permissions column
+        foreach (User::allPermissionKeys() as $permKey) {
+            $this->assertTrue($admin->hasPermission($permKey));
+        }
+
+        // 2. Superadmin creates a custom operator with only devices.view and audit_logs.view
+        $response = $this->post(route('users.store'), [
+            'username'              => 'custom_staff',
+            'name'                  => 'Staf Khusus',
+            'email'                 => 'staf@amanin.com',
+            'password'              => 'secret123',
+            'role'                  => 'operator',
+            'permissions_submitted' => '1',
+            'permissions'           => ['devices.view', 'audit_logs.view'],
+        ]);
+        $response->assertRedirect(route('users.index'));
+
+        $customUser = User::where('username', 'custom_staff')->first();
+        $this->assertNotNull($customUser);
+        $this->assertTrue($customUser->hasPermission('devices.view'));
+        $this->assertTrue($customUser->hasPermission('audit_logs.view'));
+        $this->assertFalse($customUser->hasPermission('enrollment.manage'));
+        $this->assertFalse($customUser->hasPermission('policies.view'));
+
+        // 3. Verify route enforcement for the custom user
+        $this->actingAs($customUser);
+
+        $this->get(route('devices.index'))->assertStatus(200);
+        $this->get(route('audit-logs.index'))->assertStatus(200);
+        $this->get(route('enrollment.index'))->assertStatus(403);
+        $this->get(route('policies.index'))->assertStatus(403);
+    }
 }

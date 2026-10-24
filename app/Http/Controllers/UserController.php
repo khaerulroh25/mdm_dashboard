@@ -15,7 +15,8 @@ class UserController extends Controller
     public function index()
     {
         $users = User::latest()->paginate(15);
-        return view('users.index', compact('users'));
+        $totalPermissionCount = count(User::allPermissionKeys());
+        return view('users.index', compact('users', 'totalPermissionCount'));
     }
 
     /**
@@ -23,7 +24,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('users.create');
+        $permissionGroups = User::PERMISSION_GROUPS;
+        $rolePresets = User::ROLE_PRESETS;
+        return view('users.create', compact('permissionGroups', 'rolePresets'));
     }
 
     /**
@@ -31,29 +34,43 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $validKeys = implode(',', User::allPermissionKeys());
+
         $validated = $request->validate([
-            'username' => ['required', 'string', 'alpha_dash', 'max:50', 'unique:users,username'],
-            'name'     => ['required', 'string', 'max:150'],
-            'email'    => ['nullable', 'email', 'max:150', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6'],
-            'role'     => ['required', 'string', 'in:admin,operator,auditor'],
+            'username'      => ['required', 'string', 'alpha_dash', 'max:50', 'unique:users,username'],
+            'name'          => ['required', 'string', 'max:150'],
+            'email'         => ['nullable', 'email', 'max:150', 'unique:users,email'],
+            'password'      => ['required', 'string', 'min:6'],
+            'role'          => ['required', 'string', 'in:admin,operator,auditor'],
+            'permissions'   => ['nullable', 'array'],
+            'permissions.*' => ['string', 'in:' . $validKeys],
         ]);
 
+        if ($validated['role'] === 'admin') {
+            $permissions = User::allPermissionKeys();
+        } elseif ($request->has('permissions_submitted')) {
+            $permissions = array_values(array_unique($validated['permissions'] ?? []));
+        } else {
+            $permissions = User::defaultPermissionsForRole($validated['role']);
+        }
+
         $user = User::create([
-            'username' => $validated['username'],
-            'name'     => $validated['name'],
-            'email'    => $validated['email'] ?? null,
-            'password' => Hash::make($validated['password']),
-            'role'     => $validated['role'],
+            'username'    => $validated['username'],
+            'name'        => $validated['name'],
+            'email'       => $validated['email'] ?? null,
+            'password'    => Hash::make($validated['password']),
+            'role'        => $validated['role'],
+            'permissions' => $permissions,
         ]);
 
         AuditLog::log('CREATE_USER', 'User', (string)$user->id, [
-            'username' => $user->username,
-            'role' => $user->role,
+            'username'    => $user->username,
+            'role'        => $user->role,
+            'permissions' => $user->getEffectivePermissions(),
         ]);
 
         return redirect()->route('users.index')
-            ->with('success', "Pengguna <strong>{$user->username}</strong> ({$user->role}) berhasil ditambahkan!");
+            ->with('success', "Pengguna <strong>{$user->username}</strong> ({$user->role}) berhasil ditambahkan beserta konfigurasi hak aksesnya!");
     }
 
     /**
@@ -62,7 +79,11 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        return view('users.edit', compact('user'));
+        $permissionGroups = User::PERMISSION_GROUPS;
+        $rolePresets = User::ROLE_PRESETS;
+        $effectivePermissions = $user->getEffectivePermissions();
+
+        return view('users.edit', compact('user', 'permissionGroups', 'rolePresets', 'effectivePermissions'));
     }
 
     /**
@@ -71,20 +92,35 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $validKeys = implode(',', User::allPermissionKeys());
 
         $validated = $request->validate([
-            'username' => ['required', 'string', 'alpha_dash', 'max:50', 'unique:users,username,' . $user->id],
-            'name'     => ['required', 'string', 'max:150'],
-            'email'    => ['nullable', 'email', 'max:150', 'unique:users,email,' . $user->id],
-            'password' => ['nullable', 'string', 'min:6'],
-            'role'     => ['required', 'string', 'in:admin,operator,auditor'],
+            'username'      => ['required', 'string', 'alpha_dash', 'max:50', 'unique:users,username,' . $user->id],
+            'name'          => ['required', 'string', 'max:150'],
+            'email'         => ['nullable', 'email', 'max:150', 'unique:users,email,' . $user->id],
+            'password'      => ['nullable', 'string', 'min:6'],
+            'role'          => ['required', 'string', 'in:admin,operator,auditor'],
+            'permissions'   => ['nullable', 'array'],
+            'permissions.*' => ['string', 'in:' . $validKeys],
         ]);
 
+        // Prevent demoting oneself while logged in
+        $newRole = ($user->id === auth()->id()) ? $user->role : $validated['role'];
+
+        if ($newRole === 'admin') {
+            $permissions = User::allPermissionKeys();
+        } elseif ($request->has('permissions_submitted')) {
+            $permissions = array_values(array_unique($validated['permissions'] ?? []));
+        } else {
+            $permissions = $user->permissions ?? User::defaultPermissionsForRole($newRole);
+        }
+
         $updateData = [
-            'username' => $validated['username'],
-            'name'     => $validated['name'],
-            'email'    => $validated['email'] ?? null,
-            'role'     => $validated['role'],
+            'username'    => $validated['username'],
+            'name'        => $validated['name'],
+            'email'       => $validated['email'] ?? null,
+            'role'        => $newRole,
+            'permissions' => $permissions,
         ];
 
         if (!empty($validated['password'])) {
@@ -94,12 +130,13 @@ class UserController extends Controller
         $user->update($updateData);
 
         AuditLog::log('UPDATE_USER', 'User', (string)$user->id, [
-            'username' => $user->username,
-            'role' => $user->role,
+            'username'    => $user->username,
+            'role'        => $user->role,
+            'permissions' => $user->getEffectivePermissions(),
         ]);
 
         return redirect()->route('users.index')
-            ->with('success', "Data pengguna <strong>{$user->username}</strong> berhasil diperbarui!");
+            ->with('success', "Data pengguna & permission <strong>{$user->username}</strong> berhasil diperbarui!");
     }
 
     /**

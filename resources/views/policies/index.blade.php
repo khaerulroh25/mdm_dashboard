@@ -10,12 +10,14 @@
             <h5 class="fw-bold mb-0 text-dark">Daftar Kebijakan Enterprise</h5>
             <span class="text-secondary small">Kelola aturan pembatasan perangkat, kontrol sistem, dan aplikasi terpasang</span>
         </div>
+        @if(auth()->user()->hasPermission('policies.manage'))
         <div>
             <a href="{{ route('policies.create') }}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
                 <i class="bi bi-plus-circle"></i>
                 <span>Buat Policy Baru</span>
             </a>
         </div>
+        @endif
     </div>
 
     <div class="table-responsive">
@@ -97,6 +99,7 @@
                         @endif
                     </td>
                     <td class="text-end pe-4">
+                        @if(auth()->user()->hasPermission('policies.manage'))
                         <div class="d-flex justify-content-end gap-1">
                             <a href="{{ route('policies.edit', $policy->id) }}" class="btn btn-sm btn-outline-teal" title="Konfigurasi & Kelola Aplikasi">
                                 <i class="bi bi-gear-fill"></i> Konfigurasi
@@ -111,6 +114,9 @@
                             </form>
                             @endif
                         </div>
+                        @else
+                        <span class="badge bg-light text-secondary border small">Read-Only</span>
+                        @endif
                     </td>
                 </tr>
                 @empty

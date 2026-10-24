@@ -109,6 +109,7 @@
                 <span class="text-secondary small">Menampilkan perangkat aktif yang terhubung dengan Google Cloud</span>
             @endif
         </div>
+        @if(auth()->user()->hasPermission('devices.sync'))
         <div>
             <form action="{{ route('devices.sync') }}" method="POST" class="d-inline">
                 @csrf
@@ -118,6 +119,7 @@
                 </button>
             </form>
         </div>
+        @endif
     </div>
 
     <div class="table-responsive">
@@ -220,7 +222,7 @@
                                 <i class="bi bi-eye"></i> Detail
                             </a>
 
-                            @if($device->state === 'DELETED' && auth()->user()->hasRole('admin'))
+                            @if($device->state === 'DELETED' && auth()->user()->hasPermission('devices.delete'))
                             <form action="{{ route('devices.destroy-permanent', $device->id) }}" method="POST" class="d-inline" onsubmit="return confirm('PERINGATAN: Apakah Anda yakin ingin menghapus data perangkat ini secara permanen dari database?')">
                                 @csrf
                                 @method('DELETE')

@@ -18,38 +18,53 @@
                 <span>Dashboard</span>
             </a>
         </li>
+
+        @if(auth()->check() && auth()->user()->hasPermission('devices.view'))
         <li class="nav-item">
             <a href="{{ route('devices.index') }}" class="nav-link {{ request()->routeIs('devices.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Devices">
                 <i class="bi bi-phone"></i>
                 <span>Devices</span>
             </a>
         </li>
+        @endif
+
+        @if(auth()->check() && auth()->user()->hasPermission('policies.view'))
         <li class="nav-item">
             <a href="{{ route('policies.index') }}" class="nav-link {{ request()->routeIs('policies.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Policies">
                 <i class="bi bi-shield-lock"></i>
                 <span>Policies</span>
             </a>
         </li>
+        @endif
+
+        @if(auth()->check() && auth()->user()->hasPermission('apps.view'))
         <li class="nav-item">
             <a href="{{ route('apps.index') }}" class="nav-link {{ request()->routeIs('apps.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Google Play Apps">
                 <i class="bi bi-google-play"></i>
                 <span>Google Play Apps</span>
             </a>
         </li>
+        @endif
+
+        @if(auth()->check() && auth()->user()->hasPermission('enrollment.manage'))
         <li class="nav-item">
             <a href="{{ route('enrollment.index') }}" class="nav-link {{ request()->routeIs('enrollment.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Enrollment QR">
                 <i class="bi bi-qr-code-scan"></i>
                 <span>Enrollment QR</span>
             </a>
         </li>
+        @endif
+
+        @if(auth()->check() && auth()->user()->hasPermission('audit_logs.view'))
         <li class="nav-item">
             <a href="{{ route('audit-logs.index') }}" class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Audit Logs">
                 <i class="bi bi-journal-text"></i>
                 <span>Audit Logs</span>
             </a>
         </li>
+        @endif
 
-        @if(auth()->check() && auth()->user()->isAdmin())
+        @if(auth()->check() && auth()->user()->hasPermission('users.manage'))
         <li class="nav-heading text-uppercase text-secondary small fw-bold px-3 mt-4 mb-2" style="font-size: 11px; letter-spacing: 0.5px; color: #64748B;">
             Administrator
         </li>

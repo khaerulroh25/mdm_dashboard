@@ -35,50 +35,50 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Devices Fleet
+    // Devices Management
     Route::prefix('devices')->name('devices.')->group(function () {
-        Route::get('/', [DeviceController::class, 'index'])->name('index');
-        Route::post('/sync', [DeviceController::class, 'sync'])->name('sync')->middleware('role:admin,operator');
-        Route::get('/{device}', [DeviceController::class, 'show'])->name('show');
-        Route::post('/{device}/command', [DeviceController::class, 'issueCommand'])->name('command')->middleware('role:admin,operator');
-        Route::post('/{device}/policy', [DeviceController::class, 'updatePolicy'])->name('policy')->middleware('role:admin,operator');
-        Route::post('/{device}/rename-model', [DeviceController::class, 'updateMarketingName'])->name('rename-model')->middleware('role:admin,operator');
-        Route::delete('/{device}', [DeviceController::class, 'unenroll'])->name('unenroll')->middleware('role:admin');
-        Route::delete('/{device}/permanent', [DeviceController::class, 'destroyPermanent'])->name('destroy-permanent')->middleware('role:admin');
+        Route::get('/', [DeviceController::class, 'index'])->name('index')->middleware('permission:devices.view');
+        Route::post('/sync', [DeviceController::class, 'sync'])->name('sync')->middleware('permission:devices.sync');
+        Route::get('/{device}', [DeviceController::class, 'show'])->name('show')->middleware('permission:devices.view');
+        Route::post('/{device}/command', [DeviceController::class, 'issueCommand'])->name('command')->middleware('permission:devices.command');
+        Route::post('/{device}/policy', [DeviceController::class, 'updatePolicy'])->name('policy')->middleware('permission:devices.command');
+        Route::post('/{device}/rename-model', [DeviceController::class, 'updateMarketingName'])->name('rename-model')->middleware('permission:devices.edit');
+        Route::delete('/{device}', [DeviceController::class, 'unenroll'])->name('unenroll')->middleware('permission:devices.delete');
+        Route::delete('/{device}/permanent', [DeviceController::class, 'destroyPermanent'])->name('destroy-permanent')->middleware('permission:devices.delete');
     });
 
     // Device Owners
-    Route::post('/owners', [DeviceOwnerController::class, 'store'])->name('owners.store')->middleware('role:admin,operator');
+    Route::post('/owners', [DeviceOwnerController::class, 'store'])->name('owners.store')->middleware('permission:devices.edit');
 
     // Policies
     Route::prefix('policies')->name('policies.')->group(function () {
-        Route::get('/', [PolicyController::class, 'index'])->name('index');
-        Route::get('/create', [PolicyController::class, 'create'])->name('create')->middleware('role:admin');
-        Route::post('/', [PolicyController::class, 'store'])->name('store')->middleware('role:admin');
-        Route::get('/{id}/edit', [PolicyController::class, 'edit'])->name('edit')->middleware('role:admin');
-        Route::put('/{id}', [PolicyController::class, 'update'])->name('update')->middleware('role:admin');
-        Route::delete('/{id}', [PolicyController::class, 'destroy'])->name('destroy')->middleware('role:admin');
-        Route::post('/{id}/apps', [PolicyController::class, 'addApp'])->name('add-app')->middleware('role:admin');
+        Route::get('/', [PolicyController::class, 'index'])->name('index')->middleware('permission:policies.view');
+        Route::get('/create', [PolicyController::class, 'create'])->name('create')->middleware('permission:policies.manage');
+        Route::post('/', [PolicyController::class, 'store'])->name('store')->middleware('permission:policies.manage');
+        Route::get('/{id}/edit', [PolicyController::class, 'edit'])->name('edit')->middleware('permission:policies.manage');
+        Route::put('/{id}', [PolicyController::class, 'update'])->name('update')->middleware('permission:policies.manage');
+        Route::delete('/{id}', [PolicyController::class, 'destroy'])->name('destroy')->middleware('permission:policies.manage');
+        Route::post('/{id}/apps', [PolicyController::class, 'addApp'])->name('add-app')->middleware('permission:policies.manage');
     });
 
     // Google Play Apps
     Route::prefix('apps')->name('apps.')->group(function () {
-        Route::get('/', [GooglePlayController::class, 'index'])->name('index');
-        Route::get('/search', [GooglePlayController::class, 'search'])->name('search');
-        Route::get('/lookup', [GooglePlayController::class, 'lookup'])->name('lookup');
-        Route::post('/', [GooglePlayController::class, 'store'])->name('store')->middleware('role:admin,operator');
-        Route::delete('/{id}', [GooglePlayController::class, 'destroy'])->name('destroy')->middleware('role:admin');
+        Route::get('/', [GooglePlayController::class, 'index'])->name('index')->middleware('permission:apps.view');
+        Route::get('/search', [GooglePlayController::class, 'search'])->name('search')->middleware('permission:apps.create,apps.view');
+        Route::get('/lookup', [GooglePlayController::class, 'lookup'])->name('lookup')->middleware('permission:apps.create,apps.view');
+        Route::post('/', [GooglePlayController::class, 'store'])->name('store')->middleware('permission:apps.create');
+        Route::delete('/{id}', [GooglePlayController::class, 'destroy'])->name('destroy')->middleware('permission:apps.delete');
     });
 
     // Enrollment QR
     Route::prefix('enrollment')->name('enrollment.')->group(function () {
-        Route::get('/', [EnrollmentController::class, 'index'])->name('index')->middleware('role:admin,operator');
-        Route::post('/generate', [EnrollmentController::class, 'generate'])->name('generate')->middleware('role:admin,operator');
+        Route::get('/', [EnrollmentController::class, 'index'])->name('index')->middleware('permission:enrollment.manage');
+        Route::post('/generate', [EnrollmentController::class, 'generate'])->name('generate')->middleware('permission:enrollment.manage');
     });
 
     // Audit Logs
-    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index')->middleware('role:admin,auditor');
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index')->middleware('permission:audit_logs.view');
 
-    // Users Management (Admin Only)
-    Route::resource('users', UserController::class)->middleware('role:admin');
+    // Users Management
+    Route::resource('users', UserController::class)->middleware('permission:users.manage');
 });

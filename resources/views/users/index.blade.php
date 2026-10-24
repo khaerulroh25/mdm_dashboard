@@ -5,10 +5,10 @@
 
 @section('content')
 <div class="card card-mdm border-0 overflow-hidden mb-4">
-    <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
+    <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-2">
         <div>
             <h5 class="fw-bold mb-0 text-dark">Daftar Pengguna ({{ $users->total() }})</h5>
-            <span class="text-secondary small">Kelola akun administrator, operator lapangan, dan auditor sistem</span>
+            <span class="text-secondary small">Kelola akun administrator, operator lapangan, auditor, serta kustomisasi permission per akun</span>
         </div>
         <div>
             <a href="{{ route('users.create') }}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
@@ -26,13 +26,18 @@
                     <th scope="col">Username</th>
                     <th scope="col">Nama Lengkap</th>
                     <th scope="col">Email</th>
-                    <th scope="col">Hak Akses (Role)</th>
+                    <th scope="col">Peran (Role)</th>
+                    <th scope="col">Cakupan Permission</th>
                     <th scope="col">Waktu Dibuat</th>
                     <th scope="col" class="text-end pe-4">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($users as $index => $u)
+                @php
+                    $effectivePerms = $u->getEffectivePermissions();
+                    $permCount = count($effectivePerms);
+                @endphp
                 <tr>
                     <td class="ps-4 text-secondary small">{{ $users->firstItem() + $index }}</td>
                     <td>
@@ -47,7 +52,7 @@
                     <td>
                         @if($u->role === 'admin')
                             <span class="badge badge-lost-mode fw-semibold">
-                                <i class="bi bi-shield-shaded me-1"></i> ADMIN
+                                <i class="bi bi-shield-shaded me-1"></i> SUPERADMIN
                             </span>
                         @elseif($u->role === 'operator')
                             <span class="badge badge-compliant fw-semibold">
@@ -59,13 +64,29 @@
                             </span>
                         @endif
                     </td>
+                    <td>
+                        @if($u->isAdmin())
+                            <span class="badge bg-teal-subtle text-teal border border-teal-subtle fw-semibold">
+                                <i class="bi bi-check2-all me-1"></i> Semua Akses ({{ $totalPermissionCount }}/{{ $totalPermissionCount }})
+                            </span>
+                        @else
+                            <div class="d-flex align-items-center gap-1 flex-wrap">
+                                <span class="badge bg-light text-dark border font-mono" title="{{ implode(', ', $effectivePerms) }}">
+                                    <i class="bi bi-key text-teal me-1"></i> {{ $permCount }} / {{ $totalPermissionCount }} Izin Aktif
+                                </span>
+                                @if(is_array($u->permissions))
+                                    <span class="badge bg-info bg-opacity-10 text-info border border-info-subtle" style="font-size: 10px;">Custom</span>
+                                @endif
+                            </div>
+                        @endif
+                    </td>
                     <td class="text-secondary small font-mono">
                         {{ $u->created_at->format('d M Y') }}
                     </td>
                     <td class="text-end pe-4">
                         <div class="d-flex justify-content-end gap-1">
-                            <a href="{{ route('users.edit', $u->id) }}" class="btn btn-sm btn-outline-teal" title="Edit Pengguna">
-                                <i class="bi bi-pencil"></i>
+                            <a href="{{ route('users.edit', $u->id) }}" class="btn btn-sm btn-outline-teal" title="Edit Profil & Permission">
+                                <i class="bi bi-sliders me-1"></i> Atur
                             </a>
                             @if($u->id !== auth()->id())
                             <form action="{{ route('users.destroy', $u->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus pengguna {{ $u->username }}?')">
@@ -81,7 +102,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center py-5 text-secondary">
+                    <td colspan="8" class="text-center py-5 text-secondary">
                         Belum ada pengguna terdaftar.
                     </td>
                 </tr>

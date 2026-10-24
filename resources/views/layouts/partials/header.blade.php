@@ -30,6 +30,7 @@
 
     <!-- Right: Quick Actions -->
     <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        @if(auth()->check() && auth()->user()->hasPermission('devices.sync'))
         <form action="{{ route('devices.sync') }}" method="POST" class="m-0">
             @csrf
             <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" title="Tarik data terbaru dari Google AMAPI">
@@ -37,11 +38,14 @@
                 <span class="d-none d-sm-inline">Sync AMAPI</span>
             </button>
         </form>
+        @endif
 
+        @if(auth()->check() && auth()->user()->hasPermission('enrollment.manage'))
         <a href="{{ route('enrollment.index') }}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
             <i class="bi bi-plus-circle"></i>
             <span class="d-none d-sm-inline">Enroll Device</span>
             <span class="d-sm-none">Enroll</span>
         </a>
+        @endif
     </div>
 </header>
