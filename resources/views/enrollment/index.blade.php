@@ -105,12 +105,12 @@
                                 <div class="row g-2">
                                     <div class="col-12 col-md-6">
                                         <label for="owner_name" class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">
-                                            Nama Pemilik / Agen
+                                            Nama Pemilik / Pengguna
                                         </label>
                                         <input type="text" name="owner_name" id="owner_name"
                                             class="form-control form-control-sm @error('owner_name') is-invalid @enderror"
                                             value="{{ old('owner_name') }}"
-                                            placeholder="Contoh: Siti Aisah Talam">
+                                            placeholder="Contoh: Budi Santoso">
                                         @error('owner_name')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                         @enderror
@@ -118,12 +118,12 @@
 
                                     <div class="col-12 col-md-6">
                                         <label for="id_anggota" class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">
-                                            ID Anggota <span class="text-muted fw-normal">(Wajib jika nama diisi)</span>
+                                            ID Pengguna / Nomor Identitas <span class="text-muted fw-normal">(Wajib jika nama diisi)</span>
                                         </label>
                                         <input type="text" name="id_anggota" id="id_anggota"
                                             class="form-control form-control-sm font-mono @error('id_anggota') is-invalid @enderror"
                                             value="{{ old('id_anggota') }}"
-                                            placeholder="Contoh: 12122311003106">
+                                            placeholder="Contoh: USR-2026001 / NIK">
                                         @error('id_anggota')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                         @enderror
@@ -136,7 +136,7 @@
                                         <input type="text" name="owner_phone" id="owner_phone"
                                             class="form-control form-control-sm font-mono @error('owner_phone') is-invalid @enderror"
                                             value="{{ old('owner_phone') }}"
-                                            placeholder="Contoh: 085691840938">
+                                            placeholder="Contoh: 081234567890">
                                     </div>
 
                                     <div class="col-12 col-md-6">
@@ -146,7 +146,7 @@
                                         <input type="text" name="owner_notes" id="owner_notes"
                                             class="form-control form-control-sm @error('owner_notes') is-invalid @enderror"
                                             value="{{ old('owner_notes') }}"
-                                            placeholder="Contoh: Agen Kelompok Melati">
+                                            placeholder="Contoh: Divisi Operasional / Lapangan">
                                     </div>
                                 </div>
                             </div>

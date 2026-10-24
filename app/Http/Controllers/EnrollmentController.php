@@ -44,7 +44,7 @@ class EnrollmentController extends Controller
             'owner_phone' => ['nullable', 'string', 'max:50'],
             'owner_notes' => ['nullable', 'string', 'max:250'],
         ], [
-            'id_anggota.required_with' => 'ID Anggota wajib diisi apabila Nama Calon Pemilik diisi.',
+            'id_anggota.required_with' => 'ID Pengguna / Nomor Identitas wajib diisi apabila Nama Calon Pemilik diisi.',
         ]);
 
         $user = auth()->user();

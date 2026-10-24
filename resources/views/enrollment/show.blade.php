@@ -95,7 +95,7 @@
                                         <span>{{ $ownerPreview['nama'] }}</span>
                                     </div>
                                     <div class="text-secondary small font-mono mt-1">
-                                        ID Anggota: <strong>{{ $ownerPreview['id_anggota'] }}</strong>
+                                        ID Pengguna: <strong>{{ $ownerPreview['id_anggota'] }}</strong>
                                         @if(!empty($ownerPreview['telepon']))
                                             • Telp: {{ $ownerPreview['telepon'] }}
                                         @endif
