@@ -71,30 +71,91 @@
                             </div>
 
                             <!-- Policy Selection -->
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="policy_id" class="form-label small fw-semibold text-secondary">
                                     Pilih Kebijakan (Policy) Awal <span class="text-danger">*</span>
                                 </label>
-                                <select name="policy_id" id="policy_id" class="form-select form-select-lg @error('policy_id') is-invalid @enderror" required>
+                                <select name="policy_id" id="policy_id" class="form-select @error('policy_id') is-invalid @enderror" required>
                                     @foreach($policies as $policy)
                                     <option value="{{ $policy->policy_id }}" {{ (old('policy_id') ?? 'default') == $policy->policy_id ? 'selected' : '' }}>
                                         {{ $policy->name }} ({{ $policy->policy_id }})
                                     </option>
                                     @endforeach
                                 </select>
-                                <div class="form-text mt-2" style="font-size: 11.5px; line-height: 1.4;">
-                                    Perangkat yang memindai QR code ini akan secara otomatis menerapkan seluruh batasan sistem, mode Play Store, dan aplikasi yang terdaftar pada kebijakan ini.
-                                </div>
                                 @error('policy_id')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <!-- Optional Pre-Assigned Owner (Solusi 1: Auto-Link saat Scan QR) -->
+                            <div class="p-3 bg-white rounded-3 border mb-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="fw-bold text-dark mb-0 small d-flex align-items-center gap-2">
+                                        <i class="bi bi-person-check-fill text-teal"></i>
+                                        <span>Data Calon Pemilik Perangkat (Opsional — Auto-Link)</span>
+                                    </h6>
+                                    <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10px;">
+                                        Otomatis Terhubung
+                                    </span>
+                                </div>
+                                <p class="text-secondary mb-3" style="font-size: 11.5px; line-height: 1.35;">
+                                    Isi kolom di bawah ini jika QR Code dibuat khusus untuk <strong>1 calon pemilik</strong>. Saat HP selesai di-scan dan disinkronkan, data pemilik langsung tertaut otomatis tanpa perlu diedit manual. Kosongkan jika ingin membuat <strong>QR Massal</strong>.
+                                </p>
+
+                                <div class="row g-2">
+                                    <div class="col-12 col-md-6">
+                                        <label for="owner_name" class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">
+                                            Nama Pemilik / Agen
+                                        </label>
+                                        <input type="text" name="owner_name" id="owner_name"
+                                            class="form-control form-control-sm @error('owner_name') is-invalid @enderror"
+                                            value="{{ old('owner_name') }}"
+                                            placeholder="Contoh: Siti Aisah Talam">
+                                        @error('owner_name')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label for="id_anggota" class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">
+                                            ID Anggota <span class="text-muted fw-normal">(Wajib jika nama diisi)</span>
+                                        </label>
+                                        <input type="text" name="id_anggota" id="id_anggota"
+                                            class="form-control form-control-sm font-mono @error('id_anggota') is-invalid @enderror"
+                                            value="{{ old('id_anggota') }}"
+                                            placeholder="Contoh: 12122311003106">
+                                        @error('id_anggota')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label for="owner_phone" class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">
+                                            Nomor Telepon (Opsional)
+                                        </label>
+                                        <input type="text" name="owner_phone" id="owner_phone"
+                                            class="form-control form-control-sm font-mono @error('owner_phone') is-invalid @enderror"
+                                            value="{{ old('owner_phone') }}"
+                                            placeholder="Contoh: 085691840938">
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label for="owner_notes" class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">
+                                            Catatan Singkat (Opsional)
+                                        </label>
+                                        <input type="text" name="owner_notes" id="owner_notes"
+                                            class="form-control form-control-sm @error('owner_notes') is-invalid @enderror"
+                                            value="{{ old('owner_notes') }}"
+                                            placeholder="Contoh: Agen Kelompok Melati">
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Information Alert -->
                             <div class="alert alert-info border-0 rounded-3 p-3 mb-4 d-flex gap-3" style="background-color: #F0FDFA; border-left: 4px solid var(--bs-primary) !important; color: #0F766E;">
                                 <i class="bi bi-info-circle-fill fs-5 text-teal flex-shrink-0"></i>
                                 <div class="small">
-                                    <strong>Masa Berlaku Token:</strong> Token pendaftaran yang dihasilkan aktif selama <strong>7 hari</strong> secara default dan dapat digunakan untuk mendaftarkan <strong>banyak perangkat sekaligus</strong> tanpa batas.
+                                    <strong>Mode Token Otomatis:</strong> Jika nama pemilik diisi, QR berlaku <strong>khusus 1 HP (Single-Use)</strong> agar tidak tertukar dengan HP lain. Jika dikosongkan, QR berlaku <strong>Massal (Multi-Device)</strong> selama 7 hari.
                                 </div>
                             </div>
                         </form>

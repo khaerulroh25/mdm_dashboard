@@ -62,7 +62,7 @@
                 <div class="p-4 bg-light bg-opacity-50 rounded-3 border h-100 d-flex flex-column justify-content-between">
                     <div>
                         <!-- Policy & Branch Info Badge -->
-                        <div class="p-3 bg-white rounded-3 border mb-4">
+                        <div class="p-3 bg-white rounded-3 border mb-3">
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div>
                                     <span class="text-muted small d-block" style="font-size: 11px;">Policy yang Akan Diterapkan:</span>
@@ -74,7 +74,7 @@
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     @if(!empty($branch))
                                     <span class="badge bg-teal-subtle text-teal border border-teal-subtle px-3 py-2">
-                                        <i class="bi bi-geo-alt-fill me-1"></i> {{ $branch->name }} ({{ $branch->code }})
+                                        <i class="bi bi-geo-alt-fill me-1"></i> {{ $branch->name }}
                                     </span>
                                     @endif
                                     <span class="badge bg-teal text-white font-mono px-3 py-2">
@@ -83,6 +83,30 @@
                                 </div>
                             </div>
                         </div>
+
+                        @if(!empty($ownerPreview))
+                        <!-- Pre-Assigned Owner Info Card -->
+                        <div class="p-3 bg-white rounded-3 border mb-3" style="border-left: 4px solid var(--bs-primary) !important;">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <span class="text-muted small d-block" style="font-size: 11px;">Calon Pemilik Perangkat (Otomatis Ditautkan Saat Scan):</span>
+                                    <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2 mt-1">
+                                        <i class="bi bi-person-check-fill text-teal"></i>
+                                        <span>{{ $ownerPreview['nama'] }}</span>
+                                    </div>
+                                    <div class="text-secondary small font-mono mt-1">
+                                        ID Anggota: <strong>{{ $ownerPreview['id_anggota'] }}</strong>
+                                        @if(!empty($ownerPreview['telepon']))
+                                            • Telp: {{ $ownerPreview['telepon'] }}
+                                        @endif
+                                    </div>
+                                </div>
+                                <span class="badge bg-warning bg-opacity-10 text-dark border border-warning-subtle px-2 py-1 small">
+                                    <i class="bi bi-1-circle-fill text-warning me-1"></i> Khusus 1 HP (Single-Use)
+                                </span>
+                            </div>
+                        </div>
+                        @endif
 
                         <!-- 3-Step Guided Instructions -->
                         <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">

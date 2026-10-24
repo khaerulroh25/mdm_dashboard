@@ -441,5 +441,33 @@ class MdmDashboardTest extends TestCase
         ])->assertRedirect();
 
         $this->assertEquals($rdkBranch->id, $branchBDevice->fresh()->branch_id);
+
+        // 8. Verify Enrollment QR Pre-Assigned Owner Auto-Links on Device Sync (Solusi 1)
+        $mockGoogleDevice = new \Google\Service\AndroidManagement\Device([
+            'name'                => 'enterprises/LC041be11h/devices/autolink777888',
+            'state'               => 'ACTIVE',
+            'policyName'          => 'enterprises/LC041be11h/policies/default',
+            'enrollmentTime'      => now()->toIso8601String(),
+            'enrollmentTokenData' => json_encode([
+                'branch_id'   => $rdkBranch->id,
+                'branch_code' => $rdkBranch->code,
+                'branch_name' => $rdkBranch->name,
+                'owner'       => [
+                    'nama'       => 'Siti Aisah AutoLink',
+                    'id_anggota' => '9988776655',
+                    'telepon'    => '081234567890',
+                    'catatan'    => 'Enroll via QR Pre-Fill',
+                ],
+            ]),
+        ]);
+
+        $syncService = app(\App\Services\DeviceSyncService::class);
+        $syncedDevice = $syncService->syncSingleDevice($mockGoogleDevice);
+
+        $this->assertEquals($rdkBranch->id, $syncedDevice->branch_id);
+        $this->assertNotNull($syncedDevice->owner);
+        $this->assertEquals('Siti Aisah AutoLink', $syncedDevice->owner->nama);
+        $this->assertEquals('9988776655', $syncedDevice->owner->id_anggota);
+        $this->assertEquals('081234567890', $syncedDevice->owner->telepon);
     }
 }

@@ -37,22 +37,50 @@ class EnrollmentController extends Controller
     public function generate(Request $request)
     {
         $validated = $request->validate([
-            'policy_id' => ['required', 'string'],
-            'branch_id' => ['nullable', 'exists:branches,id'],
+            'policy_id'   => ['required', 'string'],
+            'branch_id'   => ['nullable', 'exists:branches,id'],
+            'owner_name'  => ['nullable', 'string', 'max:150'],
+            'id_anggota'  => ['nullable', 'string', 'max:100', 'required_with:owner_name'],
+            'owner_phone' => ['nullable', 'string', 'max:50'],
+            'owner_notes' => ['nullable', 'string', 'max:250'],
+        ], [
+            'id_anggota.required_with' => 'ID Anggota wajib diisi apabila Nama Calon Pemilik diisi.',
         ]);
 
         $user = auth()->user();
         $branchId = $user->isBranchScoped() ? $user->branch_id : ($validated['branch_id'] ?? null);
         $branch = $branchId ? Branch::find($branchId) : null;
 
-        $additionalData = $branch ? json_encode([
-            'branch_id'   => $branch->id,
-            'branch_code' => $branch->code,
-            'branch_name' => $branch->name,
-        ]) : null;
+        $ownerPreview = null;
+        if (!empty($validated['owner_name'])) {
+            $ownerPreview = [
+                'nama'       => trim($validated['owner_name']),
+                'id_anggota' => trim($validated['id_anggota']),
+                'telepon'    => !empty($validated['owner_phone']) ? trim($validated['owner_phone']) : null,
+                'catatan'    => !empty($validated['owner_notes']) ? trim($validated['owner_notes']) : null,
+            ];
+        }
+
+        $tokenMeta = [];
+        if ($branch) {
+            $tokenMeta['branch_id'] = $branch->id;
+            $tokenMeta['branch_code'] = $branch->code;
+            $tokenMeta['branch_name'] = $branch->name;
+        }
+        if ($ownerPreview) {
+            $tokenMeta['owner'] = $ownerPreview;
+        }
+
+        $additionalData = !empty($tokenMeta) ? json_encode($tokenMeta) : null;
+        $oneTimeOnly = ($ownerPreview !== null);
 
         try {
-            $token = $this->amapi->createEnrollmentToken($validated['policy_id'], 604800, $additionalData);
+            $token = $this->amapi->createEnrollmentToken(
+                $validated['policy_id'],
+                604800,
+                $additionalData,
+                $oneTimeOnly
+            );
 
             $qrPayload = $token->getQrCode();
             $base64Image = $this->qrService->generateBase64Qr($qrPayload, 320, 10);
@@ -61,10 +89,12 @@ class EnrollmentController extends Controller
             $tokenValue = $token->getValue();
 
             AuditLog::log('GENERATE_ENROLLMENT_TOKEN', 'Policy', $validated['policy_id'], [
-                'token_name'  => $tokenName,
-                'expiration'  => $expiration,
-                'branch_id'   => $branch?->id,
-                'branch_code' => $branch?->code,
+                'token_name'   => $tokenName,
+                'expiration'   => $expiration,
+                'branch_id'    => $branch?->id,
+                'branch_code'  => $branch?->code,
+                'owner_preset' => $ownerPreview,
+                'one_time'     => $oneTimeOnly,
             ]);
 
             $policy = Policy::where('policy_id', $validated['policy_id'])->first();
@@ -76,6 +106,8 @@ class EnrollmentController extends Controller
                 'expiration',
                 'policy',
                 'branch',
+                'ownerPreview',
+                'oneTimeOnly',
                 'qrPayload'
             ));
 
