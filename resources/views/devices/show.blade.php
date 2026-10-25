@@ -271,8 +271,8 @@
                                             <i class="bi bi-broadcast me-1"></i>Aktif Online (Terhubung)
                                         </span>
                                     @else
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border font-mono">
-                                            <i class="bi bi-clock-history me-1"></i>Offline (Terakhir lapor: {{ $device->last_status_report ? $device->last_status_report->diffForHumans() : 'Belum pernah' }})
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle font-mono">
+                                            <i class="bi bi-dash-circle-fill me-1"></i>Offline (Terakhir lapor: {{ $device->last_status_report ? $device->last_status_report->diffForHumans() : 'Belum pernah' }})
                                         </span>
                                     @endif
                                 </td>
@@ -396,8 +396,8 @@
                                             <i class="bi bi-circle-fill text-success me-1" style="font-size: 8px;"></i>Aktif Menggunakan (Online)
                                         </span>
                                     @else
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border font-mono">
-                                            <i class="bi bi-circle-fill text-secondary me-1" style="font-size: 8px;"></i>Tidak Aktif / Offline
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle font-mono">
+                                            <i class="bi bi-circle-fill text-danger me-1" style="font-size: 8px;"></i>Tidak Aktif / Offline
                                         </span>
                                     @endif
                                 </td>

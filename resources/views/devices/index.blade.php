@@ -156,9 +156,15 @@
                         {{ $devices->firstItem() + $index }}
                     </td>
                     <td>
-                        <!-- Baris 1: Indikator Online + Nama Pemilik -->
+                        <!-- Baris 1: Indikator Online (Hijau) / Offline (Merah) + Nama Pemilik -->
                         <div class="d-flex align-items-center gap-2">
-                            <span class="rounded-circle flex-shrink-0 {{ $device->state === 'DELETED' ? 'bg-secondary' : ($device->is_online ? 'bg-success' : 'bg-secondary') }}" style="width: 8px; height: 8px; display: inline-block;" title="{{ $device->online_status_label }}"></span>
+                            @if($device->state === 'DELETED')
+                                <span class="status-indicator-dot deleted" title="Perangkat Dihapus / Unenrolled"></span>
+                            @elseif($device->is_online)
+                                <span class="status-indicator-dot online" title="Status: Online (Terhubung Aktif)"></span>
+                            @else
+                                <span class="status-indicator-dot offline" title="Status: Offline (Tidak Terhubung)"></span>
+                            @endif
                             @if($device->owner)
                                 <span class="fw-semibold {{ $device->state === 'DELETED' ? 'text-muted' : 'text-dark' }}">{{ $device->owner->nama }}</span>
                             @else
@@ -266,12 +272,22 @@
                                 </a>
                             @endif
                         </div>
-                        <!-- Baris 2: Waktu Terakhir Lapor (WIB) & Status Online/Offline -->
-                        <div class="small font-mono mt-1 {{ $device->state === 'DELETED' ? 'text-muted' : ($device->is_online ? 'text-success' : 'text-muted') }}" style="font-size: 11px;" title="{{ $device->online_status_label }}">
-                            @if($device->last_status_report)
-                                <i class="bi bi-clock me-1"></i>{{ $device->last_status_report->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
+                        <!-- Baris 2: Status Online (Hijau) / Offline (Merah) & Waktu Terakhir Lapor (WIB) -->
+                        <div class="small font-mono mt-1 d-flex align-items-center gap-1" style="font-size: 11px;">
+                            @if($device->state === 'DELETED')
+                                <span class="text-secondary"><i class="bi bi-x-circle me-1"></i>Unenrolled</span>
+                            @elseif($device->is_online)
+                                <span class="text-success fw-bold" title="Aktif Online"><i class="bi bi-broadcast me-1"></i>Online</span>
                             @else
-                                <i class="bi bi-clock me-1"></i>{{ $device->state === 'DELETED' ? 'Unenrolled' : 'Belum Pernah Lapor' }}
+                                <span class="text-danger fw-bold" title="Offline / Tidak Terhubung"><i class="bi bi-dash-circle me-1"></i>Offline</span>
+                            @endif
+                            <span class="text-muted">•</span>
+                            @if($device->last_status_report)
+                                <span class="text-secondary" title="{{ $device->last_status_report->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i:s') }} WIB">
+                                    <i class="bi bi-clock me-1"></i>{{ $device->last_status_report->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
+                                </span>
+                            @else
+                                <span class="text-muted">Belum Pernah Lapor</span>
                             @endif
                         </div>
                     </td>

@@ -356,4 +356,29 @@ code, kbd, pre, samp,
   position: fixed !important;
 }
 
+/* High-Contrast Device Status Indicators (Green Online / Red Offline) */
+.status-indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.status-indicator-dot.online {
+  background-color: #10B981;
+  box-shadow: 0 0 0 2.5px rgba(16, 185, 129, 0.25), 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.status-indicator-dot.offline {
+  background-color: #EF4444;
+  box-shadow: 0 0 0 2.5px rgba(239, 68, 68, 0.2);
+}
+
+.status-indicator-dot.deleted {
+  background-color: #94A3B8;
+  box-shadow: none;
+}
+
 

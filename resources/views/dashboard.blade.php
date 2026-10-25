@@ -282,7 +282,16 @@
                         @endif
                     </td>
                     <td>
-                        <div class="fw-semibold text-dark">{{ $device->owner->nama ?? 'Belum Ditautkan' }}</div>
+                        <div class="d-flex align-items-center gap-2">
+                            @if($device->state === 'DELETED')
+                                <span class="status-indicator-dot deleted" title="Perangkat Dihapus / Unenrolled"></span>
+                            @elseif($device->is_online)
+                                <span class="status-indicator-dot online" title="Status: Online (Terhubung Aktif)"></span>
+                            @else
+                                <span class="status-indicator-dot offline" title="Status: Offline (Tidak Terhubung)"></span>
+                            @endif
+                            <div class="fw-semibold text-dark">{{ $device->owner->nama ?? 'Belum Ditautkan' }}</div>
+                        </div>
                         <div class="d-flex align-items-center gap-1 flex-wrap mt-1">
                             @if($device->branch)
                                 <span class="badge bg-teal-subtle text-teal border border-teal-subtle" style="font-size: 10.5px;">
@@ -329,11 +338,17 @@
                                 </span>
                             @endif
                         </div>
-                        <div class="small font-mono mt-1 {{ $device->is_online ? 'text-success' : 'text-muted' }}" style="font-size: 11px;">
-                            @if($device->last_status_report)
-                                <i class="bi bi-clock me-1"></i>{{ $device->last_status_report->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB
+                        <div class="small font-mono mt-1 d-flex align-items-center gap-1" style="font-size: 11px;">
+                            @if($device->is_online)
+                                <span class="text-success fw-bold"><i class="bi bi-broadcast me-1"></i>Online</span>
                             @else
-                                <i class="bi bi-clock me-1"></i>Belum Pernah Lapor
+                                <span class="text-danger fw-bold"><i class="bi bi-dash-circle me-1"></i>Offline</span>
+                            @endif
+                            <span class="text-muted">•</span>
+                            @if($device->last_status_report)
+                                <span class="text-secondary"><i class="bi bi-clock me-1"></i>{{ $device->last_status_report->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') }} WIB</span>
+                            @else
+                                <span class="text-muted">Belum Pernah Lapor</span>
                             @endif
                         </div>
                     </td>
