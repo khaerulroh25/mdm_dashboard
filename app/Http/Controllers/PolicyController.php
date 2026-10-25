@@ -87,10 +87,20 @@ class PolicyController extends Controller
             ];
         }
 
+        $frpEmailsRaw = $request->input('frp_admin_emails');
+        $frpEmails = [];
+        if (!empty($frpEmailsRaw)) {
+            $frpEmails = is_array($frpEmailsRaw) ? $frpEmailsRaw : array_filter(array_map('trim', explode(',', $frpEmailsRaw)));
+        }
+        if (empty($frpEmails)) {
+            $frpEmails = ['devicekontrol450@gmail.com'];
+        }
+
         $policyData = [
             'cameraDisabled'       => $request->boolean('camera_disabled'),
             'wifiConfigDisabled'   => $request->boolean('wifi_config_disabled'),
             'factoryResetDisabled' => $request->boolean('factory_reset_disabled'),
+            'frpAdminEmails'       => $frpEmails,
             'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
             'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
             'screenCaptureDisabled'=> $screenCapture,
@@ -202,10 +212,20 @@ class PolicyController extends Controller
             ];
         }
 
+        $frpEmailsRaw = $request->input('frp_admin_emails');
+        $frpEmails = [];
+        if (!empty($frpEmailsRaw)) {
+            $frpEmails = is_array($frpEmailsRaw) ? $frpEmailsRaw : array_filter(array_map('trim', explode(',', $frpEmailsRaw)));
+        }
+        if (empty($frpEmails)) {
+            $frpEmails = ['devicekontrol450@gmail.com'];
+        }
+
         $policyData = [
             'cameraDisabled'       => $request->boolean('camera_disabled'),
             'wifiConfigDisabled'   => $request->boolean('wifi_config_disabled'),
             'factoryResetDisabled' => $request->boolean('factory_reset_disabled'),
+            'frpAdminEmails'       => $frpEmails,
             'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
             'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
             'screenCaptureDisabled'=> $screenCapture,

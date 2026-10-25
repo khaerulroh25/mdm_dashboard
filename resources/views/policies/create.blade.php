@@ -116,6 +116,22 @@
                                 </div>
                             </div>
 
+                            <!-- Enterprise FRP Admin Emails -->
+                            <div class="col-12">
+                                <div class="bg-white p-3 rounded-3 border">
+                                    <label class="form-label fw-bold small text-dark d-flex align-items-center justify-content-between mb-1" for="frp_admin_emails">
+                                        <span><i class="bi bi-shield-lock-fill text-teal me-1"></i> Enterprise FRP Admin Emails (Kunci Setup Wizard Recovery)</span>
+                                        <span class="badge bg-teal bg-opacity-10 text-teal" style="font-size: 10px;">Anti Hard-Reset</span>
+                                    </label>
+                                    <input type="text" class="form-control form-control-sm" name="frp_admin_emails" id="frp_admin_emails"
+                                           value="{{ old('frp_admin_emails', 'devicekontrol450@gmail.com') }}"
+                                           placeholder="devicekontrol450@gmail.com">
+                                    <div class="text-secondary mt-1" style="font-size: 11px;">
+                                        Jika perangkat di-reset paksa lewat tombol Recovery/Hardware, HP akan terkunci otomatis dan <strong>hanya dapat dibuka</strong> dengan akun Google Enterprise ini.
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Safe Boot -->
                             <div class="col-12 col-md-6">
                                 <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">

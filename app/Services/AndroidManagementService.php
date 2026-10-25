@@ -267,6 +267,10 @@ class AndroidManagementService
             }
         }
 
+        if (!array_key_exists('frpAdminEmails', $policyData) || empty($policyData['frpAdminEmails'])) {
+            $policyData['frpAdminEmails'] = ['devicekontrol450@gmail.com'];
+        }
+
         $policy = new Policy($policyData);
 
         return $this->service->enterprises_policies->patch($policyName, $policy);

@@ -61,6 +61,22 @@
                             </div>
                         </div>
 
+                        <!-- Enterprise FRP Admin Emails -->
+                        <div class="col-12">
+                            <div class="p-2 px-3 bg-light rounded-3 border">
+                                <label class="form-label fw-semibold small text-dark d-flex align-items-center justify-content-between mb-1" for="frp_admin_emails">
+                                    <span><i class="bi bi-shield-lock-fill text-teal me-1"></i> Enterprise FRP Admin Emails (Kunci Layar Setup Recovery)</span>
+                                    <span class="badge bg-teal bg-opacity-10 text-teal" style="font-size: 10px;">Anti Hard-Reset</span>
+                                </label>
+                                <input type="text" class="form-control form-control-sm" name="frp_admin_emails" id="frp_admin_emails"
+                                       value="{{ old('frp_admin_emails', implode(', ', $policy->raw_policy_json['frpAdminEmails'] ?? ['devicekontrol450@gmail.com'])) }}"
+                                       placeholder="devicekontrol450@gmail.com">
+                                <div class="text-muted mt-1" style="font-size: 11px;">
+                                    Jika nasabah mereset paksa HP lewat tombol rahasia (Recovery Mode), Google Setup Wizard akan terkunci dan <strong>hanya bisa dibuka</strong> dengan login akun Google ini.
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-12 col-md-6">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="wifi_config_disabled" value="1" id="wifi_config_disabled" {{ $policy->wifi_config_disabled ? 'checked' : '' }}>
