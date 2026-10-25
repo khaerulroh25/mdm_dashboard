@@ -37,7 +37,7 @@ class EnrollmentController extends Controller
     public function generate(Request $request)
     {
         $validated = $request->validate([
-            'policy_id'   => ['required', 'string'],
+            'policy_id'   => ['nullable', 'string'],
             'branch_id'   => ['nullable', 'exists:branches,id'],
             'owner_name'  => ['nullable', 'string', 'max:150'],
             'id_anggota'  => ['nullable', 'string', 'max:100', 'required_with:owner_name'],
@@ -74,9 +74,11 @@ class EnrollmentController extends Controller
         $additionalData = !empty($tokenMeta) ? json_encode($tokenMeta) : null;
         $oneTimeOnly = ($ownerPreview !== null);
 
+        $policyId = !empty($validated['policy_id']) ? $validated['policy_id'] : 'Mode_kiosk';
+
         try {
             $token = $this->amapi->createEnrollmentToken(
-                $validated['policy_id'],
+                $policyId,
                 604800,
                 $additionalData,
                 $oneTimeOnly
@@ -88,7 +90,7 @@ class EnrollmentController extends Controller
             $tokenName = $token->getName();
             $tokenValue = $token->getValue();
 
-            AuditLog::log('GENERATE_ENROLLMENT_TOKEN', 'Policy', $validated['policy_id'], [
+            AuditLog::log('GENERATE_ENROLLMENT_TOKEN', 'Policy', $policyId, [
                 'token_name'   => $tokenName,
                 'expiration'   => $expiration,
                 'branch_id'    => $branch?->id,
@@ -97,7 +99,7 @@ class EnrollmentController extends Controller
                 'one_time'     => $oneTimeOnly,
             ]);
 
-            $policy = Policy::where('policy_id', $validated['policy_id'])->first();
+            $policy = Policy::where('policy_id', $policyId)->first();
 
             return view('enrollment.show', compact(
                 'base64Image',

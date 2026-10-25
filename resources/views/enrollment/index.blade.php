@@ -70,21 +70,31 @@
                                 @endif
                             </div>
 
-                            <!-- Policy Selection -->
+                            <!-- Policy Selection (Read-Only: Default Mode Kiosk) -->
                             <div class="mb-3">
-                                <label for="policy_id" class="form-label small fw-semibold text-secondary">
-                                    Pilih Kebijakan (Policy) Awal <span class="text-danger">*</span>
+                                <label class="form-label small fw-semibold text-secondary">
+                                    Kebijakan (Policy) Pendaftaran <span class="text-danger">*</span>
                                 </label>
-                                <select name="policy_id" id="policy_id" class="form-select @error('policy_id') is-invalid @enderror" required>
-                                    @foreach($policies as $policy)
-                                    <option value="{{ $policy->policy_id }}" {{ (old('policy_id') ?? 'Mode_kiosk') == $policy->policy_id ? 'selected' : '' }}>
-                                        {{ $policy->name }} ({{ $policy->policy_id }})
-                                    </option>
-                                    @endforeach
-                                </select>
-                                @error('policy_id')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
+                                <input type="hidden" name="policy_id" value="Mode_kiosk">
+                                <div class="p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="p-2 bg-teal-subtle text-teal rounded-3 border border-teal-subtle">
+                                            <i class="bi bi-shield-check fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark small">Mode Kiosk (Mode_kiosk)</div>
+                                            <span class="text-secondary" style="font-size: 11px;">
+                                                Kebijakan operasional standar (kamera aktif, Play Store blacklist, pelacak lokasi background).
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-mono">
+                                        <i class="bi bi-lock-fill me-1"></i>Terkunci Otomatis
+                                    </span>
+                                </div>
+                                <div class="form-text mt-1 text-muted" style="font-size: 11.5px;">
+                                    <i class="bi bi-info-circle me-1"></i>Kebijakan ini dikunci ke <strong>Mode Kiosk</strong> untuk mencegah kesalahan pemilihan konfigurasi oleh petugas lapangan.
+                                </div>
                             </div>
 
                             <!-- Optional Pre-Assigned Owner (Solusi 1: Auto-Link saat Scan QR) -->
