@@ -33,6 +33,10 @@ class User extends Authenticatable
                 'label' => 'Edit Data Pemilik & Nama Model',
                 'desc'  => 'Mengubah informasi kepemilikan perangkat (Owner) dan nama komersial model HP.',
             ],
+            'devices.release' => [
+                'label' => 'Lepaskan Perangkat (Lunas)',
+                'desc'  => 'Mengalihkan perangkat ke status Lunas, melepas pelacak lokasi & FRP tanpa menghapus data.',
+            ],
             'devices.delete' => [
                 'label' => 'Unenroll & Hapus Permanen (Superadmin Only)',
                 'desc'  => 'Mencabut pengelolaan perangkat (Unenroll) dan menghapus arsip dari database (Khusus Superadmin).',
@@ -91,6 +95,7 @@ class User extends Authenticatable
             'devices.sync',
             'devices.command',
             'devices.edit',
+            'devices.release',
             'devices.delete',
             'policies.view',
             'policies.manage',
@@ -107,6 +112,7 @@ class User extends Authenticatable
             'devices.sync',
             'devices.command',
             'devices.edit',
+            'devices.release',
             'policies.view',
             'apps.view',
             'apps.create',
