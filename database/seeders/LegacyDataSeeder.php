@@ -26,7 +26,7 @@ class LegacyDataSeeder extends Seeder
             ['code' => 'RDK'],
             [
                 'name'          => 'Cabang Rengasdengklok',
-                'contact_phone' => '0858-1406-4274',
+                'contact_phone' => '0821-1895-4552',
                 'address'       => 'Rengasdengklok, Karawang',
                 'is_active'     => true,
             ]
@@ -98,7 +98,7 @@ class LegacyDataSeeder extends Seeder
         // 2. Remove unused 'default' policy and ensure primary policies exist
         Policy::where('policy_id', 'default')->delete();
 
-        Policy::firstOrCreate(
+        Policy::updateOrCreate(
             ['policy_id' => 'Mode_kiosk'],
             [
                 'name' => 'Mode Kiosk',
@@ -109,12 +109,17 @@ class LegacyDataSeeder extends Seeder
                 'install_apps_disabled' => false,
                 'allow_untrusted_apps' => true,
                 'safe_boot_disabled' => true,
+                'kiosk_status_bar_disabled' => false,
+                'kiosk_settings_blocked' => false,
+                'kiosk_navigation_disabled' => false,
+                'screen_capture_disabled' => false,
+                'keyguard_disabled' => false,
                 'location_mode' => 'HIGH_ACCURACY',
                 'play_store_mode' => 'BLACKLIST',
             ]
         );
 
-        Policy::firstOrCreate(
+        Policy::updateOrCreate(
             ['policy_id' => 'Gagal_bayar'],
             [
                 'name' => 'Gagal Bayar',
@@ -125,6 +130,11 @@ class LegacyDataSeeder extends Seeder
                 'install_apps_disabled' => false,
                 'allow_untrusted_apps' => false,
                 'safe_boot_disabled' => true,
+                'kiosk_status_bar_disabled' => true,
+                'kiosk_settings_blocked' => true,
+                'kiosk_navigation_disabled' => true,
+                'screen_capture_disabled' => true,
+                'keyguard_disabled' => true,
                 'location_mode' => 'HIGH_ACCURACY',
                 'play_store_mode' => 'WHITELIST',
             ]

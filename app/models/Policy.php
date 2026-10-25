@@ -21,6 +21,11 @@ class Policy extends Model
         'install_apps_disabled',
         'allow_untrusted_apps',
         'safe_boot_disabled',
+        'kiosk_status_bar_disabled',
+        'kiosk_settings_blocked',
+        'kiosk_navigation_disabled',
+        'screen_capture_disabled',
+        'keyguard_disabled',
         'location_mode',
         'play_store_mode',
         'raw_policy_json',
@@ -35,6 +40,11 @@ class Policy extends Model
             'install_apps_disabled' => 'boolean',
             'allow_untrusted_apps' => 'boolean',
             'safe_boot_disabled' => 'boolean',
+            'kiosk_status_bar_disabled' => 'boolean',
+            'kiosk_settings_blocked' => 'boolean',
+            'kiosk_navigation_disabled' => 'boolean',
+            'screen_capture_disabled' => 'boolean',
+            'keyguard_disabled' => 'boolean',
             'raw_policy_json' => 'array',
         ];
     }
