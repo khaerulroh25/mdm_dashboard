@@ -301,7 +301,12 @@ class AndroidManagementService
 
         if ($packageName === 'com.amanin.mdm.locationagent') {
             $entry['autoUpdateMode'] = 'AUTO_UPDATE_HIGH_PRIORITY';
-            $entry['userControlSettings'] = 'USER_CONTROL_DISALLOWED';
+            if ($installType !== 'KIOSK') {
+                $entry['userControlSettings'] = 'USER_CONTROL_DISALLOWED';
+            }
+            $entry['managedConfiguration'] = [
+                'kiosk_lock_mode' => ($installType === 'KIOSK'),
+            ];
             $entry['permissionGrants'] = [
                 ['permission' => 'android.permission.ACCESS_FINE_LOCATION', 'policy' => 'GRANT'],
                 ['permission' => 'android.permission.ACCESS_COARSE_LOCATION', 'policy' => 'GRANT'],
@@ -333,9 +338,14 @@ class AndroidManagementService
         $newApplications = [];
         foreach ($applications as $app) {
             $pkg = is_array($app) ? ($app['packageName'] ?? '') : $app->getPackageName();
+            $existingType = is_array($app) ? ($app['installType'] ?? '') : $app->getInstallType();
+
             if ($pkg === $packageName) {
                 $newApplications[] = $this->buildApplicationPolicyEntry($packageName, $installType);
                 $updated = true;
+            } elseif ($installType === 'KIOSK' && $existingType === 'KIOSK') {
+                // Only one KIOSK app is allowed per policy in Google AMAPI; skip the old KIOSK web app
+                continue;
             } else {
                 $newApplications[] = is_array($app) ? $app : json_decode(json_encode($app), true);
             }

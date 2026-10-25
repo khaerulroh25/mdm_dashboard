@@ -91,14 +91,23 @@ class TelemetryController extends Controller
         }
 
         $device->update($updateData);
+        $device->loadMissing(['owner', 'branch']);
+
+        $isLocked = in_array($device->policy_id, ['Gagal_bayar', 'lock_device'], true);
 
         return response()->json([
-            'success'    => true,
-            'matched'    => true,
-            'device_id'  => $device->short_id,
-            'owner_name' => $device->owner->nama ?? 'Terdaftar',
-            'model'      => $device->human_model_name,
-            'updated_at' => now()->timezone('Asia/Jakarta')->format('d M Y, H:i:s') . ' WIB',
+            'success'        => true,
+            'matched'        => true,
+            'device_id'      => $device->short_id,
+            'owner_name'     => $device->owner->nama ?? 'Nasabah Terdaftar',
+            'member_id'      => $device->owner->id_anggota ?? '-',
+            'model'          => $device->human_model_name,
+            'policy_id'      => $device->policy_id ?? 'Mode_kiosk',
+            'is_locked'      => $isLocked,
+            'branch_name'    => $device->branch->name ?? 'Cabang Rengasdengklok',
+            'branch_phone'   => $device->branch->contact_phone ?: '0858-1406-4274',
+            'branch_address' => $device->branch->address ?? '',
+            'updated_at'     => now()->timezone('Asia/Jakarta')->format('d M Y, H:i:s') . ' WIB',
         ]);
     }
 
