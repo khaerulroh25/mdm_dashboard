@@ -147,7 +147,7 @@ class DeviceController extends Controller
             $params['newPassword'] = $validated['new_password'];
             $params['resetPasswordFlags'] = ['LOCK_NOW', 'REQUIRE_ENTRY'];
         } elseif ($commandType === 'START_LOST_MODE') {
-            $defaultPhone = $device->branch?->contact_phone ?: '0858-1406-4274';
+            $defaultPhone = $device->branch?->contact_phone ?: '0821-1895-4552';
             $params['lostMessage'] = $validated['lost_message'] ?? 'Perangkat ini terkunci karena status tagihan/kehilangan. Hubungi Admin.';
             $params['lostPhoneNumber'] = $validated['lost_phone'] ?? $defaultPhone;
         }

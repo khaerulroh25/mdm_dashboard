@@ -104,9 +104,9 @@ class TelemetryController extends Controller
             'model'          => $device->human_model_name,
             'policy_id'      => $device->policy_id ?? 'Mode_kiosk',
             'is_locked'      => $isLocked,
-            'branch_name'    => $device->branch->name ?? 'Cabang Rengasdengklok',
-            'branch_phone'   => $device->branch->contact_phone ?: '0858-1406-4274',
-            'branch_address' => $device->branch->address ?? '',
+            'branch_name'    => $device->branch?->name ?? 'Cabang Rengasdengklok',
+            'branch_phone'   => $device->branch?->contact_phone ?: '0821-1895-4552',
+            'branch_address' => $device->branch?->address ?? 'Rengasdengklok, Karawang',
             'updated_at'     => now()->timezone('Asia/Jakarta')->format('d M Y, H:i:s') . ' WIB',
         ]);
     }

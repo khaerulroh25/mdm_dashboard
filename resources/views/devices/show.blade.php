@@ -673,7 +673,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="lost_phone" class="form-label small fw-semibold">Nomor Telepon Darurat Admin</label>
-                        <input type="text" name="lost_phone" id="lost_phone" class="form-control font-mono" value="{{ $device->branch?->contact_phone ?: '0858-1406-4274' }}" required>
+                        <input type="text" name="lost_phone" id="lost_phone" class="form-control font-mono" value="{{ $device->branch?->contact_phone ?: '0821-1895-4552' }}" required>
                     </div>
                 </div>
                 <div class="modal-footer border-top bg-light">
