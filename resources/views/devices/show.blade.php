@@ -70,7 +70,7 @@
             @endif
         </div>
         <div class="d-flex flex-wrap gap-2">
-            @if($device->policy_id !== 'Lunas' && auth()->user()->hasPermission('devices.command'))
+            @if($device->policy_id !== 'Lunas' && auth()->user()->hasPermission('devices.release'))
             <!-- Tombol Lepaskan Perangkat (Lunas) -->
             <button type="button" class="btn btn-sm btn-success d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#releaseLunasModal">
                 <i class="bi bi-patch-check-fill"></i>
