@@ -38,12 +38,12 @@ class TelemetryController extends Controller
         $lat = (float) $validated['latitude'];
         $lng = (float) $validated['longitude'];
 
-        // Ignore overseas Google Play automated pre-launch test lab coordinates (outside Indonesia)
-        if ($lat < -12.0 || $lat > 7.5 || $lng < 94.0 || $lng > 142.0) {
+        // Ignore only Google Play automated pre-launch crawler bot (Mountain View, CA: ~37.42, -122.08)
+        if (abs($lat - 37.42) < 0.2 && abs($lng - (-122.08)) < 0.2) {
             return response()->json([
                 'success' => false,
                 'matched' => false,
-                'message' => 'Koordinat di luar wilayah operasional Indonesia diabaikan.',
+                'message' => 'Koordinat automated Google Play test lab diabaikan.',
             ], 422);
         }
 
