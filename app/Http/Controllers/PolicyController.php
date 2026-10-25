@@ -27,7 +27,10 @@ class PolicyController extends Controller
         $policies = Policy::select([
             'id', 'policy_id', 'name', 'description', 'camera_disabled',
             'factory_reset_disabled', 'wifi_config_disabled', 'install_apps_disabled',
-            'allow_untrusted_apps', 'safe_boot_disabled', 'location_mode', 'play_store_mode',
+            'allow_untrusted_apps', 'safe_boot_disabled',
+            'kiosk_status_bar_disabled', 'kiosk_settings_blocked', 'kiosk_navigation_disabled',
+            'screen_capture_disabled', 'keyguard_disabled',
+            'location_mode', 'play_store_mode',
             'created_at', 'updated_at'
         ])->withCount('devices')->latest()->get();
 
@@ -57,12 +60,32 @@ class PolicyController extends Controller
             'install_apps_disabled' => ['nullable', 'boolean'],
             'allow_untrusted_apps'  => ['nullable', 'boolean'],
             'safe_boot_disabled'    => ['nullable', 'boolean'],
+            'kiosk_status_bar_disabled' => ['nullable', 'boolean'],
+            'kiosk_settings_blocked'    => ['nullable', 'boolean'],
+            'kiosk_navigation_disabled' => ['nullable', 'boolean'],
+            'screen_capture_disabled'   => ['nullable', 'boolean'],
+            'keyguard_disabled'         => ['nullable', 'boolean'],
             'location_mode'         => ['nullable', 'string', 'in:HIGH_ACCURACY,SENSORS_ONLY,BATTERY_SAVING,OFF'],
             'play_store_mode'       => ['nullable', 'string', 'in:WHITELIST,BLACKLIST'],
         ]);
 
         $playStoreMode = $request->input('play_store_mode', 'WHITELIST');
         $allowUntrusted = $request->boolean('allow_untrusted_apps');
+        $kioskStatusBar = $request->boolean('kiosk_status_bar_disabled');
+        $kioskSettings  = $request->boolean('kiosk_settings_blocked');
+        $kioskNav       = $request->boolean('kiosk_navigation_disabled');
+        $screenCapture  = $request->boolean('screen_capture_disabled');
+        $keyguard       = $request->boolean('keyguard_disabled');
+
+        $kioskCustomization = null;
+        if ($kioskStatusBar || $kioskSettings || $kioskNav) {
+            $kioskCustomization = [
+                'statusBar'            => $kioskStatusBar ? 'NOTIFICATIONS_AND_SYSTEM_INFO_DISABLED' : 'STATUS_BAR_UNSPECIFIED',
+                'deviceSettings'       => $kioskSettings ? 'SETTINGS_ACCESS_BLOCKED' : 'DEVICE_SETTINGS_UNSPECIFIED',
+                'systemNavigation'     => $kioskNav ? 'NAVIGATION_DISABLED' : 'SYSTEM_NAVIGATION_UNSPECIFIED',
+                'systemErrorWarnings'  => 'ERROR_AND_WARNINGS_MUTED',
+            ];
+        }
 
         $policyData = [
             'cameraDisabled'       => $request->boolean('camera_disabled'),
@@ -70,6 +93,8 @@ class PolicyController extends Controller
             'factoryResetDisabled' => $request->boolean('factory_reset_disabled'),
             'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
             'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
+            'screenCaptureDisabled'=> $screenCapture,
+            'keyguardDisabled'     => $keyguard,
             'locationMode'         => $request->input('location_mode') ?: null,
             'playStoreMode'        => $playStoreMode,
             'modifyAccountsDisabled' => $playStoreMode === 'BLACKLIST' ? false : true,
@@ -86,6 +111,10 @@ class PolicyController extends Controller
             ],
         ];
 
+        if ($kioskCustomization) {
+            $policyData['kioskCustomization'] = $kioskCustomization;
+        }
+
         try {
             $this->amapi->createOrPatchPolicy($validated['policy_id'], $policyData);
 
@@ -99,6 +128,11 @@ class PolicyController extends Controller
                 'install_apps_disabled' => $request->boolean('install_apps_disabled'),
                 'allow_untrusted_apps'  => $allowUntrusted,
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
+                'kiosk_status_bar_disabled' => $kioskStatusBar,
+                'kiosk_settings_blocked'    => $kioskSettings,
+                'kiosk_navigation_disabled' => $kioskNav,
+                'screen_capture_disabled'   => $screenCapture,
+                'keyguard_disabled'         => $keyguard,
                 'location_mode'         => $request->input('location_mode') ?: null,
                 'play_store_mode'       => $playStoreMode,
                 'raw_policy_json'       => $policyData,
@@ -141,12 +175,32 @@ class PolicyController extends Controller
             'install_apps_disabled' => ['nullable', 'boolean'],
             'allow_untrusted_apps'  => ['nullable', 'boolean'],
             'safe_boot_disabled'    => ['nullable', 'boolean'],
+            'kiosk_status_bar_disabled' => ['nullable', 'boolean'],
+            'kiosk_settings_blocked'    => ['nullable', 'boolean'],
+            'kiosk_navigation_disabled' => ['nullable', 'boolean'],
+            'screen_capture_disabled'   => ['nullable', 'boolean'],
+            'keyguard_disabled'         => ['nullable', 'boolean'],
             'location_mode'         => ['nullable', 'string', 'in:HIGH_ACCURACY,SENSORS_ONLY,BATTERY_SAVING,OFF'],
             'play_store_mode'       => ['nullable', 'string', 'in:WHITELIST,BLACKLIST'],
         ]);
 
-        $playStoreMode = $request->input('play_store_mode', 'WHITELIST');
+        $playStoreMode  = $request->input('play_store_mode', 'WHITELIST');
         $allowUntrusted = $request->boolean('allow_untrusted_apps');
+        $kioskStatusBar = $request->boolean('kiosk_status_bar_disabled');
+        $kioskSettings  = $request->boolean('kiosk_settings_blocked');
+        $kioskNav       = $request->boolean('kiosk_navigation_disabled');
+        $screenCapture  = $request->boolean('screen_capture_disabled');
+        $keyguard       = $request->boolean('keyguard_disabled');
+
+        $kioskCustomization = null;
+        if ($kioskStatusBar || $kioskSettings || $kioskNav) {
+            $kioskCustomization = [
+                'statusBar'            => $kioskStatusBar ? 'NOTIFICATIONS_AND_SYSTEM_INFO_DISABLED' : 'STATUS_BAR_UNSPECIFIED',
+                'deviceSettings'       => $kioskSettings ? 'SETTINGS_ACCESS_BLOCKED' : 'DEVICE_SETTINGS_UNSPECIFIED',
+                'systemNavigation'     => $kioskNav ? 'NAVIGATION_DISABLED' : 'SYSTEM_NAVIGATION_UNSPECIFIED',
+                'systemErrorWarnings'  => 'ERROR_AND_WARNINGS_MUTED',
+            ];
+        }
 
         $policyData = [
             'cameraDisabled'       => $request->boolean('camera_disabled'),
@@ -154,6 +208,8 @@ class PolicyController extends Controller
             'factoryResetDisabled' => $request->boolean('factory_reset_disabled'),
             'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
             'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
+            'screenCaptureDisabled'=> $screenCapture,
+            'keyguardDisabled'     => $keyguard,
             'locationMode'         => $request->input('location_mode') ?: null,
             'playStoreMode'        => $playStoreMode,
             'modifyAccountsDisabled' => $playStoreMode === 'BLACKLIST' ? false : true,
@@ -170,6 +226,10 @@ class PolicyController extends Controller
             ],
         ];
 
+        if ($kioskCustomization) {
+            $policyData['kioskCustomization'] = $kioskCustomization;
+        }
+
         try {
             $this->amapi->createOrPatchPolicy($policy->policy_id, $policyData);
 
@@ -182,6 +242,11 @@ class PolicyController extends Controller
                 'install_apps_disabled' => $request->boolean('install_apps_disabled'),
                 'allow_untrusted_apps'  => $allowUntrusted,
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
+                'kiosk_status_bar_disabled' => $kioskStatusBar,
+                'kiosk_settings_blocked'    => $kioskSettings,
+                'kiosk_navigation_disabled' => $kioskNav,
+                'screen_capture_disabled'   => $screenCapture,
+                'keyguard_disabled'         => $keyguard,
                 'location_mode'         => $request->input('location_mode') ?: null,
                 'play_store_mode'       => $playStoreMode,
                 'raw_policy_json'       => array_merge($policy->raw_policy_json ?? [], $policyData),

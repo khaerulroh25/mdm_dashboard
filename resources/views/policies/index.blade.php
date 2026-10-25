@@ -73,7 +73,12 @@
                                     <i class="bi bi-file-earmark-arrow-down"></i> Allow APK
                                 </span>
                             @endif
-                            @if(!$policy->camera_disabled && !$policy->factory_reset_disabled && !$policy->wifi_config_disabled && !$policy->allow_untrusted_apps)
+                            @if($policy->kiosk_status_bar_disabled || $policy->kiosk_settings_blocked)
+                                <span class="badge bg-danger text-white small" title="Strict Kiosk Lockdown Aktif (Status Bar & Settings Diblokir)">
+                                    <i class="bi bi-lock-fill"></i> Strict Kiosk
+                                </span>
+                            @endif
+                            @if(!$policy->camera_disabled && !$policy->factory_reset_disabled && !$policy->wifi_config_disabled && !$policy->allow_untrusted_apps && !$policy->kiosk_status_bar_disabled)
                                 <span class="badge bg-light text-secondary border small">Standar</span>
                             @endif
                         </div>

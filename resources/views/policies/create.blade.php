@@ -180,6 +180,71 @@
                                     <div class="text-secondary" style="font-size: 11px;">Pengguna dapat memasang file APK secara manual (misal: APK ujian/CBT atau aplikasi custom internal).</div>
                                 </div>
                             </div>
+
+                            <!-- Kiosk Status Bar -->
+                            <div class="col-12 col-md-6">
+                                <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox" name="kiosk_status_bar_disabled" value="1" id="kiosk_status_bar_disabled" {{ old('kiosk_status_bar_disabled') ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold small text-dark" for="kiosk_status_bar_disabled">
+                                            Kunci Bilah Notifikasi Atas
+                                        </label>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 11px;">Mencegah swipe-down bilah status bar dan quick settings.</div>
+                                </div>
+                            </div>
+
+                            <!-- Kiosk Settings -->
+                            <div class="col-12 col-md-6">
+                                <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox" name="kiosk_settings_blocked" value="1" id="kiosk_settings_blocked" {{ old('kiosk_settings_blocked') ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold small text-dark" for="kiosk_settings_blocked">
+                                            Blokir Menu Setelan HP
+                                        </label>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 11px;">Memblokir akses ke aplikasi Settings bawaan HP.</div>
+                                </div>
+                            </div>
+
+                            <!-- Kiosk Nav -->
+                            <div class="col-12 col-md-6">
+                                <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox" name="kiosk_navigation_disabled" value="1" id="kiosk_navigation_disabled" {{ old('kiosk_navigation_disabled') ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold small text-dark" for="kiosk_navigation_disabled">
+                                            Matikan Tombol Navigasi
+                                        </label>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 11px;">Menonaktifkan tombol Home, Back, dan Recent Apps.</div>
+                                </div>
+                            </div>
+
+                            <!-- Screen Capture -->
+                            <div class="col-12 col-md-6">
+                                <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox" name="screen_capture_disabled" value="1" id="screen_capture_disabled" {{ old('screen_capture_disabled') ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold small text-dark" for="screen_capture_disabled">
+                                            Cegah Screenshot
+                                        </label>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 11px;">Mencegah tangkapan layar dan rekaman layar.</div>
+                                </div>
+                            </div>
+
+                            <!-- Keyguard -->
+                            <div class="col-12 col-md-6">
+                                <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox" name="keyguard_disabled" value="1" id="keyguard_disabled" {{ old('keyguard_disabled') ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold small text-dark" for="keyguard_disabled">
+                                            Bypass Layar Kunci (Keyguard)
+                                        </label>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 11px;">Langsung membuka tampilan Kiosk tanpa lock screen bawaan.</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

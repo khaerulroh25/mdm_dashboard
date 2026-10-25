@@ -129,6 +129,73 @@
                         </div>
                     </div>
 
+                    <h6 class="fw-bold text-danger border-bottom pb-2 mb-3 mt-4 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-lock-fill text-danger"></i>
+                        <span>Proteksi Kiosk & Lock Screen (Gagal Bayar / Lost Mode)</span>
+                    </h6>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="kiosk_status_bar_disabled" value="1" id="kiosk_status_bar_disabled" {{ $policy->kiosk_status_bar_disabled ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="kiosk_status_bar_disabled">
+                                    Kunci Bilah Notifikasi Atas (Status Bar)
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Mencegah pengguna menarik layar dari atas ke bawah (swipe-down) untuk melihat notifikasi atau quick settings.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="kiosk_settings_blocked" value="1" id="kiosk_settings_blocked" {{ $policy->kiosk_settings_blocked ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="kiosk_settings_blocked">
+                                    Blokir Akses Menu Setelan (Settings HP)
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Memblokir akses ke aplikasi Pengaturan / Settings HP dalam mode kiosk.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="kiosk_navigation_disabled" value="1" id="kiosk_navigation_disabled" {{ $policy->kiosk_navigation_disabled ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="kiosk_navigation_disabled">
+                                    Matikan Tombol Navigasi Sistem
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Menonaktifkan tombol Home, Back, dan Recent Apps bawaan Android.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="screen_capture_disabled" value="1" id="screen_capture_disabled" {{ $policy->screen_capture_disabled ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="screen_capture_disabled">
+                                    Cegah Tangkapan Layar (Screenshot)
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Memblokir tangkapan layar (screenshot) dan perekaman layar HP.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="keyguard_disabled" value="1" id="keyguard_disabled" {{ $policy->keyguard_disabled ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="keyguard_disabled">
+                                    Bypass Layar Kunci Ganda (Keyguard)
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Melewati lock screen bawaan HP sehingga langsung menampilkan layar kiosk saat tombol daya ditekan.
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-end border-top pt-3">
                         <button type="submit" class="btn btn-primary btn-sm px-4">
                             <i class="bi bi-save me-1"></i> Perbarui Konfigurasi
