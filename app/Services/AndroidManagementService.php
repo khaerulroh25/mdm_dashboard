@@ -134,7 +134,7 @@ class AndroidManagementService
      * Issue remote command to a device.
      * Supported types: LOCK, REBOOT, RESET_PASSWORD, START_LOST_MODE, STOP_LOST_MODE
      */
-    public function issueCommand(string $deviceId, string $type, array $params = []): Command
+    public function issueCommand(string $deviceId, string $type, array $params = [])
     {
         $deviceName = $this->formatDeviceName($deviceId);
         $commandData = ['type' => strtoupper($type)];
@@ -215,6 +215,7 @@ class AndroidManagementService
     public function defaultStatusReportingSettings(): array
     {
         return [
+            'applicationReportsEnabled' => true,
             'softwareInfoEnabled' => true,
             'networkInfoEnabled' => true,
             'hardwareStatusEnabled' => true,
@@ -287,6 +288,34 @@ class AndroidManagementService
     }
 
     /**
+     * Build the ApplicationPolicy entry for a given package, including explicit
+     * permission grants & tamper protection for the Amanin Location Agent.
+     */
+    public function buildApplicationPolicyEntry(string $packageName, string $installType = 'AVAILABLE'): array
+    {
+        $entry = [
+            'packageName' => $packageName,
+            'installType' => $installType,
+            'defaultPermissionPolicy' => 'GRANT',
+        ];
+
+        if ($packageName === 'com.amanin.mdm.locationagent') {
+            $entry['autoUpdateMode'] = 'AUTO_UPDATE_HIGH_PRIORITY';
+            $entry['userControlSettings'] = 'USER_CONTROL_DISALLOWED';
+            $entry['permissionGrants'] = [
+                ['permission' => 'android.permission.ACCESS_FINE_LOCATION', 'policy' => 'GRANT'],
+                ['permission' => 'android.permission.ACCESS_COARSE_LOCATION', 'policy' => 'GRANT'],
+                ['permission' => 'android.permission.ACCESS_BACKGROUND_LOCATION', 'policy' => 'GRANT'],
+                ['permission' => 'android.permission.READ_PHONE_STATE', 'policy' => 'GRANT'],
+                ['permission' => 'android.permission.READ_PHONE_NUMBERS', 'policy' => 'GRANT'],
+                ['permission' => 'android.permission.POST_NOTIFICATIONS', 'policy' => 'GRANT'],
+            ];
+        }
+
+        return $entry;
+    }
+
+    /**
      * Add or update an app in a policy's application whitelist.
      */
     public function addAppToPolicy(string $policyId, string $packageName, string $installType = 'AVAILABLE'): Policy
@@ -305,11 +334,7 @@ class AndroidManagementService
         foreach ($applications as $app) {
             $pkg = is_array($app) ? ($app['packageName'] ?? '') : $app->getPackageName();
             if ($pkg === $packageName) {
-                $newApplications[] = [
-                    'packageName' => $packageName,
-                    'installType' => $installType,
-                    'defaultPermissionPolicy' => 'GRANT',
-                ];
+                $newApplications[] = $this->buildApplicationPolicyEntry($packageName, $installType);
                 $updated = true;
             } else {
                 $newApplications[] = is_array($app) ? $app : json_decode(json_encode($app), true);
@@ -317,17 +342,20 @@ class AndroidManagementService
         }
 
         if (!$updated) {
-            $newApplications[] = [
-                'packageName' => $packageName,
-                'installType' => $installType,
-                'defaultPermissionPolicy' => 'GRANT',
-            ];
+            $newApplications[] = $this->buildApplicationPolicyEntry($packageName, $installType);
         }
 
         $policy->setApplications($newApplications);
+        $updateMask = ['applications'];
+
+        if ($packageName === 'com.amanin.mdm.locationagent') {
+            $policy->setLocationMode('LOCATION_ENFORCED');
+            $updateMask[] = 'locationMode';
+        }
+
         $policyName = $this->formatPolicyName($policyId);
         return $this->service->enterprises_policies->patch($policyName, $policy, [
-            'updateMask' => 'applications',
+            'updateMask' => implode(',', $updateMask),
         ]);
     }
 

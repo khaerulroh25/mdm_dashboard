@@ -22,6 +22,11 @@ class Device extends Model
         'serial_number',
         'imei',
         'android_version',
+        'latitude',
+        'longitude',
+        'location_accuracy',
+        'location_updated_at',
+        'agent_android_id',
         'state',
         'policy_id',
         'network_info',
@@ -34,6 +39,10 @@ class Device extends Model
     protected function casts(): array
     {
         return [
+            'latitude' => 'float',
+            'longitude' => 'float',
+            'location_accuracy' => 'float',
+            'location_updated_at' => 'datetime',
             'network_info' => 'array',
             'memory_info' => 'array',
             'raw_device_data' => 'array',
@@ -191,6 +200,94 @@ class Device extends Model
     }
 
     /**
+     * Normalize Indonesian phone number for display (e.g. +62857... -> 0857...).
+     */
+    public static function formatLocalPhone(?string $phone): ?string
+    {
+        if (empty($phone)) {
+            return null;
+        }
+        $trimmed = trim($phone);
+        if (str_starts_with($trimmed, '+62')) {
+            return '0' . substr($trimmed, 3);
+        }
+        if (str_starts_with($trimmed, '62') && strlen($trimmed) >= 10) {
+            return '0' . substr($trimmed, 2);
+        }
+        return $trimmed;
+    }
+
+    /**
+     * Format phone number for WhatsApp link (628...).
+     */
+    public static function formatWhatsappPhone(?string $phone): ?string
+    {
+        if (empty($phone)) {
+            return null;
+        }
+        $digits = preg_replace('/[^0-9]/', '', $phone);
+        if (empty($digits)) {
+            return null;
+        }
+        if (str_starts_with($digits, '0')) {
+            return '62' . substr($digits, 1);
+        }
+        return $digits;
+    }
+
+    /**
+     * Extract installed SIM cards info from network_info / raw_device_data.telephonyInfos.
+     */
+    public function getSimCardsAttribute(): array
+    {
+        $telephony = $this->network_info['telephonyInfos']
+            ?? $this->raw_device_data['networkInfo']['telephonyInfos']
+            ?? [];
+
+        if (!is_array($telephony) || empty($telephony)) {
+            return [];
+        }
+
+        $fallbackOperator = $this->network_info['networkOperatorName']
+            ?? $this->raw_device_data['networkInfo']['networkOperatorName']
+            ?? null;
+
+        $sims = [];
+        foreach (array_values($telephony) as $idx => $sim) {
+            $rawPhone = !empty($sim['phoneNumber']) ? trim($sim['phoneNumber']) : null;
+            $localPhone = self::formatLocalPhone($rawPhone);
+            $waPhone = self::formatWhatsappPhone($rawPhone);
+            $carrier = !empty($sim['carrierName']) ? trim($sim['carrierName']) : $fallbackOperator;
+
+            $sims[] = [
+                'slot'             => $idx + 1,
+                'raw_phone'        => $rawPhone,
+                'phone_number'     => $localPhone,
+                'whatsapp_phone'   => $waPhone,
+                'carrier_name'     => $carrier ?: 'Operator Seluler',
+                'icc_id'           => $sim['iccId'] ?? null,
+                'activation_state' => $sim['activationState'] ?? null,
+            ];
+        }
+
+        return $sims;
+    }
+
+    /**
+     * Get list of non-empty local phone numbers detected from installed SIM cards.
+     */
+    public function getDetectedPhoneNumbersAttribute(): array
+    {
+        $numbers = [];
+        foreach ($this->sim_cards as $sim) {
+            if (!empty($sim['phone_number'])) {
+                $numbers[] = $sim['phone_number'];
+            }
+        }
+        return array_values(array_unique($numbers));
+    }
+
+    /**
      * Get management mode from raw_device_data (e.g. DEVICE_OWNER or PROFILE_OWNER).
      */
     public function getManagementModeAttribute(): string
@@ -229,14 +326,79 @@ class Device extends Model
     {
         $events = $this->raw_device_data['powerManagementEvents'] ?? null;
         if (!empty($events) && is_array($events)) {
-            for ($i = count($events) - 1; $i >= 0; $i--) {
-                if (isset($events[$i]['batteryLevel']) && $events[$i]['batteryLevel'] !== null) {
-                    return round((float)$events[$i]['batteryLevel'], 1);
+            $latestLevel = null;
+            $latestTimestamp = -1;
+
+            foreach ($events as $event) {
+                if (isset($event['batteryLevel']) && $event['batteryLevel'] !== null) {
+                    $ts = !empty($event['createTime']) ? strtotime($event['createTime']) : 0;
+                    if ($ts >= $latestTimestamp) {
+                        $latestTimestamp = $ts;
+                        $latestLevel = round((float)$event['batteryLevel'], 1);
+                    }
                 }
+            }
+
+            if ($latestLevel !== null) {
+                return $latestLevel;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Get Bootstrap Icon class based on battery level percentage.
+     */
+    public function getBatteryIconAttribute(): string
+    {
+        $level = $this->battery_level;
+        if ($level === null) {
+            return 'bi-battery';
+        }
+        if ($level >= 75) {
+            return 'bi-battery-full';
+        }
+        if ($level >= 25) {
+            return 'bi-battery-half';
+        }
+        return 'bi-battery';
+    }
+
+    /**
+     * Get semantic text color class based on battery level percentage.
+     */
+    public function getBatteryColorClassAttribute(): string
+    {
+        $level = $this->battery_level;
+        if ($level === null) {
+            return 'text-muted';
+        }
+        if ($level >= 50) {
+            return 'text-success';
+        }
+        if ($level >= 20) {
+            return 'text-warning';
+        }
+        return 'text-danger';
+    }
+
+    /**
+     * Get semantic badge classes based on battery level percentage.
+     */
+    public function getBatteryBadgeClassAttribute(): string
+    {
+        $level = $this->battery_level;
+        if ($level === null) {
+            return 'bg-light text-muted border';
+        }
+        if ($level >= 50) {
+            return 'bg-success bg-opacity-10 text-success border border-success-subtle';
+        }
+        if ($level >= 20) {
+            return 'bg-warning bg-opacity-10 text-warning border border-warning-subtle';
+        }
+        return 'bg-danger bg-opacity-10 text-danger border border-danger-subtle';
     }
 
     /**
@@ -265,6 +427,25 @@ class Device extends Model
         }
 
         return 'Belum Pernah Lapor';
+    }
+
+    /**
+     * Check if device has valid GPS coordinates recorded.
+     */
+    public function getHasLocationAttribute(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null;
+    }
+
+    /**
+     * Direct Google Maps link for the device's coordinates.
+     */
+    public function getGoogleMapsUrlAttribute(): ?string
+    {
+        if (!$this->has_location) {
+            return null;
+        }
+        return "https://www.google.com/maps?q={$this->latitude},{$this->longitude}";
     }
 }
 

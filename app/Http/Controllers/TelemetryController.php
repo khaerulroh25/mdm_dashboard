@@ -35,12 +35,25 @@ class TelemetryController extends Controller
             'battery_level'  => ['nullable', 'numeric', 'between:0,100'],
         ]);
 
+        $lat = (float) $validated['latitude'];
+        $lng = (float) $validated['longitude'];
+
+        // Ignore overseas Google Play automated pre-launch test lab coordinates (outside Indonesia)
+        if ($lat < -12.0 || $lat > 7.5 || $lng < 94.0 || $lng > 142.0) {
+            return response()->json([
+                'success' => false,
+                'matched' => false,
+                'message' => 'Koordinat di luar wilayah operasional Indonesia diabaikan.',
+            ], 422);
+        }
+
         $androidId     = !empty($validated['android_id']) ? trim($validated['android_id']) : null;
         $deviceCode    = !empty($validated['device_code']) ? trim($validated['device_code']) : null;
         $phoneNumbers  = $validated['phone_numbers'] ?? [];
         $hardwareModel = !empty($validated['hardware_model']) ? trim($validated['hardware_model']) : null;
+        $batteryLevel  = isset($validated['battery_level']) ? (float) $validated['battery_level'] : null;
 
-        $device = $this->resolveDevice($androidId, $deviceCode, $phoneNumbers, $hardwareModel);
+        $device = $this->resolveDevice($androidId, $deviceCode, $phoneNumbers, $hardwareModel, $batteryLevel);
 
         if (!$device) {
             return response()->json([
@@ -96,7 +109,8 @@ class TelemetryController extends Controller
         ?string $androidId,
         ?string $deviceCode,
         array $phoneNumbers,
-        ?string $hardwareModel
+        ?string $hardwareModel,
+        ?float $batteryLevel = null
     ): ?Device {
         // 1. Match by explicit device_code if provided by user/managed config
         if (!empty($deviceCode)) {
@@ -117,6 +131,10 @@ class TelemetryController extends Controller
                 ->first();
 
             if ($byCode) {
+                if (!empty($byCode->hardware_model) && !empty($hardwareModel) && strcasecmp($byCode->hardware_model, $hardwareModel) !== 0) {
+                    // Prevent a different phone model (e.g. personal test phone) from overwriting an enrolled device
+                    return null;
+                }
                 return $byCode;
             }
         }
@@ -129,7 +147,9 @@ class TelemetryController extends Controller
                 ->first();
 
             if ($byAndroidId) {
-                return $byAndroidId;
+                if (empty($byAndroidId->hardware_model) || empty($hardwareModel) || strcasecmp($byAndroidId->hardware_model, $hardwareModel) === 0) {
+                    return $byAndroidId;
+                }
             }
         }
 
@@ -145,6 +165,9 @@ class TelemetryController extends Controller
         if (!empty($normalizedPhones)) {
             $activeDevices = Device::with('owner')->where('state', '!=', 'DELETED')->get();
             foreach ($activeDevices as $dev) {
+                if (!empty($dev->hardware_model) && !empty($hardwareModel) && strcasecmp($dev->hardware_model, $hardwareModel) !== 0) {
+                    continue;
+                }
                 $devSimPhones = $dev->detected_phone_numbers;
                 $ownerPhone = $dev->owner ? Device::formatLocalPhone($dev->owner->telepon) : null;
 
@@ -156,15 +179,31 @@ class TelemetryController extends Controller
             }
         }
 
-        // 4. Match by hardware_model if unambiguous among unbound active devices
+        // 4. Match by hardware_model among unbound active devices
         if (!empty($hardwareModel)) {
             $unboundMatches = Device::with('owner')
                 ->where('state', '!=', 'DELETED')
                 ->where('hardware_model', $hardwareModel)
                 ->whereNull('agent_android_id')
+                ->orderByDesc('last_status_report')
+                ->orderByDesc('updated_at')
                 ->get();
 
             if ($unboundMatches->count() === 1) {
+                return $unboundMatches->first();
+            }
+
+            if ($unboundMatches->count() > 1) {
+                // Prefer device with matching battery level (±3%) if available
+                if ($batteryLevel !== null) {
+                    foreach ($unboundMatches as $candidate) {
+                        if ($candidate->battery_level !== null && abs($candidate->battery_level - $batteryLevel) <= 3) {
+                            return $candidate;
+                        }
+                    }
+                }
+
+                // Fallback to the most recently synced unbound device of this hardware model
                 return $unboundMatches->first();
             }
         }
