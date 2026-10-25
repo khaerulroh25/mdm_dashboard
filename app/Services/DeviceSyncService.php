@@ -25,6 +25,7 @@ class DeviceSyncService
         $syncedCount = 0;
         $errors = [];
         $pageToken = null;
+        $seenDeviceIds = [];
 
         try {
             do {
@@ -33,7 +34,8 @@ class DeviceSyncService
 
                 foreach ($devices as $gDevice) {
                     try {
-                        $this->syncSingleDevice($gDevice);
+                        $syncedDev = $this->syncSingleDevice($gDevice);
+                        $seenDeviceIds[] = $syncedDev->device_id;
                         $syncedCount++;
                     } catch (Exception $e) {
                         $deviceId = method_exists($gDevice, 'getName') ? $gDevice->getName() : 'Unknown';
@@ -44,6 +46,13 @@ class DeviceSyncService
 
                 $pageToken = method_exists($response, 'getNextPageToken') ? $response->getNextPageToken() : null;
             } while ($pageToken);
+
+            // Reconcile: Mark local ACTIVE devices that no longer exist on Google AMAPI as DELETED
+            if (!empty($seenDeviceIds)) {
+                Device::where('state', '!=', 'DELETED')
+                    ->whereNotIn('device_id', $seenDeviceIds)
+                    ->update(['state' => 'DELETED']);
+            }
 
             // Also sync policies
             $policiesSynced = $this->syncPolicies();
