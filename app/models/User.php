@@ -27,7 +27,7 @@ class User extends Authenticatable
             ],
             'devices.command' => [
                 'label' => 'Eksekusi Remote Command & Ubah Policy',
-                'desc'  => 'Mengirim perintah Lock, Reboot, Reset PIN, Mode Hilang, dan mengganti Policy perangkat.',
+                'desc'  => 'Mengirim perintah Lock, Reboot, Reset PIN, dan mengganti Policy perangkat.',
             ],
             'devices.edit' => [
                 'label' => 'Edit Data Pemilik & Nama Model',

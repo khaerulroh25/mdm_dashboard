@@ -91,30 +91,14 @@
                 <span>Reset PIN</span>
             </button>
 
-            <!-- 4. Lost Mode Modal Trigger -->
-            <button type="button" class="btn btn-sm btn-outline-warning text-dark d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#lostModeModal">
-                <i class="bi bi-shield-exclamation"></i>
-                <span>Mode Hilang / Kiosk</span>
-            </button>
-
-            <!-- 5. Stop Lost Mode -->
-            <form action="{{ route('devices.command', $device->id) }}" method="POST" class="d-inline">
-                @csrf
-                <input type="hidden" name="command_type" value="STOP_LOST_MODE">
-                <button type="submit" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
-                    <i class="bi bi-unlock"></i>
-                    <span>Stop Lost Mode</span>
-                </button>
-            </form>
-
-            <!-- 6. Switch Policy Modal Trigger -->
+            <!-- 4. Switch Policy Modal Trigger -->
             <button type="button" class="btn btn-sm btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#switchPolicyModal">
                 <i class="bi bi-shield-shaded"></i>
                 <span>Ubah Policy</span>
             </button>
             @endif
 
-            <!-- 7. Unenroll Modal Trigger -->
+            <!-- 5. Unenroll Modal Trigger -->
             @if(auth()->user()->hasPermission('devices.delete'))
             <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#unenrollModal">
                 <i class="bi bi-trash3"></i>
@@ -655,37 +639,7 @@
     </div>
 </div>
 
-<!-- 2. Lost Mode Modal -->
-<div class="modal fade" id="lostModeModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content border-0 shadow">
-            <form action="{{ route('devices.command', $device->id) }}" method="POST">
-                @csrf
-                <input type="hidden" name="command_type" value="START_LOST_MODE">
-                <div class="modal-header border-bottom bg-warning bg-opacity-10">
-                    <h5 class="modal-title fw-bold text-dark"><i class="bi bi-shield-exclamation text-warning me-2"></i>Aktifkan Mode Hilang / Tagihan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label for="lost_message" class="form-label small fw-semibold">Pesan Pada Layar Terkunci</label>
-                        <textarea name="lost_message" id="lost_message" class="form-control" rows="3" required>⚠️ Tagihan Anda Tertunggak. Silakan lakukan pembayaran segera.</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="lost_phone" class="form-label small fw-semibold">Nomor Telepon Darurat Admin</label>
-                        <input type="text" name="lost_phone" id="lost_phone" class="form-control font-mono" value="{{ $device->branch?->contact_phone ?: '0821-1895-4552' }}" required>
-                    </div>
-                </div>
-                <div class="modal-footer border-top bg-light">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning btn-sm fw-semibold">Aktifkan Lost Mode</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- 3. Switch Policy Modal -->
+<!-- 2. Switch Policy Modal -->
 <div class="modal fade" id="switchPolicyModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">

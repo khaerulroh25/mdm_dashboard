@@ -64,7 +64,7 @@
                                     value="{{ old('contact_phone') }}"
                                     placeholder="Contoh: 0858-1406-4274">
                                 <div class="form-text" style="font-size: 11px;">
-                                    Digunakan otomatis sebagai nomor telepon darurat saat perangkat di cabang ini dikunci dengan <strong>Mode Hilang (Lost Mode)</strong>.
+                                    Ditampilkan otomatis pada tombol panggilan darurat saat perangkat nasabah di cabang ini dikunci dengan <strong>Mode Gagal Bayar (Lock Screen Kiosk)</strong>.
                                 </div>
                                 @error('contact_phone')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
