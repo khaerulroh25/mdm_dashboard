@@ -4,7 +4,7 @@
 @section('page_title', 'Manajemen Perangkat')
 
 @section('content')
-<!-- Navigation Tabs: Perangkat Aktif vs Riwayat Unenroll / Dihapus -->
+<!-- Navigation Tabs: Perangkat Aktif vs Lunas vs Riwayat Unenroll (Admin Only) -->
 <ul class="nav nav-pills gap-2 mb-4 bg-white p-2 rounded-3 shadow-sm border">
     <li class="nav-item">
         <a class="nav-link {{ $currentTab === 'active' ? 'active bg-teal' : 'text-dark' }} fw-semibold d-flex align-items-center gap-2 py-2 px-3"
@@ -17,20 +17,32 @@
         </a>
     </li>
     <li class="nav-item">
+        <a class="nav-link {{ $currentTab === 'lunas' ? 'active bg-success text-white' : 'text-dark' }} fw-semibold d-flex align-items-center gap-2 py-2 px-3"
+           href="{{ route('devices.index', array_merge(request()->except('tab', 'page'), ['tab' => 'lunas'])) }}">
+            <i class="bi bi-patch-check-fill {{ $currentTab === 'lunas' ? 'text-white' : 'text-success' }}"></i>
+            <span>Lunas</span>
+            <span class="badge {{ $currentTab === 'lunas' ? 'bg-white text-success' : 'bg-light text-secondary border' }} rounded-pill ms-1">
+                {{ $lunasCount }}
+            </span>
+        </a>
+    </li>
+    @if(auth()->user()->isAdmin())
+    <li class="nav-item">
         <a class="nav-link {{ $currentTab === 'deleted' ? 'active bg-secondary' : 'text-dark' }} fw-semibold d-flex align-items-center gap-2 py-2 px-3"
            href="{{ route('devices.index', array_merge(request()->except('tab', 'page'), ['tab' => 'deleted'])) }}">
             <i class="bi bi-archive-fill"></i>
-            <span>Riwayat Unenroll / Dihapus</span>
+            <span>Riwayat Unenroll</span>
             <span class="badge {{ $currentTab === 'deleted' ? 'bg-white text-dark' : 'bg-light text-secondary border' }} rounded-pill ms-1">
                 {{ $deletedCount }}
             </span>
         </a>
     </li>
+    @endif
     <li class="nav-item ms-auto">
         <a class="nav-link {{ $currentTab === 'all' ? 'active bg-dark text-white' : 'text-secondary' }} small d-flex align-items-center gap-1 py-2 px-3"
            href="{{ route('devices.index', array_merge(request()->except('tab', 'page'), ['tab' => 'all'])) }}">
             <i class="bi bi-list-ul"></i>
-            <span>Semua ({{ $activeCount + $deletedCount }})</span>
+            <span>Semua ({{ auth()->user()->isAdmin() ? ($activeCount + $lunasCount + $deletedCount) : ($activeCount + $lunasCount) }})</span>
         </a>
     </li>
 </ul>
@@ -109,18 +121,24 @@
             @if($currentTab === 'deleted')
                 <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
                     <i class="bi bi-archive text-secondary"></i>
-                    <span>Riwayat Perangkat Di-unenroll / Dihapus ({{ $devices->total() }})</span>
+                    <span>Riwayat Perangkat Di-unenroll ({{ $devices->total() }})</span>
                 </h5>
-                <span class="text-secondary small">Perangkat yang telah dicabut pengelolaannya atau dihapus dari Google Cloud</span>
+                <span class="text-secondary small">Perangkat yang telah dicabut pengelolaannya atau dihapus permanen oleh Super Admin</span>
+            @elseif($currentTab === 'lunas')
+                <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-patch-check-fill text-success"></i>
+                    <span>Daftar Perangkat Lunas ({{ $devices->total() }})</span>
+                </h5>
+                <span class="text-secondary small">Perangkat nasabah yang telah melunasi cicilan dan dilepaskan dari pembatasan MDM</span>
             @elseif($currentTab === 'all')
                 <h5 class="fw-bold mb-0 text-dark">Seluruh Data Perangkat ({{ $devices->total() }})</h5>
-                <span class="text-secondary small">Menampilkan data perangkat gabungan aktif dan riwayat unenroll</span>
+                <span class="text-secondary small">Menampilkan data perangkat gabungan</span>
             @else
                 <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
                     <i class="bi bi-phone-fill text-teal"></i>
                     <span>Daftar Perangkat Aktif ({{ $devices->total() }})</span>
                 </h5>
-                <span class="text-secondary small">Menampilkan perangkat aktif yang terhubung dengan Google Cloud</span>
+                <span class="text-secondary small">Menampilkan perangkat aktif yang sedang dalam masa pembiayaan/kredit</span>
             @endif
         </div>
         @if(auth()->user()->hasPermission('devices.sync'))
@@ -234,10 +252,16 @@
                         </div>
                     </td>
                     <td>
-                        <span class="badge-policy">
-                            <i class="bi bi-shield-check me-1 text-teal"></i>
-                            {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
-                        </span>
+                        @if($device->policy_id === 'Lunas')
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle py-1 px-2 font-mono">
+                                <i class="bi bi-patch-check-fill me-1"></i>Lunas
+                            </span>
+                        @else
+                            <span class="badge-policy">
+                                <i class="bi bi-shield-check me-1 text-teal"></i>
+                                {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
+                            </span>
+                        @endif
                     </td>
                     <td>
                         <!-- Baris 1: Badge Status AMAPI + Level Baterai (Sejajar) -->

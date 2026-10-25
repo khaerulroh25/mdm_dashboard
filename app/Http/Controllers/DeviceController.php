@@ -45,14 +45,21 @@ class DeviceController extends Controller
             $countBaseQuery->where('branch_id', $selectedBranchId);
         }
 
-        // Tab Filter: active (default, excludes DELETED), deleted (only DELETED), or all
+        // Tab Filter: active (default, excludes DELETED & Lunas), lunas (only Lunas, not DELETED), deleted (only DELETED, admin only), or all
         if ($currentTab === 'deleted') {
+            if (!$user->isAdmin()) {
+                abort(403, 'Akses riwayat arsip unenroll hanya untuk Super Admin.');
+            }
             $query->where('state', 'DELETED');
+        } elseif ($currentTab === 'lunas') {
+            $query->where('state', '!=', 'DELETED')->where('policy_id', 'Lunas');
         } elseif ($currentTab === 'all') {
-            // all records
+            if (!$user->isAdmin()) {
+                $query->where('state', '!=', 'DELETED');
+            }
         } else {
             $currentTab = 'active';
-            $query->where('state', '!=', 'DELETED');
+            $query->where('state', '!=', 'DELETED')->where('policy_id', '!=', 'Lunas');
         }
 
         // Search Keyword
@@ -88,10 +95,11 @@ class DeviceController extends Controller
                          ->orderByDesc('id')
                          ->paginate(15)
                          ->withQueryString();
-        $policies = Policy::select('id', 'name', 'policy_id')->get();
+        $policies = Policy::select('id', 'name', 'policy_id')->where('policy_id', '!=', 'Lunas')->get();
         $branches = Branch::orderBy('name')->get();
 
-        $activeCount = (clone $countBaseQuery)->where('state', '!=', 'DELETED')->count();
+        $activeCount = (clone $countBaseQuery)->where('state', '!=', 'DELETED')->where('policy_id', '!=', 'Lunas')->count();
+        $lunasCount = (clone $countBaseQuery)->where('state', '!=', 'DELETED')->where('policy_id', 'Lunas')->count();
         $deletedCount = (clone $countBaseQuery)->where('state', 'DELETED')->count();
 
         return view('devices.index', compact(
@@ -100,6 +108,7 @@ class DeviceController extends Controller
             'branches',
             'currentTab',
             'activeCount',
+            'lunasCount',
             'deletedCount',
             'selectedBranchId'
         ));
@@ -116,7 +125,7 @@ class DeviceController extends Controller
             abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
         }
 
-        $allPolicies = Policy::select('id', 'name', 'policy_id')->get();
+        $allPolicies = Policy::select('id', 'name', 'policy_id')->where('policy_id', '!=', 'Lunas')->get();
         $branches = Branch::where('is_active', true)->orderBy('name')->get();
 
         return view('devices.show', compact('device', 'allPolicies', 'branches'));
@@ -229,10 +238,52 @@ class DeviceController extends Controller
     }
 
     /**
-     * Unenroll / Wipe device.
+     * Release device upon loan completion (Policy Lunas).
+     * Disables MDM restrictions, unbinds tracker, and lifts enterprise FRP without wiping user data.
+     */
+    public function releaseDevice(Request $request, $id)
+    {
+        $device = Device::findOrFail($id);
+
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
+
+        if ($device->state === 'DELETED') {
+            return back()->with('error', 'Perangkat yang sudah di-unenroll tidak dapat dilepaskan ke status Lunas.');
+        }
+
+        try {
+            // Apply Lunas policy in Google AMAPI
+            $this->amapi->patchDevicePolicy($device->device_id, 'Lunas');
+
+            $device->update([
+                'policy_id' => 'Lunas',
+            ]);
+
+            AuditLog::log('RELEASE_DEVICE_LUNAS', 'Device', $device->device_id, [
+                'policy'      => 'Lunas',
+                'released_by' => auth()->user()->name ?? auth()->user()->username ?? auth()->user()->email,
+                'branch'      => $device->branch?->name ?? 'Pusat',
+            ]);
+
+            return redirect()->route('devices.show', $device->id)
+                ->with('success', "Perangkat nasabah berhasil dilepaskan dengan status <strong>Lunas</strong>. Semua pembatasan operasional dan pelacakan telah dinonaktifkan tanpa menghapus data ponsel.");
+
+        } catch (Exception $e) {
+            return back()->with('error', "Gagal melepaskan perangkat ke policy Lunas di Google AMAPI: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Unenroll / Wipe device (Superadmin Only).
      */
     public function unenroll(Request $request, $id)
     {
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Aksi unenroll hanya dapat dilakukan oleh Super Admin.');
+        }
+
         $device = Device::findOrFail($id);
 
         if (!$device->canBeAccessedBy()) {

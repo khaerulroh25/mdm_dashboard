@@ -267,7 +267,9 @@ class AndroidManagementService
             }
         }
 
-        if (!array_key_exists('frpAdminEmails', $policyData) || empty($policyData['frpAdminEmails'])) {
+        if ($policyId === 'Lunas') {
+            unset($policyData['frpAdminEmails']);
+        } elseif (!array_key_exists('frpAdminEmails', $policyData) || empty($policyData['frpAdminEmails'])) {
             $policyData['frpAdminEmails'] = ['devicekontrol450@gmail.com'];
         }
 

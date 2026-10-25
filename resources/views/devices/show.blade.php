@@ -56,14 +56,28 @@
         @endif
     </div>
 </div>
-@elseif(auth()->user()->hasPermission(['devices.command', 'devices.delete']))
+@elseif(auth()->user()->hasPermission(['devices.command', 'devices.delete']) || $device->policy_id === 'Lunas')
 <!-- Remote Command Quick Action Toolbar -->
 <div class="card card-mdm border-0 p-3 mb-4">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
         <div class="d-flex align-items-center gap-2">
-            <span class="fw-semibold text-secondary small text-uppercase" style="font-size: 11px;">Perintah Jarak Jauh:</span>
+            @if($device->policy_id === 'Lunas')
+                <span class="badge bg-success py-2 px-3 d-inline-flex align-items-center gap-1 font-mono fs-6 shadow-sm">
+                    <i class="bi bi-patch-check-fill"></i> STATUS: LUNAS / BEBAS KONTROL
+                </span>
+            @else
+                <span class="fw-semibold text-secondary small text-uppercase" style="font-size: 11px;">Perintah Jarak Jauh:</span>
+            @endif
         </div>
         <div class="d-flex flex-wrap gap-2">
+            @if($device->policy_id !== 'Lunas' && auth()->user()->hasPermission('devices.command'))
+            <!-- Tombol Lepaskan Perangkat (Lunas) -->
+            <button type="button" class="btn btn-sm btn-success d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#releaseLunasModal">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Lepaskan Perangkat (Lunas)</span>
+            </button>
+            @endif
+
             @if(auth()->user()->hasPermission('devices.command'))
             <!-- 1. Lock Screen -->
             <form action="{{ route('devices.command', $device->id) }}" method="POST" class="d-inline">
@@ -98,8 +112,8 @@
             </button>
             @endif
 
-            <!-- 5. Unenroll Modal Trigger -->
-            @if(auth()->user()->hasPermission('devices.delete'))
+            <!-- 5. Unenroll Modal Trigger (Superadmin Only) -->
+            @if(auth()->user()->isAdmin())
             <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#unenrollModal">
                 <i class="bi bi-trash3"></i>
                 <span>Unenroll</span>
@@ -308,10 +322,16 @@
                                 <th class="text-secondary fw-normal">Policy Aktif</th>
                                 <td>
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span class="badge-policy font-mono fs-6 py-1 px-3">
-                                            <i class="bi bi-shield-check me-2 text-teal"></i>
-                                            {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
-                                        </span>
+                                        @if($device->policy_id === 'Lunas')
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle font-mono fs-6 py-1 px-3">
+                                                <i class="bi bi-patch-check-fill me-2"></i>Lunas (Bebas Kontrol MDM)
+                                            </span>
+                                        @else
+                                            <span class="badge-policy font-mono fs-6 py-1 px-3">
+                                                <i class="bi bi-shield-check me-2 text-teal"></i>
+                                                {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
+                                            </span>
+                                        @endif
                                         @if(auth()->user()->hasPermission('devices.command'))
                                         <button type="button" class="btn btn-sm btn-outline-teal py-0 px-2" data-bs-toggle="modal" data-bs-target="#switchPolicyModal" title="Ubah Policy">
                                             <i class="bi bi-pencil-square me-1"></i> Ubah
@@ -712,7 +732,56 @@
     </div>
 </div>
 
-<!-- 5. Unenroll Double Confirmation Modal -->
+<!-- Modal Konfirmasi Pelepasan Perangkat (Lunas) -->
+@if($device->state !== 'DELETED' && $device->policy_id !== 'Lunas')
+<div class="modal fade" id="releaseLunasModal" tabindex="-1" aria-labelledby="releaseLunasModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ route('devices.release', $device->id) }}" method="POST">
+                @csrf
+                <div class="modal-header border-bottom bg-success bg-opacity-10 py-3">
+                    <h5 class="modal-title fw-bold text-success d-flex align-items-center gap-2" id="releaseLunasModalLabel">
+                        <i class="bi bi-patch-check-fill"></i>
+                        <span>Konfirmasi Pelepasan Perangkat (Lunas)</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-success d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-info-circle-fill fs-5 mt-1"></i>
+                        <div class="small">
+                            Nasabah <strong>{{ $device->owner?->nama ?? 'Nasabah' }}</strong> (Model: <strong>{{ $device->human_model_name }}</strong>) telah menyelesaikan kewajiban/cicilan perangkat.
+                        </div>
+                    </div>
+
+                    <p class="text-secondary small mb-3">
+                        Dengan melepaskan perangkat ke status <strong>Lunas</strong>:
+                    </p>
+                    <ul class="text-secondary small mb-3 ps-3">
+                        <li><strong class="text-success"><i class="bi bi-check-circle me-1"></i>Data Pribadi Aman:</strong> Foto, chat WhatsApp, dan aplikasi nasabah <strong>TIDAK AKAN DIHAPUS</strong>.</li>
+                        <li><strong class="text-success"><i class="bi bi-check-circle me-1"></i>Pelacak Lokasi Nonaktif:</strong> Aplikasi agen pelacak dicabut dari status wajib dan berhenti melacak.</li>
+                        <li><strong class="text-success"><i class="bi bi-check-circle me-1"></i>FRP Kantor Dicabut:</strong> Proteksi reset kantor dinonaktifkan, nasabah bebas reset pabrik sendiri tanpa terkunci akun kantor.</li>
+                        <li><strong class="text-success"><i class="bi bi-check-circle me-1"></i>Bebas Batasan:</strong> Semua kunci layar tagihan dan pembatasan operasional dinonaktifkan.</li>
+                    </ul>
+
+                    <p class="text-muted small fst-italic mb-0">
+                        Apakah Anda yakin ingin melepaskan perangkat ini sekarang?
+                    </p>
+                </div>
+                <div class="modal-footer border-top bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success btn-sm fw-semibold d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-patch-check-fill"></i> Ya, Lepaskan Perangkat (Lunas)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
+@if(auth()->user()->isAdmin())
+<!-- 5. Unenroll Double Confirmation Modal (Superadmin Only) -->
 <div class="modal fade" id="unenrollModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content border-0 shadow">
@@ -742,6 +811,7 @@
         </div>
     </div>
 </div>
+@endif
 
 <!-- 6. Edit Marketing Model Name Modal -->
 <div class="modal fade" id="editModelNameModal" tabindex="-1">

@@ -32,7 +32,9 @@ class PolicyController extends Controller
             'screen_capture_disabled', 'keyguard_disabled',
             'location_mode', 'play_store_mode',
             'created_at', 'updated_at'
-        ])->withCount('devices')->latest()->get();
+        ])
+        ->where('policy_id', '!=', 'Lunas')
+        ->withCount('devices')->latest()->get();
 
         return view('policies.index', compact('policies'));
     }

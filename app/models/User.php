@@ -34,8 +34,8 @@ class User extends Authenticatable
                 'desc'  => 'Mengubah informasi kepemilikan perangkat (Owner) dan nama komersial model HP.',
             ],
             'devices.delete' => [
-                'label' => 'Unenroll & Hapus Permanen Perangkat',
-                'desc'  => 'Mencabut pengelolaan perangkat (Unenroll) dan menghapus arsip dari database.',
+                'label' => 'Unenroll & Hapus Permanen (Superadmin Only)',
+                'desc'  => 'Mencabut pengelolaan perangkat (Unenroll) dan menghapus arsip dari database (Khusus Superadmin).',
             ],
         ],
         'Kebijakan Keamanan (Policies)' => [

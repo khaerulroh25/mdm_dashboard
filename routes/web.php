@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/{device}', [DeviceController::class, 'show'])->name('show')->middleware('permission:devices.view');
         Route::post('/{device}/command', [DeviceController::class, 'issueCommand'])->name('command')->middleware('permission:devices.command');
         Route::post('/{device}/policy', [DeviceController::class, 'updatePolicy'])->name('policy')->middleware('permission:devices.command');
+        Route::post('/{device}/release', [DeviceController::class, 'releaseDevice'])->name('release')->middleware('permission:devices.command');
         Route::post('/{device}/branch', [DeviceController::class, 'updateBranch'])->name('branch')->middleware('permission:branches.manage,devices.edit');
         Route::post('/{device}/rename-model', [DeviceController::class, 'updateMarketingName'])->name('rename-model')->middleware('permission:devices.edit');
         Route::delete('/{device}', [DeviceController::class, 'unenroll'])->name('unenroll')->middleware('permission:devices.delete');
