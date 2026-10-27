@@ -363,7 +363,7 @@
                                 <i class="bi bi-gear-fill text-secondary"></i>
                                 <span>Kelola</span>
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border py-1" style="min-width: 210px; z-index: 1060;">
+                            <ul class="dropdown-menu dropdown-menu-end shadow border py-1" style="min-width: 200px; z-index: 1060;">
                                 <li>
                                     <a class="dropdown-item py-2 d-flex align-items-center gap-2 text-dark" href="{{ route('devices.show', $device->id) }}">
                                         <i class="bi bi-info-circle-fill text-teal"></i>
@@ -373,16 +373,6 @@
                                 @if(auth()->user()->hasPermission('devices.command'))
                                 <li><hr class="dropdown-divider my-1"></li>
                                 <li>
-                                    <form action="{{ route('devices.command', $device->id) }}" method="POST" class="m-0" onsubmit="return confirm('Kunci layar perangkat {{ $device->owner->nama ?? $device->human_model_name }} sekarang?')">
-                                        @csrf
-                                        <input type="hidden" name="command_type" value="LOCK">
-                                        <button type="submit" class="dropdown-item py-2 d-flex align-items-center gap-2 text-dark">
-                                            <i class="bi bi-lock-fill text-secondary"></i>
-                                            <span>Kunci Layar (Lock)</span>
-                                        </button>
-                                    </form>
-                                </li>
-                                <li>
                                     <form action="{{ route('devices.command', $device->id) }}" method="POST" class="m-0" onsubmit="return confirm('Reboot perangkat {{ $device->owner->nama ?? $device->human_model_name }} secara remote?')">
                                         @csrf
                                         <input type="hidden" name="command_type" value="REBOOT">
@@ -391,12 +381,6 @@
                                             <span>Reboot Perangkat</span>
                                         </button>
                                     </form>
-                                </li>
-                                <li>
-                                    <button type="button" class="dropdown-item py-2 d-flex align-items-center gap-2 text-danger fw-medium" data-bs-toggle="modal" data-bs-target="#lostModeModal{{ $device->id }}">
-                                        <i class="bi bi-shield-exclamation text-danger"></i>
-                                        <span>Aktifkan Lost Mode</span>
-                                    </button>
                                 </li>
                                 @endif
                             </ul>
@@ -415,42 +399,6 @@
         </table>
     </div>
 </div>
-
-@if(auth()->user()->hasPermission('devices.command'))
-@foreach($recentDevices as $device)
-<!-- Lost Mode Modal for Recent Device -->
-<div class="modal fade" id="lostModeModal{{ $device->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content border-0 shadow">
-            <form action="{{ route('devices.command', $device->id) }}" method="POST">
-                @csrf
-                <input type="hidden" name="command_type" value="START_LOST_MODE">
-                <div class="modal-header border-bottom bg-warning bg-opacity-10">
-                    <h5 class="modal-title fw-bold text-dark">
-                        <i class="bi bi-shield-exclamation text-warning me-2"></i>Aktifkan Mode Hilang: {{ $device->owner->nama ?? $device->human_model_name }}
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Pesan Pada Layar Terkunci</label>
-                        <textarea name="lost_message" class="form-control" rows="3" required>⚠️ Tagihan Anda Tertunggak. Silakan lakukan pembayaran segera.</textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Nomor Telepon Darurat Admin</label>
-                        <input type="text" name="lost_phone" class="form-control font-mono" value="{{ $device->branch?->contact_phone ?: '0821-1895-4552' }}" required>
-                    </div>
-                </div>
-                <div class="modal-footer border-top bg-light">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning btn-sm fw-semibold">Aktifkan Lost Mode</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endforeach
-@endif
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
