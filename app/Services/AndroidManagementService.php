@@ -20,7 +20,17 @@ class AndroidManagementService
     public function __construct()
     {
         $credentialsPath = config('amapi.credentials_path');
-        $this->enterpriseId = config('amapi.enterprise_id');
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('enterprises')) {
+                $activeEnt = \App\Models\Enterprise::getActiveEnterprise();
+                $this->enterpriseId = $activeEnt?->enterprise_id ?: config('amapi.enterprise_id');
+            } else {
+                $this->enterpriseId = config('amapi.enterprise_id');
+            }
+        } catch (\Throwable $e) {
+            $this->enterpriseId = config('amapi.enterprise_id');
+        }
 
         if (!file_exists($credentialsPath)) {
             throw new Exception("AMAPI Service Account credentials file not found at: {$credentialsPath}");
@@ -444,6 +454,114 @@ class AndroidManagementService
         } catch (\Throwable $e) {
             Log::warning("AMAPI getApplication failed for {$packageName}: " . $e->getMessage());
             return null;
+        }
+    }
+
+    // =========================================================================
+    // ENTERPRISE ONBOARDING & CREDENTIALS
+    // =========================================================================
+
+    public function getCredentialsPath(): string
+    {
+        return config('amapi.credentials_path');
+    }
+
+    public function getProjectId(): ?string
+    {
+        $path = $this->getCredentialsPath();
+        if (file_exists($path)) {
+            $json = json_decode(file_get_contents($path), true);
+            return $json['project_id'] ?? null;
+        }
+        return null;
+    }
+
+    public function getServiceAccountEmail(): ?string
+    {
+        $path = $this->getCredentialsPath();
+        if (file_exists($path)) {
+            $json = json_decode(file_get_contents($path), true);
+            return $json['client_email'] ?? null;
+        }
+        return null;
+    }
+
+    /**
+     * Create official signup URL for self-service Enterprise creation.
+     */
+    public function createSignupUrl(string $callbackUrl): array
+    {
+        $projectId = $this->getProjectId();
+        if (!$projectId) {
+            throw new Exception("Google Cloud Project ID tidak ditemukan pada file kredensial Service Account.");
+        }
+
+        $signupUrl = $this->service->signupUrls->create([
+            'projectId'   => $projectId,
+            'callbackUrl' => $callbackUrl,
+        ]);
+
+        return [
+            'name' => $signupUrl->getName(),
+            'url'  => $signupUrl->getUrl(),
+        ];
+    }
+
+    /**
+     * Complete enterprise creation using enterpriseToken and signupUrlName.
+     */
+    public function completeEnterpriseSignup(string $signupUrlName, string $enterpriseToken, ?string $displayName = null): \Google\Service\AndroidManagement\Enterprise
+    {
+        $projectId = $this->getProjectId();
+        if (!$projectId) {
+            throw new Exception("Google Cloud Project ID tidak ditemukan pada file kredensial Service Account.");
+        }
+
+        $enterpriseBody = new \Google\Service\AndroidManagement\Enterprise();
+        if ($displayName) {
+            $enterpriseBody->setEnterpriseDisplayName($displayName);
+        }
+
+        return $this->service->enterprises->create($enterpriseBody, [
+            'projectId'       => $projectId,
+            'signupUrlName'   => $signupUrlName,
+            'enterpriseToken' => $enterpriseToken,
+        ]);
+    }
+
+    /**
+     * Fetch raw Enterprise details directly from Google AMAPI.
+     */
+    public function getEnterpriseDetails(?string $enterpriseId = null): \Google\Service\AndroidManagement\Enterprise
+    {
+        $id = $enterpriseId ?: $this->enterpriseId;
+        return $this->service->enterprises->get($id);
+    }
+
+    /**
+     * Test AMAPI API connection.
+     */
+    public function testConnection(?string $enterpriseId = null): array
+    {
+        try {
+            $id = $enterpriseId ?: $this->enterpriseId;
+            $enterprise = $this->getEnterpriseDetails($id);
+
+            return [
+                'success'        => true,
+                'project_id'     => $this->getProjectId(),
+                'client_email'   => $this->getServiceAccountEmail(),
+                'enterprise_id'  => $enterprise->getName(),
+                'display_name'   => $enterprise->getEnterpriseDisplayName() ?: 'Enterprise',
+                'type'           => $enterprise->getEnterpriseType(),
+                'contact_email'  => $enterprise->getContactInfo()?->getDataProtectionOfficerEmail(),
+                'message'        => 'Koneksi ke Google Android Management API berhasil terhubung!',
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'message' => 'Gagal terhubung ke Google AMAPI: ' . $e->getMessage(),
+            ];
         }
     }
 }

@@ -87,6 +87,15 @@
             </a>
         </li>
         @endif
+
+        @if(auth()->user()->isAdmin())
+        <li class="nav-item">
+            <a href="{{ route('enterprises.index') }}" class="nav-link {{ request()->routeIs('enterprises.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Kelola Enterprise">
+                <i class="bi bi-briefcase"></i>
+                <span>Kelola Enterprise</span>
+            </a>
+        </li>
+        @endif
         @endif
     </ul>
 
