@@ -208,6 +208,78 @@ class DeviceController extends Controller
     }
 
     /**
+     * Lock device into Gagal_bayar policy.
+     */
+    public function lockDevice(Request $request, $id)
+    {
+        $device = Device::findOrFail($id);
+
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
+
+        if ($device->state === 'DELETED') {
+            return back()->with('error', 'Perangkat yang sudah di-unenroll tidak dapat dikunci.');
+        }
+
+        if ($device->policy_id === 'Lunas') {
+            return back()->with('error', 'Perangkat berstatus Lunas tidak dapat dikunci.');
+        }
+
+        try {
+            $this->amapi->patchDevicePolicy($device->device_id, 'Gagal_bayar');
+
+            $device->update(['policy_id' => 'Gagal_bayar']);
+
+            AuditLog::log('LOCK_DEVICE_GAGAL_BAYAR', 'Device', $device->device_id, [
+                'policy'    => 'Gagal_bayar',
+                'locked_by' => auth()->user()->name ?? auth()->user()->username ?? auth()->user()->email,
+                'branch'    => $device->branch?->name ?? 'Pusat',
+            ]);
+
+            return redirect()->route('devices.show', $device->id)
+                ->with('warning', "Perangkat berhasil <strong>Dikunci (Gagal Bayar)</strong>. Layar perangkat telah dibatasi ke mode peringatan tagihan.");
+
+        } catch (Exception $e) {
+            return back()->with('error', "Gagal mengunci perangkat di Google AMAPI: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Unlock device back to Mode_kiosk policy.
+     */
+    public function unlockDevice(Request $request, $id)
+    {
+        $device = Device::findOrFail($id);
+
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
+
+        if ($device->state === 'DELETED') {
+            return back()->with('error', 'Perangkat yang sudah di-unenroll tidak dapat diubah.');
+        }
+
+        try {
+            $this->amapi->patchDevicePolicy($device->device_id, 'Mode_kiosk');
+
+            $device->update(['policy_id' => 'Mode_kiosk']);
+
+            AuditLog::log('UNLOCK_DEVICE_KIOSK', 'Device', $device->device_id, [
+                'policy'      => 'Mode_kiosk',
+                'unlocked_by' => auth()->user()->name ?? auth()->user()->username ?? auth()->user()->email,
+                'branch'      => $device->branch?->name ?? 'Pusat',
+            ]);
+
+            return redirect()->route('devices.show', $device->id)
+                ->with('success', "Kunci perangkat berhasil <strong>Dibuka</strong>. Kebijakan perangkat telah dikembalikan ke <strong>Mode Kiosk Normal</strong>.");
+
+        } catch (Exception $e) {
+            return back()->with('error', "Gagal membuka kunci perangkat di Google AMAPI: " . $e->getMessage());
+        }
+    }
+
+    /**
      * Transfer device to another branch (Superadmin / HQ only).
      */
     public function updateBranch(Request $request, $id)

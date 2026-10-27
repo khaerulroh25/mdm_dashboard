@@ -65,8 +65,14 @@
                 <span class="badge bg-success py-2 px-3 d-inline-flex align-items-center gap-1 font-mono fs-6 shadow-sm">
                     <i class="bi bi-patch-check-fill"></i> STATUS: LUNAS / BEBAS KONTROL
                 </span>
+            @elseif($device->policy_id === 'Gagal_bayar')
+                <span class="badge bg-danger py-2 px-3 d-inline-flex align-items-center gap-1 font-mono fs-6 shadow-sm">
+                    <i class="bi bi-lock-fill"></i> STATUS: TERKUNCI (GAGAL BAYAR)
+                </span>
             @else
-                <span class="fw-semibold text-secondary small text-uppercase" style="font-size: 11px;">Perintah Jarak Jauh:</span>
+                <span class="badge bg-teal text-white py-2 px-3 d-inline-flex align-items-center gap-1 font-mono fs-6 shadow-sm">
+                    <i class="bi bi-shield-check"></i> STATUS: AKTIF (MODE KIOSK)
+                </span>
             @endif
         </div>
         <div class="d-flex flex-wrap gap-2">
@@ -79,40 +85,40 @@
             @endif
 
             @if(auth()->user()->hasPermission('devices.command'))
-            <!-- 1. Lock Screen -->
-            <form action="{{ route('devices.command', $device->id) }}" method="POST" class="d-inline">
-                @csrf
-                <input type="hidden" name="command_type" value="LOCK">
-                <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" onclick="return confirm('Kunci layar perangkat ini sekarang?')">
-                    <i class="bi bi-lock"></i>
-                    <span>Kunci Layar</span>
+                @if($device->policy_id !== 'Lunas')
+                    @if($device->policy_id === 'Gagal_bayar')
+                    <!-- Tombol Buka Kunci Perangkat (Kembali ke Mode_kiosk) -->
+                    <button type="button" class="btn btn-sm btn-warning text-dark fw-semibold d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#unlockDeviceModal">
+                        <i class="bi bi-unlock-fill"></i>
+                        <span>Buka Kunci Perangkat</span>
+                    </button>
+                    @else
+                    <!-- Tombol Kunci Perangkat (Ubah ke Gagal_bayar) -->
+                    <button type="button" class="btn btn-sm btn-danger d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#lockDeviceModal">
+                        <i class="bi bi-lock-fill"></i>
+                        <span>Kunci Perangkat</span>
+                    </button>
+                    @endif
+                @endif
+
+                <!-- Reboot -->
+                <form action="{{ route('devices.command', $device->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    <input type="hidden" name="command_type" value="REBOOT">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" onclick="return confirm('Yakin ingin mereboot perangkat ini secara remote?')">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span>Reboot</span>
+                    </button>
+                </form>
+
+                <!-- Reset PIN Modal Trigger -->
+                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#resetPinModal">
+                    <i class="bi bi-key"></i>
+                    <span>Reset PIN</span>
                 </button>
-            </form>
-
-            <!-- 2. Reboot -->
-            <form action="{{ route('devices.command', $device->id) }}" method="POST" class="d-inline">
-                @csrf
-                <input type="hidden" name="command_type" value="REBOOT">
-                <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" onclick="return confirm('Yakin ingin mereboot perangkat ini secara remote?')">
-                    <i class="bi bi-arrow-clockwise"></i>
-                    <span>Reboot</span>
-                </button>
-            </form>
-
-            <!-- 3. Reset PIN Modal Trigger -->
-            <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#resetPinModal">
-                <i class="bi bi-key"></i>
-                <span>Reset PIN</span>
-            </button>
-
-            <!-- 4. Switch Policy Modal Trigger -->
-            <button type="button" class="btn btn-sm btn-primary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#switchPolicyModal">
-                <i class="bi bi-shield-shaded"></i>
-                <span>Ubah Policy</span>
-            </button>
             @endif
 
-            <!-- 5. Unenroll Modal Trigger (Superadmin Only) -->
+            <!-- Unenroll Modal Trigger (Superadmin Only) -->
             @if(auth()->user()->isAdmin())
             <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#unenrollModal">
                 <i class="bi bi-trash3"></i>
@@ -326,16 +332,15 @@
                                             <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle font-mono fs-6 py-1 px-3">
                                                 <i class="bi bi-patch-check-fill me-2"></i>Lunas (Bebas Kontrol MDM)
                                             </span>
+                                        @elseif($device->policy_id === 'Gagal_bayar')
+                                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle font-mono fs-6 py-1 px-3">
+                                                <i class="bi bi-lock-fill me-2"></i>Terkunci (Gagal Bayar)
+                                            </span>
                                         @else
                                             <span class="badge-policy font-mono fs-6 py-1 px-3">
                                                 <i class="bi bi-shield-check me-2 text-teal"></i>
-                                                {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'default') }}
+                                                {{ $device->policy ? $device->policy->name : ($device->policy_id ?? 'Mode Kiosk') }}
                                             </span>
-                                        @endif
-                                        @if(auth()->user()->hasPermission('devices.command'))
-                                        <button type="button" class="btn btn-sm btn-outline-teal py-0 px-2" data-bs-toggle="modal" data-bs-target="#switchPolicyModal" title="Ubah Policy">
-                                            <i class="bi bi-pencil-square me-1"></i> Ubah
-                                        </button>
                                         @endif
                                     </div>
                                 </td>
@@ -659,36 +664,93 @@
     </div>
 </div>
 
-<!-- 2. Switch Policy Modal -->
-<div class="modal fade" id="switchPolicyModal" tabindex="-1">
-    <div class="modal-dialog">
+<!-- Modal Konfirmasi Kunci Perangkat (Gagal Bayar) -->
+@if($device->state !== 'DELETED' && $device->policy_id !== 'Gagal_bayar' && $device->policy_id !== 'Lunas')
+<div class="modal fade" id="lockDeviceModal" tabindex="-1" aria-labelledby="lockDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
-            <form action="{{ route('devices.policy', $device->id) }}" method="POST">
+            <form action="{{ route('devices.lock', $device->id) }}" method="POST">
                 @csrf
-                <div class="modal-header border-bottom">
-                    <h5 class="modal-title fw-bold text-dark">Ubah Policy Perangkat</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header border-bottom bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="lockDeviceModalLabel">
+                        <i class="bi bi-shield-lock-fill me-2"></i>Kunci Perangkat (Gagal Bayar)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label for="policy_id" class="form-label small fw-semibold">Pilih Policy Baru</label>
-                        <select name="policy_id" id="policy_id" class="form-select" required>
-                            @foreach($allPolicies as $pol)
-                            <option value="{{ $pol->policy_id }}" {{ $device->policy_id == $pol->policy_id ? 'selected' : '' }}>
-                                {{ $pol->name }} ({{ $pol->policy_id }})
-                            </option>
-                            @endforeach
-                        </select>
+                    <div class="alert alert-danger bg-danger bg-opacity-10 border border-danger-subtle d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-exclamation-triangle-fill text-danger fs-4 flex-shrink-0"></i>
+                        <span class="small fw-semibold text-danger">Perhatian: Kebijakan perangkat akan dialihkan ke <u>Gagal Bayar</u>.</span>
                     </div>
+
+                    <p class="text-secondary small mb-3">
+                        Dengan mengunci perangkat <strong>{{ $device->device_id }}</strong>:
+                    </p>
+                    <ul class="text-secondary small mb-3 ps-3">
+                        <li><strong class="text-danger"><i class="bi bi-lock-fill me-1"></i>Layar Kiosk Terkunci:</strong> Layar ponsel akan langsung dialihkan ke tampilan Kiosk pengingat pembayaran tagihan.</li>
+                        <li><strong class="text-danger"><i class="bi bi-slash-circle me-1"></i>Aplikasi Lain Diblokir:</strong> Pengguna tidak dapat membuka aplikasi lain atau mengakses pengaturan ponsel.</li>
+                        <li><strong class="text-dark"><i class="bi bi-geo-alt-fill me-1"></i>Pelacakan GPS Tetap Aktif:</strong> Lokasi GPS dan telemetri tetap berjalan di latar belakang untuk pemantauan aset.</li>
+                    </ul>
+
+                    <p class="text-muted small fst-italic mb-0">
+                        Apakah Anda yakin ingin mengunci perangkat ini sekarang?
+                    </p>
                 </div>
                 <div class="modal-footer border-top bg-light">
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Terapkan Policy</button>
+                    <button type="submit" class="btn btn-danger btn-sm fw-semibold d-inline-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-lock-fill"></i> Ya, Kunci Perangkat
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+@endif
+
+<!-- Modal Konfirmasi Buka Kunci Perangkat (Mode Kiosk Normal) -->
+@if($device->state !== 'DELETED' && $device->policy_id === 'Gagal_bayar')
+<div class="modal fade" id="unlockDeviceModal" tabindex="-1" aria-labelledby="unlockDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ route('devices.unlock', $device->id) }}" method="POST">
+                @csrf
+                <div class="modal-header border-bottom bg-warning text-dark">
+                    <h5 class="modal-title fw-bold" id="unlockDeviceModalLabel">
+                        <i class="bi bi-unlock-fill me-2"></i>Buka Kunci Perangkat
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning bg-warning bg-opacity-10 border border-warning-subtle d-flex align-items-center gap-2 mb-3">
+                        <i class="bi bi-info-circle-fill text-warning fs-4 flex-shrink-0"></i>
+                        <span class="small fw-semibold text-dark">Kebijakan perangkat akan dikembalikan ke <u>Mode Kiosk Normal</u>.</span>
+                    </div>
+
+                    <p class="text-secondary small mb-3">
+                        Dengan membuka kunci perangkat <strong>{{ $device->device_id }}</strong>:
+                    </p>
+                    <ul class="text-secondary small mb-3 ps-3">
+                        <li><strong class="text-success"><i class="bi bi-check-circle me-1"></i>Layar Kunci Dibuka:</strong> Layar ponsel akan terbebas dari tampilan pengingat pembayaran tagihan.</li>
+                        <li><strong class="text-success"><i class="bi bi-phone me-1"></i>Fungsi Normal:</strong> Pengguna dapat kembali menggunakan ponsel seperti biasa.</li>
+                        <li><strong class="text-dark"><i class="bi bi-shield-check me-1"></i>Pengawasan MDM Berlanjut:</strong> Pengawasan aset dan pelacakan agen Amanin tetap aktif di latar belakang.</li>
+                    </ul>
+
+                    <p class="text-muted small fst-italic mb-0">
+                        Apakah Anda yakin ingin membuka kunci perangkat ini?
+                    </p>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning text-dark btn-sm fw-semibold d-inline-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-unlock-fill"></i> Ya, Buka Kunci Perangkat
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 <!-- 4. Edit Owner Modal -->
 <div class="modal fade" id="editOwnerModal" tabindex="-1">
