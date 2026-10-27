@@ -153,6 +153,37 @@ class EnterpriseController extends Controller
     }
 
     /**
+     * Delete an enterprise (standby only).
+     */
+    public function destroy(Request $request, $id)
+    {
+        $enterprise = Enterprise::findOrFail($id);
+
+        if ($enterprise->is_active) {
+            return back()->with('error', 'Enterprise yang sedang aktif digunakan tidak dapat dihapus. Silakan alihkan Enterprise aktif ke akun lain terlebih dahulu.');
+        }
+
+        // Try deleting from Google AMAPI
+        try {
+            $this->amapi->deleteEnterprise($enterprise->enterprise_id);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("AMAPI deleteEnterprise failed for {$enterprise->enterprise_id}: " . $e->getMessage());
+        }
+
+        $name = $enterprise->name;
+        $entId = $enterprise->enterprise_id;
+        $enterprise->delete();
+
+        AuditLog::log('DELETE_ENTERPRISE', 'Enterprise', $entId, [
+            'name'          => $name,
+            'enterprise_id' => $entId,
+        ]);
+
+        return redirect()->route('enterprises.index')
+            ->with('success', "Enterprise <strong>{$name}</strong> ({$entId}) berhasil dihapus dari sistem dan Google AMAPI.");
+    }
+
+    /**
      * Test AMAPI connection.
      */
     public function testConnection(Request $request)

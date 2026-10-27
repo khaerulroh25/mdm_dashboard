@@ -107,6 +107,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/callback', [EnterpriseController::class, 'callback'])->name('callback');
         Route::post('/test-connection', [EnterpriseController::class, 'testConnection'])->name('test')->middleware('permission:users.manage');
         Route::post('/{enterprise}/activate', [EnterpriseController::class, 'activate'])->name('activate')->middleware('permission:users.manage');
+        Route::delete('/{enterprise}', [EnterpriseController::class, 'destroy'])->name('destroy')->middleware('permission:users.manage');
         Route::post('/upload-credentials', [EnterpriseController::class, 'uploadCredentials'])->name('upload-credentials')->middleware('permission:users.manage');
     });
 });

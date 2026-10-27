@@ -539,6 +539,14 @@ class AndroidManagementService
     }
 
     /**
+     * Delete an Enterprise from Google AMAPI.
+     */
+    public function deleteEnterprise(string $enterpriseId): void
+    {
+        $this->service->enterprises->delete($enterpriseId);
+    }
+
+    /**
      * Test AMAPI API connection.
      */
     public function testConnection(?string $enterpriseId = null): array

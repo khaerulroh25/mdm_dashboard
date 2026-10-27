@@ -152,12 +152,22 @@
                                 <i class="bi bi-star-fill me-1"></i>Sedang Digunakan
                             </span>
                         @else
-                            <form action="{{ route('enterprises.activate', $ent->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Alihkan Enterprise aktif ke {{ $ent->name }}?')">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-teal py-1 px-2" title="Jadikan Enterprise Aktif">
-                                    <i class="bi bi-check2-circle me-1"></i>Jadikan Aktif
-                                </button>
-                            </form>
+                            <div class="d-inline-flex align-items-center gap-1">
+                                <form action="{{ route('enterprises.activate', $ent->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Alihkan Enterprise aktif ke {{ $ent->name }}?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-teal py-1 px-2" title="Jadikan Enterprise Aktif">
+                                        <i class="bi bi-check2-circle me-1"></i>Jadikan Aktif
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('enterprises.destroy', $ent->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus Enterprise {{ $ent->name }} ({{ $ent->enterprise_id }})? Aksi ini akan menghapus akun enterprise dari sistem dan Google AMAPI.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Hapus Enterprise">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </div>
                         @endif
                     </td>
                 </tr>
