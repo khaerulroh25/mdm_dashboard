@@ -33,10 +33,7 @@
             <a href="{{ route('devices.offline-alerts') }}" 
                class="nav-link {{ request()->routeIs('devices.offline-alerts') ? 'active' : '' }} d-flex align-items-center justify-content-between" 
                data-bs-toggle="tooltip" data-bs-placement="right" title="Peringatan Offline">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-shield-exclamation text-warning fs-6"></i>
-                    <span>Peringatan Offline</span>
-                </div>
+                <span>Peringatan Offline</span>
                 @if($globalOfflineCount > 0)
                     <span class="badge rounded-pill font-mono shadow-sm text-white" 
                           style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); font-size: 10px; padding: 3px 7px;">

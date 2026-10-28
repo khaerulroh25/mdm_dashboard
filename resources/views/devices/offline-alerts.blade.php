@@ -65,9 +65,11 @@
                         <h2 class="fw-bold text-dark font-mono my-1">{{ number_format($totalOfflineCount) }} <small class="text-muted fs-6 fw-normal">Unit</small></h2>
                         <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
                             <span class="text-muted" style="font-size: 11.5px;">Seluruh durasi offline</span>
-                            <span class="text-teal small fw-semibold">
-                                {{ empty($severity) ? '● Aktif' : 'Pilih &rarr;' }}
-                            </span>
+                            @if(empty($severity))
+                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-mono" style="font-size: 10px;">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Ditampilkan
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -96,9 +98,11 @@
                             <span class="text-muted text-truncate" style="font-size: 11.5px;" title="Tindak lanjut: WhatsApp Reminder">
                                 <i class="bi bi-whatsapp text-success me-1"></i>Chat WA Ramah
                             </span>
-                            <span class="text-warning-emphasis small fw-semibold">
-                                {{ $severity === 'warning' ? '● Aktif' : 'Filter &rarr;' }}
-                            </span>
+                            @if($severity === 'warning')
+                                <span class="badge bg-warning bg-opacity-20 text-dark border border-warning-subtle font-mono" style="font-size: 10px;">
+                                    <i class="bi bi-check-circle-fill text-warning me-1"></i>Ditampilkan
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -127,9 +131,11 @@
                             <span class="text-muted text-truncate" style="font-size: 11.5px;" title="Tindak lanjut: Telepon Langsung">
                                 <i class="bi bi-telephone text-primary me-1"></i>Telepon Langsung
                             </span>
-                            <span class="text-danger small fw-semibold">
-                                {{ $severity === 'high' ? '● Aktif' : 'Filter &rarr;' }}
-                            </span>
+                            @if($severity === 'high')
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle font-mono" style="font-size: 10px;">
+                                    <i class="bi bi-check-circle-fill text-danger me-1"></i>Ditampilkan
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -158,9 +164,11 @@
                             <span class="text-muted text-truncate" style="font-size: 11.5px;" title="Tindak lanjut: Kunjungan Lapangan">
                                 <i class="bi bi-geo-alt-fill text-danger me-1"></i>Kunjungan Lapangan
                             </span>
-                            <span class="text-danger small fw-semibold">
-                                {{ $severity === 'critical' ? '● Aktif' : 'Filter &rarr;' }}
-                            </span>
+                            @if($severity === 'critical')
+                                <span class="badge bg-danger text-white font-mono" style="font-size: 10px;">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Ditampilkan
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </div>

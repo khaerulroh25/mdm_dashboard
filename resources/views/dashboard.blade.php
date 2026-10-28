@@ -31,25 +31,9 @@
                             {{ $offlineAlertCount }} Perangkat Offline (>24 Jam)
                         </span>
                     </h5>
-
-                    <div class="d-flex align-items-center gap-2 mt-2 flex-wrap" style="font-size: 11.5px;">
-                        <span class="text-secondary">Rincian Durasi:</span>
-                        @if($offlineWarningCount > 0)
-                        <span class="badge bg-warning bg-opacity-15 text-dark border border-warning-subtle font-mono">
-                            🟡 {{ $offlineWarningCount }} Unit (1-3 Hari)
-                        </span>
-                        @endif
-                        @if($offlineHighRiskCount > 0)
-                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle font-mono">
-                            🟠 {{ $offlineHighRiskCount }} Unit (3-7 Hari)
-                        </span>
-                        @endif
-                        @if($offlineCriticalCount > 0)
-                        <span class="badge bg-danger text-white font-mono">
-                            🔴 {{ $offlineCriticalCount }} Unit (>7 Hari)
-                        </span>
-                        @endif
-                    </div>
+                    <p class="text-secondary small mb-0 mt-1">
+                        Perangkat cicilan aktif belum terhubung ke server. Lakukan tindak lanjut melalui WhatsApp atau verifikasi kontak.
+                    </p>
                 </div>
             </div>
 

@@ -157,11 +157,11 @@ class DeviceController extends Controller
             });
         }
 
-        // Order by oldest report (longest offline) first
+        // Order by freshest offline (terbaru offline / belum lama) first
         $devices = $query
-            ->orderByRaw('CASE WHEN last_status_report IS NULL THEN 0 ELSE 1 END ASC')
-            ->orderBy('last_status_report', 'asc')
-            ->orderBy('created_at', 'asc')
+            ->orderByRaw('CASE WHEN last_status_report IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderByDesc('last_status_report')
+            ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
 
