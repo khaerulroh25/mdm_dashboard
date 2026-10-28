@@ -31,15 +31,18 @@
                 $globalOfflineCount = \App\Models\Device::forUser()->offlineAlert()->count();
             @endphp
             <a href="{{ route('devices.offline-alerts') }}" 
-               class="nav-link {{ request()->routeIs('devices.offline-alerts') ? 'active' : '' }} d-flex align-items-center justify-content-between" 
+               class="nav-link {{ request()->routeIs('devices.offline-alerts') ? 'active' : '' }}" 
                data-bs-toggle="tooltip" data-bs-placement="right" title="Peringatan Offline">
-                <span>Peringatan Offline</span>
-                @if($globalOfflineCount > 0)
-                    <span class="badge rounded-pill font-mono shadow-sm text-white" 
-                          style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); font-size: 10px; padding: 3px 7px;">
-                        {{ $globalOfflineCount }}
-                    </span>
-                @endif
+                <i class="bi bi-exclamation-triangle"></i>
+                <span class="d-flex align-items-center justify-content-between flex-grow-1">
+                    <span>Peringatan Offline</span>
+                    @if($globalOfflineCount > 0)
+                        <span class="badge rounded-pill font-mono shadow-sm text-white" 
+                              style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); font-size: 10px; padding: 3px 7px;">
+                            {{ $globalOfflineCount }}
+                        </span>
+                    @endif
+                </span>
             </a>
         </li>
         @endif
