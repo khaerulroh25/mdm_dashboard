@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Branch;
+use App\Models\Enterprise;
+use App\Models\Policy;
 use App\Models\AuditLog;
 
 class BranchController extends Controller
@@ -13,7 +15,7 @@ class BranchController extends Controller
      */
     public function index()
     {
-        $branches = Branch::withCount([
+        $branches = Branch::with(['enterprise'])->withCount([
             'devices',
             'devices as active_devices_count' => function ($q) {
                 $q->where('state', '!=', 'DELETED');
@@ -29,7 +31,10 @@ class BranchController extends Controller
      */
     public function create()
     {
-        return view('branches.create');
+        $enterprises = Enterprise::orderByDesc('is_active')->orderBy('name')->get();
+        $policies = Policy::where('policy_id', '!=', 'Lunas')->get();
+
+        return view('branches.create', compact('enterprises', 'policies'));
     }
 
     /**
@@ -38,11 +43,13 @@ class BranchController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code'          => ['nullable', 'string', 'alpha_dash', 'max:30', 'unique:branches,code'],
-            'name'          => ['required', 'string', 'max:150'],
-            'contact_phone' => ['nullable', 'string', 'max:50'],
-            'address'       => ['nullable', 'string', 'max:500'],
-            'is_active'     => ['nullable', 'boolean'],
+            'code'              => ['nullable', 'string', 'alpha_dash', 'max:30', 'unique:branches,code'],
+            'name'              => ['required', 'string', 'max:150'],
+            'contact_phone'     => ['nullable', 'string', 'max:50'],
+            'address'           => ['nullable', 'string', 'max:500'],
+            'enterprise_id'     => ['nullable', 'exists:enterprises,id'],
+            'default_policy_id' => ['nullable', 'string', 'max:100'],
+            'is_active'         => ['nullable', 'boolean'],
         ]);
 
         $code = !empty($validated['code'])
@@ -50,16 +57,20 @@ class BranchController extends Controller
             : Branch::generateCode($validated['name']);
 
         $branch = Branch::create([
-            'code'          => $code,
-            'name'          => trim($validated['name']),
-            'contact_phone' => $validated['contact_phone'] ?? null,
-            'address'       => $validated['address'] ?? null,
-            'is_active'     => $request->boolean('is_active', true),
+            'code'              => $code,
+            'name'              => trim($validated['name']),
+            'contact_phone'     => $validated['contact_phone'] ?? null,
+            'address'           => $validated['address'] ?? null,
+            'enterprise_id'     => $validated['enterprise_id'] ?? null,
+            'default_policy_id' => $validated['default_policy_id'] ?? 'Mode_kiosk',
+            'is_active'         => $request->boolean('is_active', true),
         ]);
 
         AuditLog::log('CREATE_BRANCH', 'Branch', (string)$branch->id, [
-            'code' => $branch->code,
-            'name' => $branch->name,
+            'code'              => $branch->code,
+            'name'              => $branch->name,
+            'enterprise_id'     => $branch->enterprise_id,
+            'default_policy_id' => $branch->default_policy_id,
         ]);
 
         return redirect()->route('branches.index')
@@ -71,7 +82,7 @@ class BranchController extends Controller
      */
     public function edit($id)
     {
-        $branch = Branch::withCount([
+        $branch = Branch::with(['enterprise'])->withCount([
             'devices',
             'devices as active_devices_count' => function ($q) {
                 $q->where('state', '!=', 'DELETED');
@@ -79,7 +90,10 @@ class BranchController extends Controller
             'users',
         ])->findOrFail($id);
 
-        return view('branches.edit', compact('branch'));
+        $enterprises = Enterprise::orderByDesc('is_active')->orderBy('name')->get();
+        $policies = Policy::where('policy_id', '!=', 'Lunas')->get();
+
+        return view('branches.edit', compact('branch', 'enterprises', 'policies'));
     }
 
     /**
@@ -90,23 +104,29 @@ class BranchController extends Controller
         $branch = Branch::findOrFail($id);
 
         $validated = $request->validate([
-            'name'          => ['required', 'string', 'max:150'],
-            'contact_phone' => ['nullable', 'string', 'max:50'],
-            'address'       => ['nullable', 'string', 'max:500'],
-            'is_active'     => ['nullable', 'boolean'],
+            'name'              => ['required', 'string', 'max:150'],
+            'contact_phone'     => ['nullable', 'string', 'max:50'],
+            'address'           => ['nullable', 'string', 'max:500'],
+            'enterprise_id'     => ['nullable', 'exists:enterprises,id'],
+            'default_policy_id' => ['nullable', 'string', 'max:100'],
+            'is_active'         => ['nullable', 'boolean'],
         ]);
 
         $branch->update([
-            'name'          => trim($validated['name']),
-            'contact_phone' => $validated['contact_phone'] ?? null,
-            'address'       => $validated['address'] ?? null,
-            'is_active'     => $request->boolean('is_active', false),
+            'name'              => trim($validated['name']),
+            'contact_phone'     => $validated['contact_phone'] ?? null,
+            'address'           => $validated['address'] ?? null,
+            'enterprise_id'     => $validated['enterprise_id'] ?? null,
+            'default_policy_id' => $validated['default_policy_id'] ?? 'Mode_kiosk',
+            'is_active'         => $request->boolean('is_active', false),
         ]);
 
         AuditLog::log('UPDATE_BRANCH', 'Branch', (string)$branch->id, [
-            'code'      => $branch->code,
-            'name'      => $branch->name,
-            'is_active' => $branch->is_active,
+            'code'              => $branch->code,
+            'name'              => $branch->name,
+            'enterprise_id'     => $branch->enterprise_id,
+            'default_policy_id' => $branch->default_policy_id,
+            'is_active'         => $branch->is_active,
         ]);
 
         return redirect()->route('branches.index')

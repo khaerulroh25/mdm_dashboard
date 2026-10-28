@@ -57,6 +57,17 @@ class AndroidManagementService
     }
 
     /**
+     * Extract enterprise resource name (enterprises/LCxxxx) from a device name or resource path.
+     */
+    public function extractEnterpriseFromDeviceName(string $deviceName): ?string
+    {
+        if (preg_match('#^(enterprises/[^/]+)#', $deviceName, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
      * Normalize device resource name.
      */
     public function formatDeviceName(string $deviceId): string
@@ -70,12 +81,13 @@ class AndroidManagementService
     /**
      * Normalize policy resource name.
      */
-    public function formatPolicyName(string $policyId): string
+    public function formatPolicyName(string $policyId, ?string $enterpriseId = null): string
     {
         if (str_starts_with($policyId, 'enterprises/')) {
             return $policyId;
         }
-        return "{$this->enterpriseId}/policies/{$policyId}";
+        $ent = $enterpriseId ?: $this->enterpriseId;
+        return "{$ent}/policies/{$policyId}";
     }
 
     // =========================================================================
@@ -85,15 +97,16 @@ class AndroidManagementService
     /**
      * List all devices under the enterprise.
      */
-    public function listDevices(int $pageSize = 100, ?string $pageToken = null)
+    public function listDevices(int $pageSize = 100, ?string $pageToken = null, ?string $enterpriseId = null)
     {
+        $targetEnterprise = $enterpriseId ?: $this->enterpriseId;
         $optParams = ['pageSize' => $pageSize];
         if ($pageToken) {
             $optParams['pageToken'] = $pageToken;
         }
 
         return $this->service->enterprises_devices->listEnterprisesDevices(
-            $this->enterpriseId,
+            $targetEnterprise,
             $optParams
         );
     }
@@ -113,7 +126,8 @@ class AndroidManagementService
     public function patchDevicePolicy(string $deviceId, string $policyId)
     {
         $deviceName = $this->formatDeviceName($deviceId);
-        $policyName = $this->formatPolicyName($policyId);
+        $deviceEnt = $this->extractEnterpriseFromDeviceName($deviceName) ?: $this->enterpriseId;
+        $policyName = $this->formatPolicyName($policyId, $deviceEnt);
 
         $device = $this->getDevice($deviceName);
         $device->setPolicyName($policyName);
@@ -397,9 +411,13 @@ class AndroidManagementService
         ?string $policyId = null,
         int $durationSeconds = 604800,
         ?string $additionalData = null,
-        bool $oneTimeOnly = false
+        bool $oneTimeOnly = false,
+        ?string $enterpriseId = null
     ): EnrollmentToken {
-        $policyName = $policyId ? $this->formatPolicyName($policyId) : $this->formatPolicyName('Mode_kiosk');
+        $targetEnterprise = $enterpriseId ?: $this->enterpriseId;
+        $policyName = $policyId
+            ? $this->formatPolicyName($policyId, $targetEnterprise)
+            : $this->formatPolicyName('Mode_kiosk', $targetEnterprise);
 
         $payload = [
             'policyName' => $policyName,
@@ -417,7 +435,7 @@ class AndroidManagementService
         $tokenConfig = new EnrollmentToken($payload);
 
         return $this->service->enterprises_enrollmentTokens->create(
-            $this->enterpriseId,
+            $targetEnterprise,
             $tokenConfig
         );
     }
@@ -570,6 +588,93 @@ class AndroidManagementService
                 'success' => false,
                 'message' => 'Gagal terhubung ke Google AMAPI: ' . $e->getMessage(),
             ];
+        }
+    }
+
+    /**
+     * Clone standard master policies (Mode_kiosk, Gagal_bayar, Lunas) to a target enterprise.
+     */
+    public function cloneMasterPoliciesToEnterprise(string $targetEnterpriseId): array
+    {
+        $masterEnterpriseId = \App\Models\Enterprise::where('is_active', true)->value('enterprise_id')
+            ?? \App\Models\Enterprise::first()?->enterprise_id
+            ?? config('amapi.enterprise_id');
+
+        $policiesToClone = ['Mode_kiosk', 'Gagal_bayar', 'Lunas'];
+        $results = [];
+
+        foreach ($policiesToClone as $policyId) {
+            try {
+                // Fetch master policy from the source master enterprise
+                $masterPolicy = $this->service->enterprises_policies->get("{$masterEnterpriseId}/policies/{$policyId}");
+                $policyData = (array) $masterPolicy->toSimpleObject();
+
+                // Strip old name and version so Google AMAPI initializes a fresh policy version 1
+                unset($policyData['name']);
+                unset($policyData['version']);
+
+                $newPolicy = new Policy($policyData);
+                $targetPolicyName = "{$targetEnterpriseId}/policies/{$policyId}";
+
+                $patched = $this->service->enterprises_policies->patch($targetPolicyName, $newPolicy);
+                $results[$policyId] = [
+                    'success' => true,
+                    'version' => $patched->getVersion(),
+                ];
+            } catch (\Throwable $e) {
+                Log::error("Failed cloning policy {$policyId} to {$targetEnterpriseId}: " . $e->getMessage());
+                $results[$policyId] = [
+                    'success' => false,
+                    'error'   => $e->getMessage(),
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * List all policies registered under a specific enterprise with parsed metadata.
+     */
+    public function listEnterprisePolicies(string $enterpriseId): array
+    {
+        try {
+            $response = $this->service->enterprises_policies->listEnterprisesPolicies($enterpriseId);
+            $policies = $response->getPolicies() ?? [];
+
+            $formatted = [];
+            foreach ($policies as $pol) {
+                $raw = (array) $pol->toSimpleObject();
+                $name = $pol->getName();
+                $shortId = basename($name);
+
+                $apps = $raw['applications'] ?? [];
+                $kioskApp = null;
+                foreach ($apps as $app) {
+                    $installType = is_object($app) ? ($app->installType ?? null) : ($app['installType'] ?? null);
+                    if ($installType === 'KIOSK') {
+                        $kioskApp = is_object($app) ? ($app->packageName ?? null) : ($app['packageName'] ?? null);
+                        break;
+                    }
+                }
+
+                $formatted[] = [
+                    'name'                    => $name,
+                    'short_id'                => $shortId,
+                    'version'                 => $pol->getVersion(),
+                    'factory_reset_disabled'  => !empty($raw['factoryResetDisabled']),
+                    'frp_admin_emails'        => $raw['frpAdminEmails'] ?? [],
+                    'location_mode'           => $raw['locationMode'] ?? 'LOCATION_USER_CHOICE',
+                    'kiosk_app'               => $kioskApp,
+                    'applications_count'      => count($apps),
+                    'play_store_mode'         => $raw['playStoreMode'] ?? 'BLACKLIST',
+                ];
+            }
+
+            return $formatted;
+        } catch (\Throwable $e) {
+            Log::warning("Failed listing policies for {$enterpriseId}: " . $e->getMessage());
+            return [];
         }
     }
 }

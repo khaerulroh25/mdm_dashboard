@@ -15,6 +15,8 @@ class Branch extends Model
         'name',
         'contact_phone',
         'address',
+        'enterprise_id',
+        'default_policy_id',
         'is_active',
     ];
 
@@ -38,6 +40,23 @@ class Branch extends Model
     public function activeDevices(): HasMany
     {
         return $this->hasMany(Device::class, 'branch_id')->where('state', '!=', 'DELETED');
+    }
+
+    public function enterprise(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Enterprise::class, 'enterprise_id');
+    }
+
+    public function getEffectiveEnterpriseId(): string
+    {
+        return $this->enterprise?->enterprise_id
+            ?? Enterprise::getActiveEnterprise()?->enterprise_id
+            ?? config('amapi.enterprise_id');
+    }
+
+    public function getEffectivePolicyId(): string
+    {
+        return $this->default_policy_id ?: 'Mode_kiosk';
     }
 
     /**

@@ -57,43 +57,68 @@
                                     <select name="branch_id" id="branch_id" class="form-select @error('branch_id') is-invalid @enderror">
                                         @foreach($branches as $b)
                                         <option value="{{ $b->id }}" {{ old('branch_id') == $b->id ? 'selected' : '' }}>
-                                            📍 {{ $b->name }} ({{ $b->code }})
+                                            📍 {{ $b->name }} ({{ $b->code }}) — {{ $b->enterprise?->name ?? 'Enterprise Default' }} [{{ $b->default_policy_id ?: 'Mode_kiosk' }}]
                                         </option>
                                         @endforeach
                                         <option value="" {{ old('branch_id') === '' ? 'selected' : '' }}>
-                                            🏢 Pusat / Tanpa Cabang Spesifik
+                                            🏢 Pusat / Tanpa Cabang Spesifik (Enterprise Utama)
                                         </option>
                                     </select>
                                     <div class="form-text mt-1" style="font-size: 11.5px;">
-                                        Pilih cabang agar perangkat yang memindai QR ini otomatis ditempatkan ke cabang tersebut saat sinkronisasi.
+                                        Pilih cabang agar perangkat yang memindai QR ini otomatis teralokasi ke akun Google Enterprise dan cabang bersangkutan.
                                     </div>
                                 @endif
                             </div>
 
-                            <!-- Policy Selection (Read-Only: Default Mode Kiosk) -->
+                            @if(auth()->user()->isBranchScoped() && auth()->user()->branch)
+                            <!-- Enterprise Allocation Info for Scoped User -->
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">
+                                    Alokasi Akun Enterprise Google Cloud
+                                </label>
+                                <div class="p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-building-check text-teal fs-5"></i>
+                                        <div>
+                                            <div class="fw-bold text-dark small">
+                                                {{ auth()->user()->branch->enterprise?->name ?? ($activeEnterprise?->name ?? 'Enterprise Utama') }}
+                                            </div>
+                                            <span class="text-muted font-mono" style="font-size: 11px;">
+                                                {{ auth()->user()->branch->getEffectiveEnterpriseId() }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-light text-secondary border font-mono">
+                                        Terkait Cabang
+                                    </span>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Policy Selection (Read-Only: Default Mode Kiosk or Branch Policy) -->
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold text-secondary">
                                     Kebijakan (Policy) Pendaftaran <span class="text-danger">*</span>
                                 </label>
-                                <input type="hidden" name="policy_id" value="Mode_kiosk">
+                                <input type="hidden" name="policy_id" value="{{ $defaultPolicy ?? 'Mode_kiosk' }}">
                                 <div class="p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="p-2 bg-teal-subtle text-teal rounded-3 border border-teal-subtle">
                                             <i class="bi bi-shield-check fs-4"></i>
                                         </div>
                                         <div>
-                                            <div class="fw-bold text-dark small">Mode Kiosk (Mode_kiosk)</div>
+                                            <div class="fw-bold text-dark small">{{ $defaultPolicy ?? 'Mode_kiosk' }}</div>
                                             <span class="text-secondary" style="font-size: 11px;">
                                                 Kebijakan operasional standar (kamera aktif, Play Store blacklist, pelacak lokasi background).
                                             </span>
                                         </div>
                                     </div>
                                     <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-mono">
-                                        <i class="bi bi-lock-fill me-1"></i>Terkunci Otomatis
+                                        <i class="bi bi-lock-fill me-1"></i>Otomatis Cabang
                                     </span>
                                 </div>
                                 <div class="form-text mt-1 text-muted" style="font-size: 11.5px;">
-                                    <i class="bi bi-info-circle me-1"></i>Kebijakan ini dikunci ke <strong>Mode Kiosk</strong> untuk mencegah kesalahan pemilihan konfigurasi oleh petugas lapangan.
+                                    <i class="bi bi-info-circle me-1"></i>Kebijakan pendaftaran diselaraskan otomatis dengan konfigurasi cabang operasional.
                                 </div>
                             </div>
 

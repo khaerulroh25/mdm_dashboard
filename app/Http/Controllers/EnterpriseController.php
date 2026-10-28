@@ -118,19 +118,59 @@ class EnterpriseController extends Controller
                 ]
             );
 
+            // Auto-clone standard master policies (Mode_kiosk, Gagal_bayar, Lunas)
+            $cloneSummary = $this->amapi->cloneMasterPoliciesToEnterprise($enterprise->enterprise_id);
+
             session()->forget('amapi_signup_url_name');
 
             AuditLog::log('CREATE_ENTERPRISE_SUCCESS', 'Enterprise', $enterprise->enterprise_id, [
-                'name'        => $enterprise->name,
-                'admin_email' => $enterprise->admin_email,
+                'name'            => $enterprise->name,
+                'admin_email'     => $enterprise->admin_email,
+                'policies_cloned' => $cloneSummary,
             ]);
 
-            return redirect()->route('enterprises.index')
-                ->with('success', "Enterprise <strong>{$enterprise->name}</strong> ({$enterprise->enterprise_id}) berhasil didaftarkan secara otomatis melalui Google AMAPI!");
+            return redirect()->route('enterprises.show', $enterprise->id)
+                ->with('success', "Enterprise <strong>{$enterprise->name}</strong> ({$enterprise->enterprise_id}) berhasil didaftarkan! Kebijakan master (Mode_kiosk, Gagal_bayar, Lunas) telah otomatis dikloning dan siap digunakan.");
 
         } catch (Exception $e) {
             return redirect()->route('enterprises.index')
                 ->with('error', "Gagal menyelesaikan pendaftaran Enterprise: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display detailed Enterprise information, live AMAPI policies, and linked branches.
+     */
+    public function show($id)
+    {
+        $enterprise = Enterprise::with('branches')->findOrFail($id);
+
+        $policies = $this->amapi->listEnterprisePolicies($enterprise->enterprise_id);
+        $deviceCount = \App\Models\Device::where('device_id', 'LIKE', "{$enterprise->enterprise_id}/%")
+            ->where('state', '!=', 'DELETED')
+            ->count();
+
+        return view('enterprises.show', compact('enterprise', 'policies', 'deviceCount'));
+    }
+
+    /**
+     * Re-sync/clone master policies to this specific enterprise.
+     */
+    public function clonePolicies(Request $request, $id)
+    {
+        $enterprise = Enterprise::findOrFail($id);
+
+        try {
+            $results = $this->amapi->cloneMasterPoliciesToEnterprise($enterprise->enterprise_id);
+
+            AuditLog::log('CLONE_ENTERPRISE_POLICIES', 'Enterprise', $enterprise->enterprise_id, [
+                'results' => $results,
+            ]);
+
+            return back()->with('success', "Kebijakan master (<strong>Mode_kiosk</strong>, <strong>Gagal_bayar</strong>, <strong>Lunas</strong>) berhasil disinkronkan ke <strong>{$enterprise->name}</strong>.");
+
+        } catch (Exception $e) {
+            return back()->with('error', "Gagal menyinkronkan kebijakan ke Google AMAPI: " . $e->getMessage());
         }
     }
 

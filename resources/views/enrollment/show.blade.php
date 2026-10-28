@@ -72,6 +72,11 @@
                                     </h5>
                                 </div>
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    @if(!empty($targetEnterpriseRecord))
+                                    <span class="badge bg-light text-dark border px-3 py-2">
+                                        <i class="bi bi-building me-1 text-teal"></i> {{ $targetEnterpriseRecord->name }}
+                                    </span>
+                                    @endif
                                     @if(!empty($branch))
                                     <span class="badge bg-teal-subtle text-teal border border-teal-subtle px-3 py-2">
                                         <i class="bi bi-geo-alt-fill me-1"></i> {{ $branch->name }}

@@ -25,7 +25,8 @@
                     <th scope="col" class="ps-4">No</th>
                     <th scope="col">Kode Cabang</th>
                     <th scope="col">Nama Cabang</th>
-                    <th scope="col">Kontak Darurat (Lost Mode)</th>
+                    <th scope="col">Enterprise & Policy</th>
+                    <th scope="col">Kontak Darurat</th>
                     <th scope="col">Perangkat Aktif</th>
                     <th scope="col">Akun Cabang</th>
                     <th scope="col">Status</th>
@@ -46,6 +47,14 @@
                         @if($branch->address)
                             <div class="text-secondary small text-truncate" style="max-width: 260px;">{{ $branch->address }}</div>
                         @endif
+                    </td>
+                    <td>
+                        <div class="small fw-semibold text-dark">
+                            <i class="bi bi-building text-teal me-1"></i>{{ $branch->enterprise->name ?? 'Default (Active)' }}
+                        </div>
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary font-mono" style="font-size: 11px;">
+                            {{ $branch->default_policy_id ?: 'Mode_kiosk' }}
+                        </span>
                     </td>
                     <td>
                         @if($branch->contact_phone)

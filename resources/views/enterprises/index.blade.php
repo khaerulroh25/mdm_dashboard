@@ -147,16 +147,20 @@
                         {{ $ent->created_at ? $ent->created_at->timezone('Asia/Jakarta')->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}
                     </td>
                     <td class="text-end pe-4">
-                        @if($ent->is_active)
-                            <span class="badge bg-teal-subtle text-teal border border-teal-subtle py-1 px-2 small">
-                                <i class="bi bi-star-fill me-1"></i>Sedang Digunakan
-                            </span>
-                        @else
-                            <div class="d-inline-flex align-items-center gap-1">
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <a href="{{ route('enterprises.show', $ent->id) }}" class="btn btn-sm btn-outline-teal py-1 px-2" title="Lihat Detail & Daftar Policies">
+                                <i class="bi bi-eye me-1"></i>Detail
+                            </a>
+
+                            @if($ent->is_active)
+                                <span class="badge bg-teal-subtle text-teal border border-teal-subtle py-1 px-2 small">
+                                    <i class="bi bi-star-fill me-1"></i>Aktif
+                                </span>
+                            @else
                                 <form action="{{ route('enterprises.activate', $ent->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Alihkan Enterprise aktif ke {{ $ent->name }}?')">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-teal py-1 px-2" title="Jadikan Enterprise Aktif">
-                                        <i class="bi bi-check2-circle me-1"></i>Jadikan Aktif
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Jadikan Enterprise Aktif">
+                                        <i class="bi bi-check2-circle me-1"></i>Aktifkan
                                     </button>
                                 </form>
 
@@ -167,8 +171,8 @@
                                         <i class="bi bi-trash3"></i>
                                     </button>
                                 </form>
-                            </div>
-                        @endif
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

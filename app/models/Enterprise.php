@@ -32,4 +32,9 @@ class Enterprise extends Model
         return self::where('is_active', true)->first()
             ?? self::first();
     }
+
+    public function branches(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Branch::class, 'enterprise_id');
+    }
 }

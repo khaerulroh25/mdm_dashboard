@@ -83,6 +83,45 @@
                                 @enderror
                             </div>
 
+                            <div class="col-12 col-md-6">
+                                <label for="enterprise_id" class="form-label small fw-semibold text-secondary">
+                                    Alokasi Akun Enterprise Google Cloud
+                                </label>
+                                <select name="enterprise_id" id="enterprise_id" class="form-select @error('enterprise_id') is-invalid @enderror">
+                                    <option value="">-- Gunakan Enterprise Default (Aktif) --</option>
+                                    @foreach($enterprises as $ent)
+                                        <option value="{{ $ent->id }}" {{ old('enterprise_id') == $ent->id ? 'selected' : '' }}>
+                                            {{ $ent->name }} ({{ $ent->enterprise_id }}) {{ $ent->is_active ? '★ DEFAULT' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="form-text" style="font-size: 11px;">
+                                    Enterprise yang digunakan saat pendaftaran QR perangkat di cabang ini.
+                                </div>
+                                @error('enterprise_id')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="default_policy_id" class="form-label small fw-semibold text-secondary">
+                                    Kebijakan Default Pendaftaran
+                                </label>
+                                <select name="default_policy_id" id="default_policy_id" class="form-select @error('default_policy_id') is-invalid @enderror">
+                                    @foreach($policies as $pol)
+                                        <option value="{{ $pol->policy_id }}" {{ old('default_policy_id', 'Mode_kiosk') == $pol->policy_id ? 'selected' : '' }}>
+                                            {{ $pol->name }} ({{ $pol->policy_id }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="form-text" style="font-size: 11px;">
+                                    Kebijakan yang otomatis diterapkan saat scan QR pendaftaran cabang.
+                                </div>
+                                @error('default_policy_id')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
                             <div class="col-12">
                                 <div class="bg-white p-3 rounded-3 border">
                                     <div class="form-check form-switch">
