@@ -162,6 +162,15 @@ class DeviceSyncService
             $resolvedBranch = Branch::find($branchId);
         }
 
+        // Preserve newer location_updated_at or existing local last_status_report if more recent than AMAPI
+        $finalStatusReport = $lastReport;
+        if ($existingDevice) {
+            $latestLocal = $existingDevice->location_updated_at;
+            if ($latestLocal && (!$finalStatusReport || $latestLocal->gt(\Carbon\Carbon::parse($finalStatusReport)))) {
+                $finalStatusReport = $latestLocal->format('Y-m-d H:i:s');
+            }
+        }
+
         $device = Device::updateOrCreate(
             ['device_id' => $deviceId],
             [
@@ -178,7 +187,7 @@ class DeviceSyncService
                 'network_info' => $networkInfoArray,
                 'memory_info' => $memoryInfo ? json_decode(json_encode($memoryInfo), true) : null,
                 'raw_device_data' => $rawDeviceArray,
-                'last_status_report' => $lastReport,
+                'last_status_report' => $finalStatusReport,
                 'enrolled_at' => $enrollmentTime ?? now(),
             ]
         );

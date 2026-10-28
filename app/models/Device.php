@@ -402,15 +402,30 @@ class Device extends Model
     }
 
     /**
+     * Get the effective latest interaction timestamp across Google AMAPI and MDM Agent GPS.
+     */
+    public function getEffectiveLastSeenAttribute(): ?\Carbon\Carbon
+    {
+        if ($this->location_updated_at && $this->last_status_report) {
+            return $this->location_updated_at->gt($this->last_status_report)
+                ? $this->location_updated_at
+                : $this->last_status_report;
+        }
+
+        return $this->location_updated_at ?? $this->last_status_report;
+    }
+
+    /**
      * Check if device is actively online (reported status within the last 24 hours).
      */
     public function getIsOnlineAttribute(): bool
     {
-        if (!$this->last_status_report) {
+        $lastSeen = $this->effective_last_seen;
+        if (!$lastSeen) {
             return false;
         }
 
-        return $this->last_status_report->diffInHours(now()) <= 24;
+        return $lastSeen->diffInHours(now()) <= 24;
     }
 
     /**
@@ -422,8 +437,9 @@ class Device extends Model
             return 'Aktif Online';
         }
 
-        if ($this->last_status_report) {
-            return 'Offline (' . $this->last_status_report->diffForHumans() . ')';
+        $lastSeen = $this->effective_last_seen;
+        if ($lastSeen) {
+            return 'Offline (' . $lastSeen->diffForHumans() . ')';
         }
 
         return 'Belum Pernah Lapor';
@@ -451,31 +467,43 @@ class Device extends Model
     /**
      * Scope for devices triggering offline alerts (> 24 hours without contact).
      * Excludes deleted devices and settled/completed loans (policy 'Lunas').
+     * Checks both AMAPI status report and MDM Agent location updates.
      */
     public function scopeOfflineAlert($query, ?string $severity = null)
     {
         $cutoff24h = now()->subHours(24);
 
+        // A device is an offline alert candidate if it has NO recent interaction (neither AMAPI nor Agent location) in the last 24h
         $query->where('state', '!=', 'DELETED')
               ->where('policy_id', '!=', 'Lunas')
               ->where(function ($q) use ($cutoff24h) {
-                  $q->whereNull('last_status_report')
-                    ->orWhere('last_status_report', '<', $cutoff24h);
+                  $q->where(function ($sub) use ($cutoff24h) {
+                      $sub->whereNull('last_status_report')
+                          ->orWhere('last_status_report', '<', $cutoff24h);
+                  })->where(function ($sub) use ($cutoff24h) {
+                      $sub->whereNull('location_updated_at')
+                          ->orWhere('location_updated_at', '<', $cutoff24h);
+                  });
               });
+
+        $latestSql = 'COALESCE(GREATEST(COALESCE(last_status_report, location_updated_at), COALESCE(location_updated_at, last_status_report)), last_status_report, location_updated_at)';
 
         if ($severity === 'warning') {
             // 1 s/d 3 hari (24 - 72 jam)
-            $query->whereNotNull('last_status_report')
-                  ->whereBetween('last_status_report', [now()->subHours(72), $cutoff24h]);
+            $query->where(function ($q) use ($latestSql, $cutoff24h) {
+                $q->whereBetween(\Illuminate\Support\Facades\DB::raw($latestSql), [now()->subHours(72), $cutoff24h]);
+            });
         } elseif ($severity === 'high') {
             // 3 s/d 7 hari (72 - 168 jam)
-            $query->whereNotNull('last_status_report')
-                  ->whereBetween('last_status_report', [now()->subHours(168), now()->subHours(72)]);
+            $query->where(function ($q) use ($latestSql) {
+                $q->whereBetween(\Illuminate\Support\Facades\DB::raw($latestSql), [now()->subHours(168), now()->subHours(72)]);
+            });
         } elseif ($severity === 'critical') {
             // > 7 hari (168 jam) atau tidak pernah lapor sama sekali
-            $query->where(function ($q) {
-                $q->whereNull('last_status_report')
-                  ->orWhere('last_status_report', '<', now()->subHours(168));
+            $query->where(function ($q) use ($latestSql) {
+                $q->where(function ($sub) {
+                    $sub->whereNull('last_status_report')->whereNull('location_updated_at');
+                })->orWhere(\Illuminate\Support\Facades\DB::raw($latestSql), '<', now()->subHours(168));
             });
         }
 
@@ -487,7 +515,7 @@ class Device extends Model
      */
     public function getOfflineDurationHoursAttribute(): int
     {
-        $lastSeen = $this->last_status_report ?? $this->created_at;
+        $lastSeen = $this->effective_last_seen ?? $this->created_at;
         return (int) $lastSeen->diffInHours(now());
     }
 
@@ -496,7 +524,8 @@ class Device extends Model
      */
     public function getOfflineRiskAttribute(): array
     {
-        if (!$this->last_status_report) {
+        $lastSeen = $this->effective_last_seen;
+        if (!$lastSeen) {
             $days = (int) max(1, $this->created_at->diffInDays(now()));
             return [
                 'level'        => 'critical',
@@ -520,7 +549,7 @@ class Device extends Model
                 'badge_subtle' => 'bg-warning bg-opacity-15 text-dark border border-warning-subtle',
                 'days'         => max(1, $days),
                 'icon'         => 'bi-exclamation-triangle-fill',
-                'description'  => "Offline selama {$days} hari ({$this->last_status_report->diffForHumans()})",
+                'description'  => "Offline selama {$days} hari ({$lastSeen->diffForHumans()})",
             ];
         }
 
@@ -532,7 +561,7 @@ class Device extends Model
                 'badge_subtle' => 'bg-danger bg-opacity-10 text-danger border border-danger-subtle',
                 'days'         => $days,
                 'icon'         => 'bi-exclamation-circle-fill',
-                'description'  => "Offline selama {$days} hari ({$this->last_status_report->diffForHumans()})",
+                'description'  => "Offline selama {$days} hari ({$lastSeen->diffForHumans()})",
             ];
         }
 
@@ -543,7 +572,7 @@ class Device extends Model
             'badge_subtle' => 'bg-danger bg-opacity-10 text-danger border border-danger-subtle',
             'days'         => $days,
             'icon'         => 'bi-shield-fill-x',
-            'description'  => "Offline selama {$days} hari ({$this->last_status_report->diffForHumans()})",
+            'description'  => "Offline selama {$days} hari ({$lastSeen->diffForHumans()})",
         ];
     }
 

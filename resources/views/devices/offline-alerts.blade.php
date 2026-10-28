@@ -329,7 +329,7 @@
                             <div class="text-muted" style="font-size: 11px;">
                                 Terakhir: 
                                 <strong>
-                                    {{ $device->last_status_report ? $device->last_status_report->format('d M Y, H:i') : 'Belum Pernah' }}
+                                    {{ $device->effective_last_seen ? $device->effective_last_seen->format('d M Y, H:i') : 'Belum Pernah' }}
                                 </strong>
                             </div>
                         </td>

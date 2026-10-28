@@ -157,10 +157,12 @@ class DeviceController extends Controller
             });
         }
 
-        // Order by freshest offline (terbaru offline / belum lama) first
+        // Order by freshest offline (terbaru offline / belum lama) first, considering both AMAPI and Agent location
+        $latestExpr = \Illuminate\Support\Facades\DB::raw('COALESCE(GREATEST(COALESCE(last_status_report, location_updated_at), COALESCE(location_updated_at, last_status_report)), last_status_report, location_updated_at)');
+
         $devices = $query
-            ->orderByRaw('CASE WHEN last_status_report IS NULL THEN 1 ELSE 0 END ASC')
-            ->orderByDesc('last_status_report')
+            ->orderByRaw('CASE WHEN last_status_report IS NULL AND location_updated_at IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderByDesc($latestExpr)
             ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
