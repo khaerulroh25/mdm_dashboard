@@ -659,6 +659,7 @@ class AndroidManagementService
                 }
 
                 $formatted[] = [
+                    'id'                      => $shortId,
                     'name'                    => $name,
                     'short_id'                => $shortId,
                     'version'                 => $pol->getVersion(),
