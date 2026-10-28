@@ -26,6 +26,9 @@ class DashboardController extends Controller
         $totalDevices = (clone $deviceQuery)->where('state', '!=', 'DELETED')->count();
         $activeDevices = (clone $deviceQuery)->where('state', 'ACTIVE')->count();
         $offlineAlertCount = (clone $deviceQuery)->offlineAlert()->count();
+        $offlineWarningCount = $offlineAlertCount > 0 ? (clone $deviceQuery)->offlineAlert('warning')->count() : 0;
+        $offlineHighRiskCount = $offlineAlertCount > 0 ? (clone $deviceQuery)->offlineAlert('high')->count() : 0;
+        $offlineCriticalCount = $offlineAlertCount > 0 ? (clone $deviceQuery)->offlineAlert('critical')->count() : 0;
 
         $lostModeQuery = DeviceCommand::where('command_type', 'START_LOST_MODE')
             ->where('status', 'SUCCESS');
@@ -143,6 +146,9 @@ class DashboardController extends Controller
             'totalDevices',
             'activeDevices',
             'offlineAlertCount',
+            'offlineWarningCount',
+            'offlineHighRiskCount',
+            'offlineCriticalCount',
             'lostModeDevices',
             'totalPolicies',
             'totalApps',

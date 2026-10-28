@@ -5,23 +5,65 @@
 
 @section('content')
 @if($offlineAlertCount > 0)
-<!-- Offline Alert Warning Banner -->
-<div class="alert alert-warning border-0 rounded-3 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 shadow-sm" style="background-color: #FFFBEB; border-left: 4px solid #F59E0B !important;">
-    <div class="d-flex align-items-center gap-3">
-        <div class="p-2 bg-warning bg-opacity-20 text-warning rounded-circle flex-shrink-0">
-            <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
-        </div>
-        <div>
-            <div class="fw-bold text-dark small">Peringatan Operasional: Terdeteksi {{ $offlineAlertCount }} Perangkat Offline (>24 Jam)</div>
-            <span class="text-secondary" style="font-size: 12px;">
-                Terdapat perangkat cicilan aktif yang belum terhubung atau tidak melaporkan status ke server lebih dari 1 hari.
-            </span>
+<!-- Executive Offline Early Warning Banner -->
+<div class="card card-mdm border-0 mb-4 overflow-hidden shadow-sm" style="background: linear-gradient(to right, #FFFFFF, #FFFDF8); border-left: 5px solid #F59E0B !important;">
+    <div class="card-body p-3 p-md-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <!-- Prominent Amber Gradient Icon Box with crisp White Icon -->
+                <div class="d-flex align-items-center justify-content-center flex-shrink-0 text-white shadow-sm" 
+                     style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
+                    <i class="bi bi-shield-exclamation fs-3"></i>
+                </div>
+                
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                        <span class="badge px-2 py-1 rounded-pill fw-semibold text-uppercase font-mono" style="background-color: #FEF3C7; color: #92400E; font-size: 10px; letter-spacing: 0.5px;">
+                            <i class="bi bi-broadcast me-1"></i>Early Warning System
+                        </span>
+                        <span class="text-secondary small">&bull;</span>
+                        <span class="text-secondary small">Perangkat Tidak Lapor Status</span>
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-1 d-flex align-items-center gap-2 flex-wrap">
+                        <span>Peringatan Operasional:</span>
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle font-mono px-2 py-1 fs-6">
+                            {{ $offlineAlertCount }} Perangkat Offline (>24 Jam)
+                        </span>
+                    </h5>
+
+                    <div class="d-flex align-items-center gap-2 mt-2 flex-wrap" style="font-size: 11.5px;">
+                        <span class="text-secondary">Rincian Durasi:</span>
+                        @if($offlineWarningCount > 0)
+                        <span class="badge bg-warning bg-opacity-15 text-dark border border-warning-subtle font-mono">
+                            🟡 {{ $offlineWarningCount }} Unit (1-3 Hari)
+                        </span>
+                        @endif
+                        @if($offlineHighRiskCount > 0)
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle font-mono">
+                            🟠 {{ $offlineHighRiskCount }} Unit (3-7 Hari)
+                        </span>
+                        @endif
+                        @if($offlineCriticalCount > 0)
+                        <span class="badge bg-danger text-white font-mono">
+                            🔴 {{ $offlineCriticalCount }} Unit (>7 Hari)
+                        </span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('devices.offline-alerts') }}" 
+                   class="btn btn-sm px-3 py-2 fw-semibold d-inline-flex align-items-center gap-2 text-white shadow-sm"
+                   style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border: none; border-radius: 8px;">
+                    <i class="bi bi-eye"></i>
+                    <span>Tinjau Perangkat Offline</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
         </div>
     </div>
-    <a href="{{ route('devices.offline-alerts') }}" class="btn btn-warning btn-sm fw-semibold d-inline-flex align-items-center gap-1 shadow-sm px-3" style="background-color: #F59E0B; border-color: #F59E0B; color: #fff;">
-        <span>Lihat Daftar Peringatan</span>
-        <i class="bi bi-arrow-right"></i>
-    </a>
 </div>
 @endif
 
