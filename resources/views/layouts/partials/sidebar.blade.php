@@ -21,9 +21,23 @@
 
         @if(auth()->check() && auth()->user()->hasPermission('devices.view'))
         <li class="nav-item">
-            <a href="{{ route('devices.index') }}" class="nav-link {{ request()->routeIs('devices.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Devices">
+            <a href="{{ route('devices.index') }}" class="nav-link {{ request()->routeIs('devices.*') && !request()->routeIs('devices.offline-alerts') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Devices">
                 <i class="bi bi-phone"></i>
                 <span>Devices</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            @php
+                $globalOfflineCount = \App\Models\Device::forUser()->offlineAlert()->count();
+            @endphp
+            <a href="{{ route('devices.offline-alerts') }}" class="nav-link {{ request()->routeIs('devices.offline-alerts') ? 'active' : '' }} d-flex align-items-center justify-content-between" data-bs-toggle="tooltip" data-bs-placement="right" title="Peringatan Offline">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle text-warning"></i>
+                    <span>Peringatan Offline</span>
+                </div>
+                @if($globalOfflineCount > 0)
+                    <span class="badge bg-danger rounded-pill font-mono" style="font-size: 10px; padding: 3px 6px;">{{ $globalOfflineCount }}</span>
+                @endif
             </a>
         </li>
         @endif

@@ -115,6 +115,74 @@ class DeviceController extends Controller
     }
 
     /**
+     * Display listing of devices/people triggering offline alerts (> 24 hours).
+     */
+    public function offlineAlerts(Request $request)
+    {
+        $user = auth()->user();
+        $selectedBranchId = $user->isBranchScoped() ? $user->branch_id : $request->input('branch_id');
+        $severity = $request->input('severity'); // 'warning', 'high', 'critical', or null (all)
+        $search = $request->input('search');
+
+        // Base scoped query
+        $baseQuery = Device::forUser($user);
+        if (!$user->isBranchScoped() && !empty($selectedBranchId)) {
+            $baseQuery->where('branch_id', $selectedBranchId);
+        }
+
+        // Calculate severity metric cards based on current user / branch filter
+        $totalOfflineCount = (clone $baseQuery)->offlineAlert()->count();
+        $warningCount = (clone $baseQuery)->offlineAlert('warning')->count();
+        $highRiskCount = (clone $baseQuery)->offlineAlert('high')->count();
+        $criticalCount = (clone $baseQuery)->offlineAlert('critical')->count();
+
+        // Main list query with eager loads
+        $query = (clone $baseQuery)
+            ->with(['owner', 'branch', 'policy'])
+            ->offlineAlert($severity);
+
+        // Search Filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('hardware_model', 'like', "%{$search}%")
+                  ->orWhere('marketing_name', 'like', "%{$search}%")
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhere('serial_number', 'like', "%{$search}%")
+                  ->orWhere('imei', 'like', "%{$search}%")
+                  ->orWhereHas('owner', function ($oq) use ($search) {
+                      $oq->where('nama', 'like', "%{$search}%")
+                         ->orWhere('id_anggota', 'like', "%{$search}%")
+                         ->orWhere('telepon', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Order by oldest report (longest offline) first
+        $devices = $query
+            ->orderByRaw('CASE WHEN last_status_report IS NULL THEN 0 ELSE 1 END ASC')
+            ->orderBy('last_status_report', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->paginate(15)
+            ->withQueryString();
+
+        $branches = Branch::where('is_active', true)->orderBy('name')->get();
+        $currentBranch = $selectedBranchId ? Branch::find($selectedBranchId) : null;
+
+        return view('devices.offline-alerts', compact(
+            'devices',
+            'totalOfflineCount',
+            'warningCount',
+            'highRiskCount',
+            'criticalCount',
+            'severity',
+            'search',
+            'branches',
+            'currentBranch',
+            'selectedBranchId'
+        ));
+    }
+
+    /**
      * Display detailed device technical specs and command history.
      */
     public function show($id)

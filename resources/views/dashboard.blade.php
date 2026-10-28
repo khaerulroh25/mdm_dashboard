@@ -4,6 +4,27 @@
 @section('page_title', 'Dashboard Overview')
 
 @section('content')
+@if($offlineAlertCount > 0)
+<!-- Offline Alert Warning Banner -->
+<div class="alert alert-warning border-0 rounded-3 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3 shadow-sm" style="background-color: #FFFBEB; border-left: 4px solid #F59E0B !important;">
+    <div class="d-flex align-items-center gap-3">
+        <div class="p-2 bg-warning bg-opacity-20 text-warning rounded-circle flex-shrink-0">
+            <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+        </div>
+        <div>
+            <div class="fw-bold text-dark small">Peringatan Operasional: Terdeteksi {{ $offlineAlertCount }} Perangkat Offline (>24 Jam)</div>
+            <span class="text-secondary" style="font-size: 12px;">
+                Terdapat perangkat cicilan aktif yang belum terhubung atau tidak melaporkan status ke server lebih dari 1 hari.
+            </span>
+        </div>
+    </div>
+    <a href="{{ route('devices.offline-alerts') }}" class="btn btn-warning btn-sm fw-semibold d-inline-flex align-items-center gap-1 shadow-sm px-3" style="background-color: #F59E0B; border-color: #F59E0B; color: #fff;">
+        <span>Lihat Daftar Peringatan</span>
+        <i class="bi bi-arrow-right"></i>
+    </a>
+</div>
+@endif
+
 <!-- Metric Cards -->
 <div class="row g-3 mb-4">
     <!-- Metric 1: Total Perangkat -->

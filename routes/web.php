@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
     // Devices Management
     Route::prefix('devices')->name('devices.')->group(function () {
         Route::get('/', [DeviceController::class, 'index'])->name('index')->middleware('permission:devices.view');
+        Route::get('/offline-alerts', [DeviceController::class, 'offlineAlerts'])->name('offline-alerts')->middleware('permission:devices.view');
         Route::post('/sync', [DeviceController::class, 'sync'])->name('sync')->middleware('permission:devices.sync');
         Route::get('/{device}', [DeviceController::class, 'show'])->name('show')->middleware('permission:devices.view');
         Route::post('/{device}/command', [DeviceController::class, 'issueCommand'])->name('command')->middleware('permission:devices.command');

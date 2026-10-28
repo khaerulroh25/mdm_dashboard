@@ -447,5 +447,148 @@ class Device extends Model
         }
         return "https://www.google.com/maps?q={$this->latitude},{$this->longitude}";
     }
+
+    /**
+     * Scope for devices triggering offline alerts (> 24 hours without contact).
+     * Excludes deleted devices and settled/completed loans (policy 'Lunas').
+     */
+    public function scopeOfflineAlert($query, ?string $severity = null)
+    {
+        $cutoff24h = now()->subHours(24);
+
+        $query->where('state', '!=', 'DELETED')
+              ->where('policy_id', '!=', 'Lunas')
+              ->where(function ($q) use ($cutoff24h) {
+                  $q->whereNull('last_status_report')
+                    ->orWhere('last_status_report', '<', $cutoff24h);
+              });
+
+        if ($severity === 'warning') {
+            // 1 s/d 3 hari (24 - 72 jam)
+            $query->whereNotNull('last_status_report')
+                  ->whereBetween('last_status_report', [now()->subHours(72), $cutoff24h]);
+        } elseif ($severity === 'high') {
+            // 3 s/d 7 hari (72 - 168 jam)
+            $query->whereNotNull('last_status_report')
+                  ->whereBetween('last_status_report', [now()->subHours(168), now()->subHours(72)]);
+        } elseif ($severity === 'critical') {
+            // > 7 hari (168 jam) atau tidak pernah lapor sama sekali
+            $query->where(function ($q) {
+                $q->whereNull('last_status_report')
+                  ->orWhere('last_status_report', '<', now()->subHours(168));
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Get offline duration in hours.
+     */
+    public function getOfflineDurationHoursAttribute(): int
+    {
+        $lastSeen = $this->last_status_report ?? $this->created_at;
+        return (int) $lastSeen->diffInHours(now());
+    }
+
+    /**
+     * Get offline risk classification metadata.
+     */
+    public function getOfflineRiskAttribute(): array
+    {
+        if (!$this->last_status_report) {
+            $days = (int) max(1, $this->created_at->diffInDays(now()));
+            return [
+                'level'        => 'critical',
+                'label'        => 'Kritis (>7 Hari / Belum Lapor)',
+                'badge_class'  => 'bg-danger text-white',
+                'badge_subtle' => 'bg-danger bg-opacity-10 text-danger border border-danger-subtle',
+                'days'         => $days,
+                'icon'         => 'bi-exclamation-octagon-fill',
+                'description'  => 'Perangkat belum pernah melaporkan status sejak registrasi',
+            ];
+        }
+
+        $hours = $this->offline_duration_hours;
+        $days = (int) round($hours / 24);
+
+        if ($hours <= 72) {
+            return [
+                'level'        => 'warning',
+                'label'        => 'Peringatan Dini (1-3 Hari)',
+                'badge_class'  => 'bg-warning text-dark',
+                'badge_subtle' => 'bg-warning bg-opacity-15 text-dark border border-warning-subtle',
+                'days'         => max(1, $days),
+                'icon'         => 'bi-exclamation-triangle-fill',
+                'description'  => "Offline selama {$days} hari ({$this->last_status_report->diffForHumans()})",
+            ];
+        }
+
+        if ($hours <= 168) {
+            return [
+                'level'        => 'high',
+                'label'        => 'Siaga Tinggi (3-7 Hari)',
+                'badge_class'  => 'bg-danger bg-opacity-75 text-white',
+                'badge_subtle' => 'bg-danger bg-opacity-10 text-danger border border-danger-subtle',
+                'days'         => $days,
+                'icon'         => 'bi-exclamation-circle-fill',
+                'description'  => "Offline selama {$days} hari ({$this->last_status_report->diffForHumans()})",
+            ];
+        }
+
+        return [
+            'level'        => 'critical',
+            'label'        => 'Kritis (>7 Hari)',
+            'badge_class'  => 'bg-danger text-white',
+            'badge_subtle' => 'bg-danger bg-opacity-10 text-danger border border-danger-subtle',
+            'days'         => $days,
+            'icon'         => 'bi-shield-fill-x',
+            'description'  => "Offline selama {$days} hari ({$this->last_status_report->diffForHumans()})",
+        ];
+    }
+
+    /**
+     * Get preferred WhatsApp recipient number for this device (owner phone or detected SIM).
+     */
+    public function getPreferredWhatsappNumberAttribute(): ?string
+    {
+        if (!empty($this->owner?->telepon)) {
+            $formatted = self::formatWhatsappPhone($this->owner->telepon);
+            if ($formatted) {
+                return $formatted;
+            }
+        }
+
+        foreach ($this->sim_cards as $sim) {
+            if (!empty($sim['whatsapp_phone'])) {
+                return $sim['whatsapp_phone'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Friendly WhatsApp reminder message URL for customer follow-up.
+     */
+    public function getWhatsappAlertUrlAttribute(): ?string
+    {
+        $phone = $this->preferred_whatsapp_number;
+        if (!$phone) {
+            return null;
+        }
+
+        $nama = $this->owner?->nama ?? 'Pelanggan';
+        $model = $this->display_name;
+        $cabang = $this->branch?->name ?? 'Layanan Kami';
+        $durasi = $this->offline_risk['days'];
+
+        $msg = "Halo Bpk/Ibu *{$nama}*,\n\n"
+             . "Kami dari tim administrasi *{$cabang}* menginformasikan bahwa sistem kami mendeteksi perangkat cicilan Anda (*{$model}*) saat ini sedang *tidak terhubung ke jaringan internet* (offline sekitar {$durasi} hari).\n\n"
+             . "Mohon kesediaannya untuk menyalakan perangkat dan memastikan koneksi internet/data seluler aktif agar status perangkat tetap sinkron dengan sistem kami.\n\n"
+             . "Jika terdapat kendala teknis atau pertanyaan, silakan membalas pesan ini. Terima kasih.";
+
+        return "https://wa.me/{$phone}?text=" . rawurlencode($msg);
+    }
 }
 

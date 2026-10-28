@@ -25,6 +25,7 @@ class DashboardController extends Controller
 
         $totalDevices = (clone $deviceQuery)->where('state', '!=', 'DELETED')->count();
         $activeDevices = (clone $deviceQuery)->where('state', 'ACTIVE')->count();
+        $offlineAlertCount = (clone $deviceQuery)->offlineAlert()->count();
 
         $lostModeQuery = DeviceCommand::where('command_type', 'START_LOST_MODE')
             ->where('status', 'SUCCESS');
@@ -141,6 +142,7 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'totalDevices',
             'activeDevices',
+            'offlineAlertCount',
             'lostModeDevices',
             'totalPolicies',
             'totalApps',
