@@ -296,12 +296,12 @@ class MdmDashboardTest extends TestCase
         $response = $this->get(route('devices.index'));
         $response->assertStatus(200);
         $response->assertSee('Perangkat Aktif');
-        $response->assertSee('Riwayat Unenroll / Dihapus');
+        $response->assertSee('Riwayat Unenroll');
 
         // Deleted tab should show unenrolled devices
         $responseDeleted = $this->get(route('devices.index', ['tab' => 'deleted']));
         $responseDeleted->assertStatus(200);
-        $responseDeleted->assertSee('Riwayat Perangkat Di-unenroll / Dihapus');
+        $responseDeleted->assertSee('Riwayat Perangkat Di-unenroll');
     }
 
     public function test_dashboard_only_shows_active_devices_ordered_by_newest(): void

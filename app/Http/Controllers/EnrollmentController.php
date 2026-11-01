@@ -8,18 +8,35 @@ use App\Models\Policy;
 use App\Models\Branch;
 use App\Models\Enterprise;
 use App\Models\AuditLog;
+use App\Models\EnrollmentToken;
 use App\Services\AndroidManagementService;
 use App\Services\QrCodeService;
+use App\Services\StandaloneEnrollmentService;
+use Illuminate\Support\Facades\Log;
 
 class EnrollmentController extends Controller
 {
-    protected AndroidManagementService $amapi;
+    protected ?AndroidManagementService $amapi = null;
     protected QrCodeService $qrService;
+    protected StandaloneEnrollmentService $standaloneService;
 
-    public function __construct(AndroidManagementService $amapi, QrCodeService $qrService)
-    {
-        $this->amapi = $amapi;
+    public function __construct(
+        QrCodeService $qrService,
+        StandaloneEnrollmentService $standaloneService
+    ) {
         $this->qrService = $qrService;
+        $this->standaloneService = $standaloneService;
+
+        // Gracefully resolve AndroidManagementService if configured
+        try {
+            $credentialsPath = config('amapi.credentials_path');
+            if ($credentialsPath && file_exists($credentialsPath)) {
+                $this->amapi = app(AndroidManagementService::class);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('AMAPI Service unavailable: ' . $e->getMessage());
+            $this->amapi = null;
+        }
     }
 
     /**
@@ -42,7 +59,24 @@ class EnrollmentController extends Controller
 
         $policies = Policy::where('policy_id', '!=', 'Lunas')->get();
 
-        return view('enrollment.index', compact('policies', 'branches', 'enterprises', 'selectedBranch', 'activeEnterprise', 'defaultPolicy'));
+        // Fetch recent standalone tokens for tracking history
+        $recentTokens = EnrollmentToken::with(['branch', 'creator', 'usedByDevice'])
+            ->orderByDesc('created_at')
+            ->limit(10)
+            ->get();
+
+        $isAmapiConfigured = ($this->amapi !== null);
+
+        return view('enrollment.index', compact(
+            'policies',
+            'branches',
+            'enterprises',
+            'selectedBranch',
+            'activeEnterprise',
+            'defaultPolicy',
+            'recentTokens',
+            'isAmapiConfigured'
+        ));
     }
 
     /**
@@ -51,6 +85,7 @@ class EnrollmentController extends Controller
     public function generate(Request $request)
     {
         $validated = $request->validate([
+            'engine'        => ['nullable', 'in:standalone,amapi'],
             'policy_id'     => ['nullable', 'string'],
             'enterprise_id' => ['nullable', 'string'],
             'branch_id'     => ['nullable', 'exists:branches,id'],
@@ -58,6 +93,8 @@ class EnrollmentController extends Controller
             'id_anggota'    => ['nullable', 'string', 'max:100', 'required_with:owner_name'],
             'owner_phone'   => ['nullable', 'string', 'max:50'],
             'owner_notes'   => ['nullable', 'string', 'max:250'],
+            'wifi_ssid'     => ['nullable', 'string', 'max:100'],
+            'wifi_password' => ['nullable', 'string', 'max:100'],
         ], [
             'id_anggota.required_with' => 'ID Pengguna / Nomor Identitas wajib diisi apabila Nama Calon Pemilik diisi.',
         ]);
@@ -66,15 +103,6 @@ class EnrollmentController extends Controller
         $branchId = $user->isBranchScoped() ? $user->branch_id : ($validated['branch_id'] ?? null);
         $branch = $branchId ? Branch::with('enterprise')->find($branchId) : null;
 
-        // Determine target enterprise ID
-        $targetEnterpriseId = null;
-        if ($branch) {
-            $targetEnterpriseId = $branch->getEffectiveEnterpriseId();
-        } elseif (!empty($validated['enterprise_id'])) {
-            $targetEnterpriseId = $validated['enterprise_id'];
-        }
-
-        // Determine effective policy ID
         $policyId = !empty($validated['policy_id'])
             ? $validated['policy_id']
             : ($branch ? $branch->getEffectivePolicyId() : 'Mode_kiosk');
@@ -89,6 +117,76 @@ class EnrollmentController extends Controller
             ];
         }
 
+        $engine = $validated['engine'] ?? 'standalone';
+        $oneTimeOnly = ($ownerPreview !== null);
+
+        // ==========================================
+        // 1. STANDALONE IN-HOUSE MDM ENGINE
+        // ==========================================
+        if ($engine === 'standalone') {
+            try {
+                $enrollmentData = $this->standaloneService->createEnrollment(
+                    policyId: $policyId,
+                    branchId: $branch?->id,
+                    ownerData: $ownerPreview,
+                    ttlSeconds: 604800, // 7 days
+                    isOneTime: $oneTimeOnly,
+                    wifiSsid: $validated['wifi_ssid'] ?? null,
+                    wifiPassword: $validated['wifi_password'] ?? null
+                );
+
+                $token = $enrollmentData['token'];
+                $tokenValue = $enrollmentData['token_string'];
+                $base64Image = $enrollmentData['base64_qr'];
+                $qrPayload = $enrollmentData['qr_payload'];
+                $provisioningPayload = $enrollmentData['provisioning_payload'];
+                $expiration = $enrollmentData['expires_at'];
+
+                AuditLog::log('GENERATE_STANDALONE_ENROLLMENT_TOKEN', 'EnrollmentToken', (string) $token->id, [
+                    'token'        => $tokenValue,
+                    'policy_id'    => $policyId,
+                    'branch_id'    => $branch?->id,
+                    'branch_code'  => $branch?->code,
+                    'owner_preset' => $ownerPreview,
+                    'one_time'     => $oneTimeOnly,
+                ]);
+
+                $policy = Policy::where('policy_id', $policyId)->first();
+                $targetEnterpriseRecord = null;
+
+                return view('enrollment.show', compact(
+                    'engine',
+                    'base64Image',
+                    'token',
+                    'tokenValue',
+                    'expiration',
+                    'policy',
+                    'branch',
+                    'ownerPreview',
+                    'oneTimeOnly',
+                    'qrPayload',
+                    'provisioningPayload',
+                    'targetEnterpriseRecord'
+                ));
+            } catch (Exception $e) {
+                return back()->with('error', "Gagal membuat enrollment token Standalone: " . $e->getMessage());
+            }
+        }
+
+        // ==========================================
+        // 2. GOOGLE CLOUD AMAPI ENGINE (LEGACY)
+        // ==========================================
+        if (!$this->amapi) {
+            return back()->with('error', 'Google AMAPI tidak terkonfigurasi atau file service-account.json tidak ditemukan.');
+        }
+
+        $targetEnterpriseId = null;
+        if ($branch) {
+            $targetEnterpriseId = $branch->getEffectiveEnterpriseId();
+        } elseif (!empty($validated['enterprise_id'])) {
+            $targetEnterpriseId = $validated['enterprise_id'];
+        }
+
         $tokenMeta = [];
         if ($branch) {
             $tokenMeta['branch_id'] = $branch->id;
@@ -100,7 +198,6 @@ class EnrollmentController extends Controller
         }
 
         $additionalData = !empty($tokenMeta) ? json_encode($tokenMeta) : null;
-        $oneTimeOnly = ($ownerPreview !== null);
 
         try {
             $token = $this->amapi->createEnrollmentToken(
@@ -116,8 +213,8 @@ class EnrollmentController extends Controller
             $expiration = $token->getExpirationTimestamp();
             $tokenName = $token->getName();
             $tokenValue = $token->getValue();
+            $provisioningPayload = json_decode($qrPayload, true);
 
-            // Find target enterprise model for display
             $targetEnterpriseRecord = Enterprise::where('enterprise_id', $targetEnterpriseId)->first()
                 ?? Enterprise::getActiveEnterprise();
 
@@ -134,6 +231,7 @@ class EnrollmentController extends Controller
             $policy = Policy::where('policy_id', $policyId)->first();
 
             return view('enrollment.show', compact(
+                'engine',
                 'base64Image',
                 'token',
                 'tokenValue',
@@ -143,11 +241,81 @@ class EnrollmentController extends Controller
                 'ownerPreview',
                 'oneTimeOnly',
                 'qrPayload',
+                'provisioningPayload',
                 'targetEnterpriseRecord'
             ));
 
         } catch (Exception $e) {
             return back()->with('error', "Gagal membuat enrollment token AMAPI: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Show/reprint an existing enrollment token.
+     */
+    public function showToken(int $id)
+    {
+        $token = EnrollmentToken::with(['branch', 'usedByDevice'])->findOrFail($id);
+
+        $baseUrl = config('app.url', 'http://127.0.0.1:8000');
+        $apkDownloadUrl = env('DPC_APK_URL', $baseUrl . '/downloads/dpc-debug.apk');
+        $dpcReceiverComponent = env('DPC_ADMIN_COMPONENT', 'com.amanin.mdm.dpc/.receiver.MdmAdminReceiver');
+        $apiUrl = env('DPC_API_URL', $baseUrl . '/api/v1/dpc');
+
+        $provisioningPayload = [
+            'android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION' => $apkDownloadUrl,
+            'android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME'           => $dpcReceiverComponent,
+            'android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED'          => true,
+            'android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE' => [
+                'server_url'       => $apiUrl,
+                'enrollment_token' => $token->token,
+                'policy_id'        => $token->policy_id,
+            ],
+        ];
+
+        $qrPayload = json_encode($provisioningPayload, JSON_UNESCAPED_SLASHES);
+        $base64Image = $this->qrService->generateBase64Qr($qrPayload, 320, 10);
+
+        $engine = 'standalone';
+        $tokenValue = $token->token;
+        $expiration = $token->expires_at;
+        $policy = Policy::where('policy_id', $token->policy_id)->first();
+        $branch = $token->branch;
+        $ownerPreview = $token->owner_data;
+        $oneTimeOnly = $token->is_one_time;
+        $targetEnterpriseRecord = null;
+
+        return view('enrollment.show', compact(
+            'engine',
+            'base64Image',
+            'token',
+            'tokenValue',
+            'expiration',
+            'policy',
+            'branch',
+            'ownerPreview',
+            'oneTimeOnly',
+            'qrPayload',
+            'provisioningPayload',
+            'targetEnterpriseRecord'
+        ));
+    }
+
+    /**
+     * Revoke / cancel an active enrollment token.
+     */
+    public function revokeToken(int $id)
+    {
+        $token = EnrollmentToken::findOrFail($id);
+        $token->update([
+            'is_used'    => true,
+            'expires_at' => now()->subMinute(),
+        ]);
+
+        AuditLog::log('REVOKE_ENROLLMENT_TOKEN', 'EnrollmentToken', (string) $token->id, [
+            'token' => $token->token,
+        ]);
+
+        return back()->with('success', "Token {$token->token} berhasil dibatalkan.");
     }
 }

@@ -90,6 +90,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('enrollment')->name('enrollment.')->group(function () {
         Route::get('/', [EnrollmentController::class, 'index'])->name('index')->middleware('permission:enrollment.manage');
         Route::post('/generate', [EnrollmentController::class, 'generate'])->name('generate')->middleware('permission:enrollment.manage');
+        Route::get('/tokens/{id}', [EnrollmentController::class, 'showToken'])->name('tokens.show')->middleware('permission:enrollment.manage');
+        Route::delete('/tokens/{id}', [EnrollmentController::class, 'revokeToken'])->name('tokens.revoke')->middleware('permission:enrollment.manage');
     });
 
     // Audit Logs

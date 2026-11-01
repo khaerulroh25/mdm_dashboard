@@ -27,6 +27,12 @@ class Device extends Model
         'location_accuracy',
         'location_updated_at',
         'agent_android_id',
+        'device_token',
+        'battery_level',
+        'battery_status',
+        'is_online',
+        'dpc_version',
+        'enrollment_token_id',
         'state',
         'policy_id',
         'network_info',
@@ -43,6 +49,8 @@ class Device extends Model
             'longitude' => 'float',
             'location_accuracy' => 'float',
             'location_updated_at' => 'datetime',
+            'battery_level' => 'integer',
+            'is_online' => 'boolean',
             'network_info' => 'array',
             'memory_info' => 'array',
             'raw_device_data' => 'array',
@@ -69,6 +77,11 @@ class Device extends Model
     public function policy(): BelongsTo
     {
         return $this->belongsTo(Policy::class, 'policy_id', 'policy_id');
+    }
+
+    public function enrollmentToken(): BelongsTo
+    {
+        return $this->belongsTo(EnrollmentToken::class, 'enrollment_token_id');
     }
 
     /**

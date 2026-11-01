@@ -69,7 +69,7 @@
                                     <span class="badge bg-teal bg-opacity-10 text-teal" style="font-size: 10px;">Anti Hard-Reset</span>
                                 </label>
                                 <input type="text" class="form-control form-control-sm" name="frp_admin_emails" id="frp_admin_emails"
-                                       value="{{ old('frp_admin_emails', implode(', ', $policy->raw_policy_json['frpAdminEmails'] ?? ['devicekontrol450@gmail.com'])) }}"
+                                       value="{{ old('frp_admin_emails', !empty($policy->frp_admin_emails) ? implode(', ', (array) $policy->frp_admin_emails) : (!empty($policy->raw_policy_json['frpAdminEmails']) ? implode(', ', (array) $policy->raw_policy_json['frpAdminEmails']) : 'devicekontrol450@gmail.com')) }}"
                                        placeholder="devicekontrol450@gmail.com">
                                 <div class="text-muted mt-1" style="font-size: 11px;">
                                     Jika nasabah mereset paksa HP lewat tombol rahasia (Recovery Mode), Google Setup Wizard akan terkunci dan <strong>hanya bisa dibuka</strong> dengan login akun Google ini.
