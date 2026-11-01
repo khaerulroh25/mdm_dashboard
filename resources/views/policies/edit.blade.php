@@ -97,6 +97,30 @@
 
                         <div class="col-12 col-md-6">
                             <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="usb_debugging_disabled" value="1" id="usb_debugging_disabled" {{ ($policy->usb_debugging_disabled ?? true) ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="usb_debugging_disabled">
+                                    Matikan USB Debugging & Opsi Pengembang <span class="badge bg-danger bg-opacity-10 text-danger ms-1" style="font-size: 10px;">Anti-ADB</span>
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Memblokir Developer Options & koneksi ADB via PC/laptop agar MDM tidak bisa di-bypass teknisi servis.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="usb_file_transfer_disabled" value="1" id="usb_file_transfer_disabled" {{ $policy->usb_file_transfer_disabled ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="usb_file_transfer_disabled">
+                                    Blokir Transfer Data Kabel USB (Charge Only)
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Mematikan transfer file USB ke komputer sehingga kabel hanya bisa mengisi daya baterai.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="install_apps_disabled" value="1" id="install_apps_disabled" {{ $policy->install_apps_disabled ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="install_apps_disabled">
                                     Kunci Instalasi Luar

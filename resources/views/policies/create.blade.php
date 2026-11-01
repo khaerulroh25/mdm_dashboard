@@ -145,6 +145,33 @@
                                 </div>
                             </div>
 
+                            <!-- USB Debugging & Developer Options (Anti-ADB) -->
+                            <div class="col-12 col-md-6">
+                                <div class="bg-white p-3 rounded-3 border border-danger-subtle h-100 d-flex flex-column justify-content-between">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox" name="usb_debugging_disabled" value="1" id="usb_debugging_disabled" {{ old('usb_debugging_disabled', true) ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold small text-dark d-flex align-items-center justify-content-between" for="usb_debugging_disabled">
+                                            <span>Matikan USB Debugging & Opsi Pengembang</span>
+                                            <span class="badge bg-danger bg-opacity-10 text-danger ms-1" style="font-size: 10px;">Anti-ADB</span>
+                                        </label>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 11px;">Memblokir Developer Options & perintah kabel PC/laptop (ADB) agar aplikasi MDM tidak bisa dihapus paksa oleh teknisi konter. <strong>(Sangat disarankan)</strong></div>
+                                </div>
+                            </div>
+
+                            <!-- USB File Transfer Disabled (Charge Only) -->
+                            <div class="col-12 col-md-6">
+                                <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox" name="usb_file_transfer_disabled" value="1" id="usb_file_transfer_disabled" {{ old('usb_file_transfer_disabled') ? 'checked' : '' }}>
+                                        <label class="form-check-label fw-bold small text-dark" for="usb_file_transfer_disabled">
+                                            Blokir Transfer Data Kabel USB (Charge Only)
+                                        </label>
+                                    </div>
+                                    <div class="text-secondary" style="font-size: 11px;">Mematikan jalur data MTP/PTP saat dicolok ke komputer sehingga kabel USB hanya berfungsi untuk mengisi daya baterai.</div>
+                                </div>
+                            </div>
+
                             <!-- Camera -->
                             <div class="col-12 col-md-6">
                                 <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">

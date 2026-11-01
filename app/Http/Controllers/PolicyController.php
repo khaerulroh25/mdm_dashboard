@@ -28,6 +28,7 @@ class PolicyController extends Controller
             'id', 'policy_id', 'name', 'description', 'camera_disabled',
             'factory_reset_disabled', 'wifi_config_disabled', 'install_apps_disabled',
             'allow_untrusted_apps', 'safe_boot_disabled',
+            'usb_debugging_disabled', 'usb_file_transfer_disabled',
             'kiosk_status_bar_disabled', 'kiosk_settings_blocked', 'kiosk_navigation_disabled',
             'screen_capture_disabled', 'keyguard_disabled',
             'location_mode', 'play_store_mode',
@@ -62,6 +63,8 @@ class PolicyController extends Controller
             'install_apps_disabled' => ['nullable', 'boolean'],
             'allow_untrusted_apps'  => ['nullable', 'boolean'],
             'safe_boot_disabled'    => ['nullable', 'boolean'],
+            'usb_debugging_disabled'     => ['nullable', 'boolean'],
+            'usb_file_transfer_disabled' => ['nullable', 'boolean'],
             'kiosk_status_bar_disabled' => ['nullable', 'boolean'],
             'kiosk_settings_blocked'    => ['nullable', 'boolean'],
             'kiosk_navigation_disabled' => ['nullable', 'boolean'],
@@ -73,6 +76,8 @@ class PolicyController extends Controller
 
         $playStoreMode = $request->input('play_store_mode', 'WHITELIST');
         $allowUntrusted = $request->boolean('allow_untrusted_apps');
+        $usbDebuggingDisabled = $request->boolean('usb_debugging_disabled');
+        $usbFileTransferDisabled = $request->boolean('usb_file_transfer_disabled');
         $kioskStatusBar = $request->boolean('kiosk_status_bar_disabled');
         $kioskSettings  = $request->boolean('kiosk_settings_blocked');
         $kioskNav       = $request->boolean('kiosk_navigation_disabled');
@@ -99,19 +104,24 @@ class PolicyController extends Controller
         }
 
         $policyData = [
-            'cameraDisabled'       => $request->boolean('camera_disabled'),
-            'wifiConfigDisabled'   => $request->boolean('wifi_config_disabled'),
-            'factoryResetDisabled' => $request->boolean('factory_reset_disabled'),
-            'frpAdminEmails'       => $frpEmails,
-            'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
-            'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
-            'screenCaptureDisabled'=> $screenCapture,
-            'keyguardDisabled'     => $keyguard,
-            'locationMode'         => $request->input('location_mode') ?: null,
-            'playStoreMode'        => $playStoreMode,
-            'modifyAccountsDisabled' => $playStoreMode === 'BLACKLIST' ? false : true,
+            'cameraDisabled'            => $request->boolean('camera_disabled'),
+            'wifiConfigDisabled'        => $request->boolean('wifi_config_disabled'),
+            'factoryResetDisabled'      => $request->boolean('factory_reset_disabled'),
+            'frpAdminEmails'            => $frpEmails,
+            'installAppsDisabled'       => $request->boolean('install_apps_disabled'),
+            'safeBootDisabled'          => $request->boolean('safe_boot_disabled'),
+            'debuggingFeaturesAllowed'  => !$usbDebuggingDisabled,
+            'usbFileTransferDisabled'   => $usbFileTransferDisabled,
+            'screenCaptureDisabled'     => $screenCapture,
+            'keyguardDisabled'          => $keyguard,
+            'locationMode'              => $request->input('location_mode') ?: null,
+            'playStoreMode'             => $playStoreMode,
+            'modifyAccountsDisabled'    => $playStoreMode === 'BLACKLIST' ? false : true,
             'advancedSecurityOverrides' => [
                 'untrustedAppsPolicy' => $allowUntrusted ? 'ALLOW_INSTALL_DEVICE_WIDE' : 'DISALLOW_INSTALL',
+                'developerSettings'   => ($usbDebuggingDisabled || $request->boolean('safe_boot_disabled'))
+                    ? 'DEVELOPER_SETTINGS_DISABLED'
+                    : 'DEVELOPER_SETTINGS_ALLOWED',
             ],
             'statusReportingSettings' => [
                 'softwareInfoEnabled' => true,
@@ -140,6 +150,8 @@ class PolicyController extends Controller
                 'install_apps_disabled' => $request->boolean('install_apps_disabled'),
                 'allow_untrusted_apps'  => $allowUntrusted,
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
+                'usb_debugging_disabled'     => $usbDebuggingDisabled,
+                'usb_file_transfer_disabled' => $usbFileTransferDisabled,
                 'kiosk_status_bar_disabled' => $kioskStatusBar,
                 'kiosk_settings_blocked'    => $kioskSettings,
                 'kiosk_navigation_disabled' => $kioskNav,
@@ -187,6 +199,8 @@ class PolicyController extends Controller
             'install_apps_disabled' => ['nullable', 'boolean'],
             'allow_untrusted_apps'  => ['nullable', 'boolean'],
             'safe_boot_disabled'    => ['nullable', 'boolean'],
+            'usb_debugging_disabled'     => ['nullable', 'boolean'],
+            'usb_file_transfer_disabled' => ['nullable', 'boolean'],
             'kiosk_status_bar_disabled' => ['nullable', 'boolean'],
             'kiosk_settings_blocked'    => ['nullable', 'boolean'],
             'kiosk_navigation_disabled' => ['nullable', 'boolean'],
@@ -198,6 +212,8 @@ class PolicyController extends Controller
 
         $playStoreMode  = $request->input('play_store_mode', 'WHITELIST');
         $allowUntrusted = $request->boolean('allow_untrusted_apps');
+        $usbDebuggingDisabled = $request->boolean('usb_debugging_disabled');
+        $usbFileTransferDisabled = $request->boolean('usb_file_transfer_disabled');
         $kioskStatusBar = $request->boolean('kiosk_status_bar_disabled');
         $kioskSettings  = $request->boolean('kiosk_settings_blocked');
         $kioskNav       = $request->boolean('kiosk_navigation_disabled');
@@ -224,19 +240,24 @@ class PolicyController extends Controller
         }
 
         $policyData = [
-            'cameraDisabled'       => $request->boolean('camera_disabled'),
-            'wifiConfigDisabled'   => $request->boolean('wifi_config_disabled'),
-            'factoryResetDisabled' => $request->boolean('factory_reset_disabled'),
-            'frpAdminEmails'       => $frpEmails,
-            'installAppsDisabled'  => $request->boolean('install_apps_disabled'),
-            'safeBootDisabled'     => $request->boolean('safe_boot_disabled'),
-            'screenCaptureDisabled'=> $screenCapture,
-            'keyguardDisabled'     => $keyguard,
-            'locationMode'         => $request->input('location_mode') ?: null,
-            'playStoreMode'        => $playStoreMode,
-            'modifyAccountsDisabled' => $playStoreMode === 'BLACKLIST' ? false : true,
+            'cameraDisabled'            => $request->boolean('camera_disabled'),
+            'wifiConfigDisabled'        => $request->boolean('wifi_config_disabled'),
+            'factoryResetDisabled'      => $request->boolean('factory_reset_disabled'),
+            'frpAdminEmails'            => $frpEmails,
+            'installAppsDisabled'       => $request->boolean('install_apps_disabled'),
+            'safeBootDisabled'          => $request->boolean('safe_boot_disabled'),
+            'debuggingFeaturesAllowed'  => !$usbDebuggingDisabled,
+            'usbFileTransferDisabled'   => $usbFileTransferDisabled,
+            'screenCaptureDisabled'     => $screenCapture,
+            'keyguardDisabled'          => $keyguard,
+            'locationMode'              => $request->input('location_mode') ?: null,
+            'playStoreMode'             => $playStoreMode,
+            'modifyAccountsDisabled'    => $playStoreMode === 'BLACKLIST' ? false : true,
             'advancedSecurityOverrides' => [
                 'untrustedAppsPolicy' => $allowUntrusted ? 'ALLOW_INSTALL_DEVICE_WIDE' : 'DISALLOW_INSTALL',
+                'developerSettings'   => ($usbDebuggingDisabled || $request->boolean('safe_boot_disabled'))
+                    ? 'DEVELOPER_SETTINGS_DISABLED'
+                    : 'DEVELOPER_SETTINGS_ALLOWED',
             ],
             'statusReportingSettings' => [
                 'softwareInfoEnabled' => true,
@@ -264,6 +285,8 @@ class PolicyController extends Controller
                 'install_apps_disabled' => $request->boolean('install_apps_disabled'),
                 'allow_untrusted_apps'  => $allowUntrusted,
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
+                'usb_debugging_disabled'     => $usbDebuggingDisabled,
+                'usb_file_transfer_disabled' => $usbFileTransferDisabled,
                 'kiosk_status_bar_disabled' => $kioskStatusBar,
                 'kiosk_settings_blocked'    => $kioskSettings,
                 'kiosk_navigation_disabled' => $kioskNav,

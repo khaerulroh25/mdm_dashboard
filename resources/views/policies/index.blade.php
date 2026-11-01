@@ -63,6 +63,16 @@
                                     <i class="bi bi-shield-slash"></i> No Reset
                                 </span>
                             @endif
+                            @if($policy->usb_debugging_disabled)
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle small" title="USB Debugging & Opsi Pengembang (ADB) Dinonaktifkan">
+                                    <i class="bi bi-usb-symbol"></i> Anti-ADB
+                                </span>
+                            @endif
+                            @if($policy->usb_file_transfer_disabled)
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle small" title="Transfer Data Kabel USB Diblokir (Charge Only)">
+                                    <i class="bi bi-usb-plug"></i> USB Charge-Only
+                                </span>
+                            @endif
                             @if($policy->wifi_config_disabled)
                                 <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle small" title="Konfigurasi Wi-Fi Terkunci">
                                     <i class="bi bi-wifi-off"></i> Lock Wi-Fi
