@@ -174,11 +174,35 @@ class LegacyDataSeeder extends Seeder
             ['device_id' => 'enterprises/LC041be11h/devices/3cbd0871e4480f33', 'nama' => 'CHASIAH BANTEN', 'id_anggota' => '12122304001705', 'telepon' => '08560031787', 'departemen' => 'RENGASDENGKLOK', 'catatan' => '0'],
         ];
 
-        foreach ($productionOwners as $owner) {
+        foreach ($productionOwners as $index => $owner) {
             $owner['departemen'] = 'RENGASDENGKLOK';
             DeviceOwner::updateOrCreate(
                 ['device_id' => $owner['device_id']],
                 $owner
+            );
+
+            Device::firstOrCreate(
+                ['device_id' => $owner['device_id']],
+                [
+                    'branch_id'           => $rdkBranch->id,
+                    'state'               => 'ACTIVE',
+                    'policy_id'           => 'Mode_kiosk',
+                    'hardware_model'      => ($index % 2 === 0 ? 'V2434' : 'SM-A155F'),
+                    'marketing_name'      => ($index % 2 === 0 ? 'Vivo Y29 5G' : 'Samsung Galaxy A15'),
+                    'brand'               => ($index % 2 === 0 ? 'vivo' : 'samsung'),
+                    'manufacturer'        => ($index % 2 === 0 ? 'vivo' : 'samsung'),
+                    'android_version'     => '14',
+                    'imei'                => '35678901234567' . ($index % 10),
+                    'battery_level'       => 85,
+                    'battery_status'      => 'CHARGING',
+                    'is_online'           => true,
+                    'latitude'            => -6.2088 + ($index * 0.001),
+                    'longitude'           => 106.8456 + ($index * 0.001),
+                    'location_accuracy'   => 12.5,
+                    'location_updated_at' => now(),
+                    'last_status_report'  => now(),
+                    'enrolled_at'         => now()->subDays(5),
+                ]
             );
         }
 
