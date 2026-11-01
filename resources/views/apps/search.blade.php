@@ -112,7 +112,7 @@
                     <!-- Loading Spinner -->
                     <div id="modalLoading" class="text-center py-4">
                         <div class="spinner-border text-teal mb-2" role="status"></div>
-                        <div class="text-secondary small">Mengambil informasi resmi dari Google Cloud AMAPI...</div>
+                        <div class="text-secondary small">Mengambil informasi aplikasi dari katalog...</div>
                     </div>
 
                     <!-- App Details Preview -->
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('btnSubmitIframeApp').style.display = 'none';
         iframeModal.show();
 
-        // Fetch official details via Google AMAPI lookup
+        // Fetch app details via catalog lookup
         fetch(`{{ route('apps.lookup') }}?package_name=${encodeURIComponent(packageName)}`, {
             headers: { 'Accept': 'application/json' }
         })

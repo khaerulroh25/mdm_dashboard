@@ -445,28 +445,32 @@ class MdmDashboardTest extends TestCase
 
         $this->assertEquals($rdkBranch->id, $branchBDevice->fresh()->branch_id);
 
-        // 8. Verify Enrollment QR Pre-Assigned Owner Auto-Links on Device Sync (Solusi 1)
-        $mockGoogleDevice = new \Google\Service\AndroidManagement\Device([
-            'name'                => 'enterprises/LC041be11h/devices/autolink777888',
-            'state'               => 'ACTIVE',
-            'policyName'          => 'enterprises/LC041be11h/policies/default',
-            'enrollmentTime'      => now()->toIso8601String(),
-            'enrollmentTokenData' => json_encode([
-                'branch_id'   => $rdkBranch->id,
-                'branch_code' => $rdkBranch->code,
-                'branch_name' => $rdkBranch->name,
-                'owner'       => [
-                    'nama'       => 'Siti Aisah AutoLink',
-                    'id_anggota' => '9988776655',
-                    'telepon'    => '081234567890',
-                    'catatan'    => 'Enroll via QR Pre-Fill',
-                ],
-            ]),
+        // 8. Verify Standalone Enrollment Token Auto-Links Branch and Owner
+        $standaloneService = app(\App\Services\StandaloneEnrollmentService::class);
+        $enrData = $standaloneService->createEnrollment(
+            policyId: 'default',
+            branchId: $rdkBranch->id,
+            ownerData: [
+                'nama'       => 'Siti Aisah AutoLink',
+                'id_anggota' => '9988776655',
+                'telepon'    => '081234567890',
+                'catatan'    => 'Enroll via Standalone QR',
+            ]
+        );
+
+        $enrollResponse = $this->postJson('/api/v1/dpc/enroll', [
+            'enrollment_token' => $enrData['token_string'],
+            'brand'            => 'Samsung',
+            'hardware_model'   => 'Galaxy A15',
+            'serial_number'    => 'SN-BRANCH-TEST-001',
+            'android_version'  => '14',
+            'dpc_version'      => '1.0.0',
         ]);
 
-        $syncService = app(\App\Services\DeviceSyncService::class);
-        $syncedDevice = $syncService->syncSingleDevice($mockGoogleDevice);
+        $enrollResponse->assertStatus(200);
 
+        $syncedDevice = Device::where('serial_number', 'SN-BRANCH-TEST-001')->first();
+        $this->assertNotNull($syncedDevice);
         $this->assertEquals($rdkBranch->id, $syncedDevice->branch_id);
         $this->assertNotNull($syncedDevice->owner);
         $this->assertEquals('Siti Aisah AutoLink', $syncedDevice->owner->nama);

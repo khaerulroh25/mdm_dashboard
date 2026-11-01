@@ -7,7 +7,6 @@
     "require": {
         "php": "^8.2",
         "endroid/qr-code": "4.8",
-        "google/apiclient": "2.18",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "nelexa/google-play-scraper": "0.4"

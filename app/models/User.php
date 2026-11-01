@@ -22,8 +22,8 @@ class User extends Authenticatable
                 'desc'  => 'Membuka halaman daftar perangkat, detail spesifikasi, lokasi, dan telemetri.',
             ],
             'devices.sync' => [
-                'label' => 'Sinkronisasi Google AMAPI',
-                'desc'  => 'Menarik pembaruan status perangkat langsung dari Google Cloud AMAPI.',
+                'label' => 'Sinkronisasi Status Perangkat',
+                'desc'  => 'Menyinkronkan status telemetri perangkat ke sistem lokal.',
             ],
             'devices.command' => [
                 'label' => 'Eksekusi Remote Command & Ubah Policy',

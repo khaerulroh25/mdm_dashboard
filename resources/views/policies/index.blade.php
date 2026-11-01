@@ -25,7 +25,7 @@
             <thead class="table-tosca">
                 <tr>
                     <th scope="col" class="ps-4">Nama Policy</th>
-                    <th scope="col">Policy ID (AMAPI)</th>
+                    <th scope="col">Policy ID</th>
                     <th scope="col">Perangkat Terhubung</th>
                     <th scope="col">Status Pembatasan</th>
                     <th scope="col">Google Play</th>

@@ -80,7 +80,7 @@
         <!-- Filter State -->
         <div class="col-6 {{ auth()->user()->isBranchScoped() ? 'col-md-3' : 'col-md-2' }}">
             <select name="state" class="form-select" onchange="this.form.submit()">
-                <option value="">Semua Status AMAPI</option>
+                <option value="">Semua Status Perangkat</option>
                 <option value="ACTIVE" {{ request('state') == 'ACTIVE' ? 'selected' : '' }}>ACTIVE</option>
                 <option value="PROVISIONING" {{ request('state') == 'PROVISIONING' ? 'selected' : '' }}>PROVISIONING</option>
                 <option value="DISABLED" {{ request('state') == 'DISABLED' ? 'selected' : '' }}>DISABLED</option>
@@ -264,7 +264,7 @@
                         @endif
                     </td>
                     <td>
-                        <!-- Baris 1: Badge Status AMAPI + Level Baterai (Sejajar) -->
+                        <!-- Baris 1: Badge Status Perangkat + Level Baterai (Sejajar) -->
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             @if($device->state === 'ACTIVE')
                                 <span class="badge badge-compliant d-inline-flex align-items-center gap-1">

@@ -9,17 +9,14 @@ use App\Models\App;
 use App\Models\Policy;
 use App\Models\AuditLog;
 use App\Services\GooglePlayService;
-use App\Services\AndroidManagementService;
 
 class GooglePlayController extends Controller
 {
     protected GooglePlayService $playService;
-    protected AndroidManagementService $amapi;
 
-    public function __construct(GooglePlayService $playService, AndroidManagementService $amapi)
+    public function __construct(GooglePlayService $playService)
     {
         $this->playService = $playService;
-        $this->amapi = $amapi;
     }
 
     /**
@@ -53,31 +50,9 @@ class GooglePlayController extends Controller
         }
 
         $policies = Policy::all();
-
-        // 1. Determine Parent Frame URL for Google Managed Play Iframe
-        $customParent = config('amapi.parent_frame_url');
-        $parentUrl = $customParent;
-        
-        if (!$parentUrl) {
-            $isHttps = $request->isSecure() || $request->header('X-Forwarded-Proto') === 'https' || str_starts_with(config('app.url'), 'https://');
-            if ($isHttps) {
-                $parentUrl = $request->url();
-            }
-        }
-
         $webToken = null;
         $webTokenError = null;
-
-        // 2. If parentUrl is HTTPS, request official Web Token from AMAPI
-        if ($parentUrl && str_starts_with($parentUrl, 'https://')) {
-            try {
-                $tokenObj = $this->amapi->createWebToken($parentUrl);
-                $webToken = $tokenObj->getValue();
-            } catch (\Throwable $e) {
-                Log::warning("AMAPI createWebToken failed: " . $e->getMessage());
-                $webTokenError = $e->getMessage();
-            }
-        }
+        $parentUrl = null;
 
         return view('apps.search', compact('results', 'keyword', 'policies', 'webToken', 'webTokenError', 'parentUrl'));
     }
@@ -149,22 +124,11 @@ class GooglePlayController extends Controller
         // Optionally attach to policy
         if (!empty($validated['policy_id'])) {
             $installType = $validated['install_type'] ?? 'AVAILABLE';
-            try {
-                $this->amapi->addAppToPolicy($validated['policy_id'], $app->package_name, $installType);
-                $policy = Policy::where('policy_id', $validated['policy_id'])->first();
-                if ($policy) {
-                    $policy->applications()->syncWithoutDetaching([
-                        $app->id => ['install_type' => $installType]
-                    ]);
-                }
-            } catch (Exception $e) {
-                if ($request->wantsJson() || $request->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Aplikasi tersimpan ke katalog, namun gagal didaftarkan ke policy AMAPI: " . $e->getMessage()
-                    ], 500);
-                }
-                return back()->with('error', "Aplikasi tersimpan ke katalog, namun gagal didaftarkan ke policy AMAPI: " . $e->getMessage());
+            $policy = Policy::where('policy_id', $validated['policy_id'])->first();
+            if ($policy) {
+                $policy->applications()->syncWithoutDetaching([
+                    $app->id => ['install_type' => $installType]
+                ]);
             }
         }
 

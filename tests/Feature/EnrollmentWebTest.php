@@ -28,8 +28,8 @@ class EnrollmentWebTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Buat QR Code Pendaftaran Perangkat');
-        $response->assertSee('In-House MDM');
-        $response->assertSee('Google Cloud AMAPI');
+        $response->assertSee('In-House Standalone MDM Engine');
+        $response->assertSee('Mandiri');
     }
 
     public function test_admin_can_generate_standalone_enrollment_qr(): void

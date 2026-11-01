@@ -312,7 +312,7 @@
                     <th scope="col">Pemilik Perangkat</th>
                     <th scope="col">Tipe Perangkat</th>
                     <th scope="col">Policy Aktif</th>
-                    <th scope="col">Status AMAPI</th>
+                    <th scope="col">Status Perangkat</th>
                     <th scope="col">Device ID (Resource)</th>
                     <th scope="col" class="text-end pe-4">Aksi</th>
                 </tr>
@@ -438,7 +438,7 @@
                 <tr>
                     <td colspan="8" class="text-center py-5 text-secondary">
                         <i class="bi bi-phone text-muted fs-1 d-block mb-2"></i>
-                        Belum ada data perangkat yang tersimpan. Klik tombol <strong>Sync AMAPI</strong> di atas untuk sinkronisasi.
+                        Belum ada data perangkat yang tersimpan. Klik tombol <strong>Enroll Device</strong> di atas untuk mendaftarkan perangkat.
                     </td>
                 </tr>
                 @endforelse

@@ -5,7 +5,6 @@ namespace App\Jobs;
 use Exception;
 use App\Models\DeviceCommand;
 use App\Models\AuditLog;
-use App\Services\AndroidManagementService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -32,8 +31,10 @@ class IssueDeviceCommandJob implements ShouldQueue
 
     /**
      * Execute the job.
+     * In standalone MDM mode, commands are stored in the database as PENDING
+     * and delivered to the native Android DPC client via heartbeat / API polling.
      */
-    public function handle(AndroidManagementService $amapi): void
+    public function handle(): void
     {
         $command = DeviceCommand::find($this->deviceCommandId);
 
@@ -42,60 +43,6 @@ class IssueDeviceCommandJob implements ShouldQueue
             return;
         }
 
-        try {
-            $response = $amapi->issueCommand(
-                $command->device_id,
-                $command->command_type,
-                $command->command_params ?? []
-            );
-
-            $amapiCommandId = method_exists($response, 'getName') ? $response->getName() : null;
-
-            $command->update([
-                'status' => 'SUCCESS',
-                'amapi_command_id' => $amapiCommandId,
-                'executed_at' => now(),
-            ]);
-
-            // Record in audit log
-            AuditLog::create([
-                'user_id' => $command->issued_by_user_id,
-                'action' => "COMMAND_{$command->command_type}",
-                'target_type' => 'Device',
-                'target_id' => $command->device_id,
-                'new_values' => [
-                    'status' => 'SUCCESS',
-                    'command_type' => $command->command_type,
-                    'amapi_command_id' => $amapiCommandId,
-                ],
-            ]);
-
-            Log::info("Command {$command->command_type} sent successfully to {$command->device_id}");
-
-        } catch (Exception $e) {
-            Log::error("Command {$command->command_type} failed for {$command->device_id}: " . $e->getMessage());
-
-            $command->update([
-                'status' => 'FAILED',
-                'error_message' => $e->getMessage(),
-                'executed_at' => now(),
-            ]);
-
-            AuditLog::create([
-                'user_id' => $command->issued_by_user_id,
-                'action' => "COMMAND_{$command->command_type}_FAILED",
-                'target_type' => 'Device',
-                'target_id' => $command->device_id,
-                'new_values' => [
-                    'status' => 'FAILED',
-                    'error' => $e->getMessage(),
-                ],
-            ]);
-
-            // Re-throw if within retry attempts
-            if ($this->attempts() < $this->tries) {
-                throw $e;
-            }
-        }
+        Log::info("Command {$command->command_type} (ID: {$command->id}) ready for standalone DPC delivery to {$command->device_id}");
     }
 }

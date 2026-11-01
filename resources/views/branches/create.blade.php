@@ -174,7 +174,7 @@
                                     <div>
                                         <h6 class="fw-bold text-dark mb-1 small">Otomatisasi Scan QR Enrollment</h6>
                                         <p class="text-secondary mb-0" style="font-size: 12px;">
-                                            Saat Admin Cabang membuat QR Enrollment, token Google AMAPI otomatis menyisipkan identitas cabang sehingga HP baru langsung masuk ke cabang tersebut saat disinkronkan.
+                                            Saat Admin Cabang membuat QR Enrollment, token pendaftaran otomatis menyisipkan identitas cabang sehingga HP baru langsung masuk ke cabang tersebut saat onboarding.
                                         </p>
                                     </div>
                                 </div>

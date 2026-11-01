@@ -47,11 +47,10 @@ class Branch extends Model
         return $this->belongsTo(Enterprise::class, 'enterprise_id');
     }
 
-    public function getEffectiveEnterpriseId(): string
+    public function getEffectiveEnterpriseId(): ?string
     {
         return $this->enterprise?->enterprise_id
-            ?? Enterprise::getActiveEnterprise()?->enterprise_id
-            ?? config('amapi.enterprise_id');
+            ?? Enterprise::getActiveEnterprise()?->enterprise_id;
     }
 
     public function getEffectivePolicyId(): string

@@ -11,7 +11,6 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\EnterpriseController;
 use App\Http\Controllers\TelemetryController;
 
 /*
@@ -102,17 +101,4 @@ Route::middleware('auth')->group(function () {
 
     // Users Management
     Route::resource('users', UserController::class)->middleware('permission:users.manage');
-
-    // Kelola Enterprise Google AMAPI (Superadmin Only)
-    Route::prefix('enterprises')->name('enterprises.')->group(function () {
-        Route::get('/', [EnterpriseController::class, 'index'])->name('index')->middleware('permission:users.manage');
-        Route::post('/signup', [EnterpriseController::class, 'initiateSignup'])->name('signup')->middleware('permission:users.manage');
-        Route::get('/callback', [EnterpriseController::class, 'callback'])->name('callback');
-        Route::post('/test-connection', [EnterpriseController::class, 'testConnection'])->name('test')->middleware('permission:users.manage');
-        Route::post('/upload-credentials', [EnterpriseController::class, 'uploadCredentials'])->name('upload-credentials')->middleware('permission:users.manage');
-        Route::get('/{enterprise}', [EnterpriseController::class, 'show'])->name('show')->middleware('permission:users.manage');
-        Route::post('/{enterprise}/activate', [EnterpriseController::class, 'activate'])->name('activate')->middleware('permission:users.manage');
-        Route::post('/{enterprise}/clone-policies', [EnterpriseController::class, 'clonePolicies'])->name('clone-policies')->middleware('permission:users.manage');
-        Route::delete('/{enterprise}', [EnterpriseController::class, 'destroy'])->name('destroy')->middleware('permission:users.manage');
-    });
 });

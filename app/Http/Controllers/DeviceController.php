@@ -9,21 +9,10 @@ use App\Models\Branch;
 use App\Models\Policy;
 use App\Models\DeviceCommand;
 use App\Models\AuditLog;
-use App\Services\AndroidManagementService;
-use App\Services\DeviceSyncService;
 use App\Jobs\IssueDeviceCommandJob;
 
 class DeviceController extends Controller
 {
-    protected AndroidManagementService $amapi;
-    protected DeviceSyncService $syncService;
-
-    public function __construct(AndroidManagementService $amapi, DeviceSyncService $syncService)
-    {
-        $this->amapi = $amapi;
-        $this->syncService = $syncService;
-    }
-
     /**
      * Display a listing of devices with search and filters.
      */
@@ -157,7 +146,7 @@ class DeviceController extends Controller
             });
         }
 
-        // Order by freshest offline (terbaru offline / belum lama) first, considering both AMAPI and Agent location
+        // Order by freshest offline (terbaru offline / belum lama) first
         $latestExpr = \Illuminate\Support\Facades\DB::raw('COALESCE(GREATEST(COALESCE(last_status_report, location_updated_at), COALESCE(location_updated_at, last_status_report)), last_status_report, location_updated_at)');
 
         $devices = $query
@@ -264,16 +253,22 @@ class DeviceController extends Controller
         ]);
 
         try {
-            $this->amapi->patchDevicePolicy($device->device_id, $validated['policy_id']);
-
             $device->update(['policy_id' => $validated['policy_id']]);
+
+            DeviceCommand::create([
+                'device_id' => $device->device_id,
+                'issued_by_user_id' => auth()->id(),
+                'command_type' => 'UPDATE_POLICY',
+                'command_params' => ['policy_id' => $validated['policy_id']],
+                'status' => 'PENDING',
+            ]);
 
             AuditLog::log('UPDATE_DEVICE_POLICY', 'Device', $device->device_id, ['new_policy' => $validated['policy_id']]);
 
             return back()->with('success', "Policy perangkat berhasil diubah menjadi <strong>{$validated['policy_id']}</strong>.");
 
         } catch (Exception $e) {
-            return back()->with('error', "Gagal memperbarui policy di Google AMAPI: " . $e->getMessage());
+            return back()->with('error', "Gagal memperbarui policy perangkat: " . $e->getMessage());
         }
     }
 
@@ -297,9 +292,15 @@ class DeviceController extends Controller
         }
 
         try {
-            $this->amapi->patchDevicePolicy($device->device_id, 'Gagal_bayar');
-
             $device->update(['policy_id' => 'Gagal_bayar']);
+
+            DeviceCommand::create([
+                'device_id' => $device->device_id,
+                'issued_by_user_id' => auth()->id(),
+                'command_type' => 'LOCK',
+                'command_params' => ['policy' => 'Gagal_bayar'],
+                'status' => 'PENDING',
+            ]);
 
             AuditLog::log('LOCK_DEVICE_GAGAL_BAYAR', 'Device', $device->device_id, [
                 'policy'    => 'Gagal_bayar',
@@ -311,7 +312,7 @@ class DeviceController extends Controller
                 ->with('warning', "Perangkat berhasil <strong>Dikunci (Gagal Bayar)</strong>. Layar perangkat telah dibatasi ke mode peringatan tagihan.");
 
         } catch (Exception $e) {
-            return back()->with('error', "Gagal mengunci perangkat di Google AMAPI: " . $e->getMessage());
+            return back()->with('error', "Gagal mengunci perangkat: " . $e->getMessage());
         }
     }
 
@@ -331,9 +332,15 @@ class DeviceController extends Controller
         }
 
         try {
-            $this->amapi->patchDevicePolicy($device->device_id, 'Mode_kiosk');
-
             $device->update(['policy_id' => 'Mode_kiosk']);
+
+            DeviceCommand::create([
+                'device_id' => $device->device_id,
+                'issued_by_user_id' => auth()->id(),
+                'command_type' => 'UNLOCK',
+                'command_params' => ['policy' => 'Mode_kiosk'],
+                'status' => 'PENDING',
+            ]);
 
             AuditLog::log('UNLOCK_DEVICE_KIOSK', 'Device', $device->device_id, [
                 'policy'      => 'Mode_kiosk',
@@ -345,7 +352,7 @@ class DeviceController extends Controller
                 ->with('success', "Kunci perangkat berhasil <strong>Dibuka</strong>. Kebijakan perangkat telah dikembalikan ke <strong>Mode Kiosk Normal</strong>.");
 
         } catch (Exception $e) {
-            return back()->with('error', "Gagal membuka kunci perangkat di Google AMAPI: " . $e->getMessage());
+            return back()->with('error', "Gagal membuka kunci perangkat: " . $e->getMessage());
         }
     }
 
@@ -396,11 +403,16 @@ class DeviceController extends Controller
         }
 
         try {
-            // Apply Lunas policy in Google AMAPI
-            $this->amapi->patchDevicePolicy($device->device_id, 'Lunas');
-
             $device->update([
                 'policy_id' => 'Lunas',
+            ]);
+
+            DeviceCommand::create([
+                'device_id' => $device->device_id,
+                'issued_by_user_id' => auth()->id(),
+                'command_type' => 'RELEASE',
+                'command_params' => ['policy' => 'Lunas'],
+                'status' => 'PENDING',
             ]);
 
             AuditLog::log('RELEASE_DEVICE_LUNAS', 'Device', $device->device_id, [
@@ -413,7 +425,7 @@ class DeviceController extends Controller
                 ->with('success', "Perangkat nasabah berhasil dilepaskan dengan status <strong>Lunas</strong>. Semua pembatasan operasional dan pelacakan telah dinonaktifkan tanpa menghapus data ponsel.");
 
         } catch (Exception $e) {
-            return back()->with('error', "Gagal melepaskan perangkat ke policy Lunas di Google AMAPI: " . $e->getMessage());
+            return back()->with('error', "Gagal melepaskan perangkat ke policy Lunas: " . $e->getMessage());
         }
     }
 
@@ -433,9 +445,18 @@ class DeviceController extends Controller
         }
 
         try {
-            $this->amapi->unenrollDevice($device->device_id);
+            $device->update([
+                'state' => 'DELETED',
+                'is_online' => false,
+            ]);
 
-            $device->update(['state' => 'DELETED']);
+            DeviceCommand::create([
+                'device_id' => $device->device_id,
+                'issued_by_user_id' => auth()->id(),
+                'command_type' => 'WIPE_DATA',
+                'command_params' => ['reason' => 'unenroll'],
+                'status' => 'PENDING',
+            ]);
 
             AuditLog::log('UNENROLL_DEVICE', 'Device', $device->device_id);
 
@@ -475,19 +496,19 @@ class DeviceController extends Controller
     }
 
     /**
-     * Trigger manual synchronization from Google AMAPI.
+     * Refresh device status and offline threshold.
      */
     public function sync()
     {
-        $result = $this->syncService->syncAll();
+        $offlineThreshold = now()->subMinutes(15);
+        $updated = Device::where('is_online', true)
+            ->where(function ($q) use ($offlineThreshold) {
+                $q->whereNull('last_status_report')
+                  ->orWhere('last_status_report', '<', $offlineThreshold);
+            })
+            ->update(['is_online' => false]);
 
-        if ($result['success']) {
-            $count = $result['synced_count'];
-            $polCount = $result['policies_synced'] ?? 0;
-            return back()->with('success', "Sinkronisasi berhasil! <strong>{$count}</strong> perangkat dan <strong>{$polCount}</strong> policy telah diperbarui dari Google AMAPI.");
-        } else {
-            return back()->with('error', "Sinkronisasi gagal: " . ($result['message'] ?? 'Terjadi kesalahan'));
-        }
+        return back()->with('success', "Status telemetri perangkat berhasil disinkronkan.");
     }
 
     /**

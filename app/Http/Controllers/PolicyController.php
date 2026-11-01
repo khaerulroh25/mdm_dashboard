@@ -8,17 +8,9 @@ use App\Models\Policy;
 use App\Models\App;
 use App\Models\PolicyApplication;
 use App\Models\AuditLog;
-use App\Services\AndroidManagementService;
 
 class PolicyController extends Controller
 {
-    protected AndroidManagementService $amapi;
-
-    public function __construct(AndroidManagementService $amapi)
-    {
-        $this->amapi = $amapi;
-    }
-
     /**
      * Display a listing of enterprise policies.
      */
@@ -129,8 +121,6 @@ class PolicyController extends Controller
         }
 
         try {
-            $this->amapi->createOrPatchPolicy($validated['policy_id'], $policyData);
-
             $policy = Policy::create([
                 'policy_id'             => $validated['policy_id'],
                 'name'                  => $validated['name'],
@@ -155,10 +145,10 @@ class PolicyController extends Controller
             AuditLog::log('CREATE_POLICY', 'Policy', $policy->policy_id, $policyData);
 
             return redirect()->route('policies.index')
-                ->with('success', "Policy <strong>{$policy->name}</strong> berhasil dibuat dan diterapkan ke Google AMAPI.");
+                ->with('success', "Policy <strong>{$policy->name}</strong> berhasil dibuat.");
 
         } catch (Exception $e) {
-            return back()->withInput()->with('error', "Gagal membuat policy di AMAPI: " . $e->getMessage());
+            return back()->withInput()->with('error', "Gagal membuat policy: " . $e->getMessage());
         }
     }
 
@@ -256,8 +246,6 @@ class PolicyController extends Controller
         }
 
         try {
-            $this->amapi->createOrPatchPolicy($policy->policy_id, $policyData);
-
             $policy->update([
                 'name'                  => $validated['name'],
                 'description'           => $validated['description'],
@@ -283,12 +271,12 @@ class PolicyController extends Controller
             return back()->with('success', "Konfigurasi policy <strong>{$policy->name}</strong> berhasil diperbarui.");
 
         } catch (Exception $e) {
-            return back()->with('error', "Gagal memperbarui policy di AMAPI: " . $e->getMessage());
+            return back()->with('error', "Gagal memperbarui policy: " . $e->getMessage());
         }
     }
 
     /**
-     * Remove the specified policy from Google AMAPI and database.
+     * Remove the specified policy from database.
      */
     public function destroy($id)
     {
@@ -299,7 +287,6 @@ class PolicyController extends Controller
         }
 
         try {
-            $this->amapi->deletePolicy($policy->policy_id);
             $policyId = $policy->policy_id;
             $policy->delete();
 
@@ -309,7 +296,7 @@ class PolicyController extends Controller
                 ->with('success', "Policy <strong>{$policyId}</strong> berhasil dihapus.");
 
         } catch (Exception $e) {
-            return back()->with('error', "Gagal menghapus policy di AMAPI: " . $e->getMessage());
+            return back()->with('error', "Gagal menghapus policy: " . $e->getMessage());
         }
     }
 
@@ -326,8 +313,6 @@ class PolicyController extends Controller
         ]);
 
         try {
-            $this->amapi->addAppToPolicy($policy->policy_id, $validated['package_name'], $validated['install_type']);
-
             // Find or create local app
             $app = App::firstOrCreate(
                 ['package_name' => $validated['package_name']],

@@ -34,15 +34,9 @@
                 <div class="p-4 bg-light bg-opacity-50 rounded-3 border h-100 text-center d-flex flex-column justify-content-between">
                     <div>
                         <div class="mb-3">
-                            @if(($engine ?? 'standalone') === 'standalone')
-                                <span class="badge bg-teal-subtle text-teal px-3 py-2 rounded-pill fw-semibold small text-uppercase">
-                                    <i class="bi bi-shield-check me-1"></i> In-House MDM (Custom DPC)
-                                </span>
-                            @else
-                                <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-semibold small text-uppercase">
-                                    <i class="bi bi-cloud me-1"></i> Google Cloud AMAPI
-                                </span>
-                            @endif
+                            <span class="badge bg-teal-subtle text-teal px-3 py-2 rounded-pill fw-semibold small text-uppercase">
+                                <i class="bi bi-shield-check me-1"></i> In-House MDM (Custom DPC)
+                            </span>
                         </div>
 
                         <!-- QR Container with Dashed Tosca Border -->

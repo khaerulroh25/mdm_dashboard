@@ -42,7 +42,7 @@
             </div>
             <div>
                 <h6 class="fw-bold mb-0 text-dark">Perangkat Telah Di-unenroll / Dihapus</h6>
-                <span class="text-secondary small">Perangkat ini sudah tidak aktif di Google Cloud AMAPI. Seluruh perintah remote dinonaktifkan. Data ini disimpan sebagai arsip histori.</span>
+                <span class="text-secondary small">Perangkat ini sudah tidak aktif di sistem MDM. Seluruh perintah remote dinonaktifkan. Data ini disimpan sebagai arsip histori.</span>
             </div>
         </div>
         @if(auth()->user()->hasPermission('devices.delete'))
@@ -179,7 +179,7 @@
                                         </span>
                                     @else
                                         <span class="text-muted small fst-italic">
-                                            <i class="bi bi-clock-history me-1"></i>Menunggu sinkronisasi telemetri AMAPI
+                                            <i class="bi bi-clock-history me-1"></i>Menunggu sinkronisasi telemetri DPC
                                         </span>
                                     @endif
                                 </td>
@@ -585,7 +585,7 @@
                     <th scope="col">Jenis Perintah</th>
                     <th scope="col">Operator</th>
                     <th scope="col">Status</th>
-                    <th scope="col">AMAPI Command ID</th>
+                    <th scope="col">Command Ref</th>
                     <th scope="col" class="pe-4">Keterangan</th>
                 </tr>
             </thead>
@@ -889,7 +889,7 @@
                     <div class="mb-3">
                         <label class="form-label small fw-semibold text-secondary">Kode Model Pabrik</label>
                         <input type="text" class="form-control bg-light font-mono" value="{{ $device->hardware_model ?? '-' }}" readonly>
-                        <span class="text-muted small" style="font-size: 11px;">Kode model hardware bawaan dari Google AMAPI</span>
+                        <span class="text-muted small" style="font-size: 11px;">Kode model hardware bawaan dari perangkat</span>
                     </div>
 
                     <div class="mb-3">

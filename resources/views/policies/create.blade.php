@@ -34,7 +34,7 @@
 
                         <!-- Policy ID -->
                         <div class="mb-3">
-                            <label for="policy_id" class="form-label small fw-semibold text-secondary">Policy ID (Identifier Unik AMAPI) <span class="text-danger">*</span></label>
+                            <label for="policy_id" class="form-label small fw-semibold text-secondary">Policy ID (Identifier Unik Kebijakan) <span class="text-danger">*</span></label>
                             <input type="text" name="policy_id" id="policy_id" class="form-control font-mono @error('policy_id') is-invalid @enderror" placeholder="Contoh: policy_sales, kiosk_mode" value="{{ old('policy_id') }}" required>
                             <div class="form-text" style="font-size: 11px;">Hanya huruf, angka, garis bawah (_), dan tanda hubung (-). Tanpa spasi.</div>
                             @error('policy_id')
@@ -270,14 +270,14 @@
         <!-- Footer Actions Bar -->
         <div class="card-footer bg-white py-3 px-4 border-top d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2 text-secondary small">
-                <i class="bi bi-cloud-check text-teal fs-6"></i>
-                <span>Aturan ini akan langsung disinkronkan dan didaftarkan ke Google Cloud AMAPI.</span>
+                <i class="bi bi-shield-check text-teal fs-6"></i>
+                <span>Aturan ini akan langsung diterapkan ke perangkat yang menggunakan kebijakan ini.</span>
             </div>
             <div class="d-flex align-items-center gap-2">
                 <a href="{{ route('policies.index') }}" class="btn btn-secondary btn-sm px-3">Batal</a>
                 <button type="submit" class="btn btn-primary btn-sm px-4 d-flex align-items-center gap-2">
-                    <i class="bi bi-cloud-arrow-up"></i>
-                    <span>Simpan & Kirim ke Google AMAPI</span>
+                    <i class="bi bi-check2-circle"></i>
+                    <span>Simpan Kebijakan</span>
                 </button>
             </div>
         </div>

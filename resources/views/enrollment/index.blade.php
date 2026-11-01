@@ -50,47 +50,23 @@
 
                         <form action="{{ route('enrollment.generate') }}" method="POST" id="enrollmentForm">
                             @csrf
+                            <input type="hidden" name="engine" value="standalone" id="engine_standalone">
 
-                            <!-- Enrollment Engine Selector -->
+                            <!-- Engine Info Banner -->
                             <div class="mb-3">
-                                <label class="form-label small fw-semibold text-secondary">
-                                    Pilih Engine MDM <span class="text-danger">*</span>
-                                </label>
-                                <div class="row g-2">
-                                    <div class="col-12 col-sm-6">
-                                        <label class="card h-100 p-3 border rounded-3 cursor-pointer engine-selector-card shadow-sm" style="border-color: var(--bs-primary) !important; background-color: #F0FDFA;">
-                                            <div class="d-flex align-items-start gap-2">
-                                                <input type="radio" name="engine" value="standalone" class="form-check-input mt-1" checked id="engine_standalone">
-                                                <div>
-                                                    <span class="fw-bold text-dark d-block small">In-House MDM</span>
-                                                    <span class="badge bg-teal text-white mt-1" style="font-size: 10px;">
-                                                        <i class="bi bi-star-fill me-1"></i> Mandiri (Custom DPC)
-                                                    </span>
-                                                    <p class="text-muted mb-0 mt-2" style="font-size: 11px; line-height: 1.3;">
-                                                        Bebas akun Google Cloud. Mendukung emulator & perangkat lokal/offline.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </label>
+                                <div class="p-3 border rounded-3 d-flex align-items-center justify-content-between" style="border-color: #0D9488 !important; background-color: #F0FDFA;">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle bg-teal text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px; min-width: 36px;">
+                                            <i class="bi bi-shield-check fs-6"></i>
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-dark d-block small">In-House Standalone MDM Engine</span>
+                                            <span class="text-secondary" style="font-size: 11px;">100% Native DPC Client &bull; Zero-Touch QR Provisioning &bull; Bebas Ketergantungan Google Cloud</span>
+                                        </div>
                                     </div>
-                                    <div class="col-12 col-sm-6">
-                                        <label class="card h-100 p-3 border rounded-3 cursor-pointer engine-selector-card {{ !$isAmapiConfigured ? 'opacity-50' : '' }}">
-                                            <div class="d-flex align-items-start gap-2">
-                                                <input type="radio" name="engine" value="amapi" class="form-check-input mt-1" id="engine_amapi" {{ !$isAmapiConfigured ? 'disabled' : '' }}>
-                                                <div>
-                                                    <span class="fw-bold text-dark d-block small">Google Cloud AMAPI</span>
-                                                    @if($isAmapiConfigured)
-                                                        <span class="badge bg-secondary text-white mt-1" style="font-size: 10px;">Legacy Cloud</span>
-                                                    @else
-                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle mt-1" style="font-size: 10px;">Belum Aktif</span>
-                                                    @endif
-                                                    <p class="text-muted mb-0 mt-2" style="font-size: 11px; line-height: 1.3;">
-                                                        Google Android Device Policy via cloud API.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </label>
-                                    </div>
+                                    <span class="badge bg-teal text-white px-2 py-1" style="font-size: 11px;">
+                                        <i class="bi bi-star-fill me-1"></i> Mandiri
+                                    </span>
                                 </div>
                             </div>
 

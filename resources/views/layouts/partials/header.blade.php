@@ -28,9 +28,9 @@
             {{ auth()->user()->branch->name }} ({{ auth()->user()->branch->code }})
         </span>
         @else
-        <span class="badge bg-light text-secondary border font-mono small d-none d-md-inline-flex align-items-center gap-1">
-            <i class="bi bi-building"></i>
-            {{ config('amapi.enterprise_id') }}
+        <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-mono small d-none d-md-inline-flex align-items-center gap-1">
+            <i class="bi bi-shield-check"></i>
+            Standalone MDM
         </span>
         @endif
     </div>
@@ -40,9 +40,9 @@
         @if(auth()->check() && auth()->user()->hasPermission('devices.sync'))
         <form action="{{ route('devices.sync') }}" method="POST" class="m-0">
             @csrf
-            <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" title="Tarik data terbaru dari Google AMAPI">
+            <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" title="Segarkan status telemetri perangkat">
                 <i class="bi bi-arrow-repeat"></i>
-                <span class="d-none d-sm-inline">Sync AMAPI</span>
+                <span class="d-none d-sm-inline">Sync Status</span>
             </button>
         </form>
         @endif
