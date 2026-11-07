@@ -90,15 +90,8 @@ class EnrollmentController extends Controller
 
         $ownerPreview = null;
         if (!empty($validated['owner_name'])) {
-            $isManual = $request->boolean('manual_id');
-            $customId = !empty($validated['id_anggota']) ? trim($validated['id_anggota']) : null;
-
-            if ($isManual && $customId) {
-                $finalId = $customId;
-            } else {
-                // Generate atomic sequential ID with race condition protection (YYYYMMDD0001)
-                $finalId = app(\App\Services\MemberIdGeneratorService::class)->generateNextId();
-            }
+            // Generate atomic sequential ID with race condition protection (YYYYMMDD0001)
+            $finalId = app(\App\Services\MemberIdGeneratorService::class)->generateNextId();
 
             $ownerPreview = [
                 'nama'       => trim($validated['owner_name']),

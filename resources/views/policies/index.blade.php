@@ -24,11 +24,11 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-tosca">
                 <tr>
-                    <th scope="col" class="ps-4">Nama Policy</th>
-                    <th scope="col">Policy ID (AMAPI)</th>
+                    <th scope="col" class="ps-4">Nama Kebijakan</th>
+                    <th scope="col">Kode Kebijakan</th>
                     <th scope="col">Perangkat Terhubung</th>
                     <th scope="col">Status Pembatasan</th>
-                    <th scope="col">Google Play</th>
+                    <th scope="col">Akses Toko Aplikasi</th>
                     <th scope="col">Mode Lokasi (GPS)</th>
                     <th scope="col" class="text-end pe-4">Aksi</th>
                 </tr>
@@ -55,37 +55,37 @@
                         <div class="d-flex flex-wrap gap-1">
                             @if($policy->camera_disabled)
                                 <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle small" title="Kamera Dinonaktifkan">
-                                    <i class="bi bi-camera-video-off"></i> No Cam
+                                    <i class="bi bi-camera-video-off"></i> Kamera Mati
                                 </span>
                             @endif
                             @if($policy->factory_reset_disabled)
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle small" title="Factory Reset Dicegah">
-                                    <i class="bi bi-shield-slash"></i> No Reset
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle small" title="Reset Pabrik Dicegah">
+                                    <i class="bi bi-shield-slash"></i> Cegah Reset
                                 </span>
                             @endif
                             @if($policy->usb_debugging_disabled)
-                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle small" title="USB Debugging & Opsi Pengembang (ADB) Dinonaktifkan">
-                                    <i class="bi bi-usb-symbol"></i> Anti-ADB
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle small" title="Opsi Pengembang & Sambungan Komputer Dikunci">
+                                    <i class="bi bi-usb-symbol"></i> Kunci Pengembang
                                 </span>
                             @endif
                             @if($policy->usb_file_transfer_disabled)
-                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle small" title="Transfer Data Kabel USB Diblokir (Charge Only)">
-                                    <i class="bi bi-usb-plug"></i> USB Charge-Only
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle small" title="Transfer Data Kabel Diblokir (Hanya Mengisi Daya)">
+                                    <i class="bi bi-usb-plug"></i> Hanya Cas
                                 </span>
                             @endif
                             @if($policy->wifi_config_disabled)
-                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle small" title="Konfigurasi Wi-Fi Terkunci">
-                                    <i class="bi bi-wifi-off"></i> Lock Wi-Fi
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle small" title="Pengaturan Sambungan Wi-Fi Dikunci">
+                                    <i class="bi bi-wifi-off"></i> Kunci Wi-Fi
                                 </span>
                             @endif
                             @if($policy->allow_untrusted_apps)
-                                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle small" title="Instalasi APK Luar Diizinkan">
-                                    <i class="bi bi-file-earmark-arrow-down"></i> Allow APK
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle small" title="Pemasangan Aplikasi Luar Diizinkan">
+                                    <i class="bi bi-file-earmark-arrow-down"></i> Aplikasi Luar
                                 </span>
                             @endif
                             @if($policy->kiosk_status_bar_disabled || $policy->kiosk_settings_blocked)
-                                <span class="badge bg-danger text-white small" title="Strict Kiosk Lockdown Aktif (Status Bar & Settings Diblokir)">
-                                    <i class="bi bi-lock-fill"></i> Strict Kiosk
+                                <span class="badge bg-danger text-white small" title="Penguncian Layar Ketat Aktif">
+                                    <i class="bi bi-lock-fill"></i> Kiosk Ketat
                                 </span>
                             @endif
                             @if(!$policy->camera_disabled && !$policy->factory_reset_disabled && !$policy->wifi_config_disabled && !$policy->allow_untrusted_apps && !$policy->kiosk_status_bar_disabled)
@@ -95,12 +95,12 @@
                     </td>
                     <td>
                         @if(($policy->play_store_mode ?? 'WHITELIST') === 'BLACKLIST')
-                            <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle font-mono small" title="Play Store Terbuka Penuh">
-                                <i class="bi bi-google-play me-1"></i> Buka Penuh (Publik)
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle small" title="Semua Aplikasi Publik Dapat Diunduh Bebas">
+                                <i class="bi bi-google-play me-1"></i> Terbuka Penuh
                             </span>
                         @else
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary border font-mono small" title="Play Store Dibatasi Hanya App Tertentu">
-                                <i class="bi bi-shield-lock me-1"></i> Dibatasi (Whitelist)
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border small" title="Hanya Aplikasi Tertentu yang Diizinkan">
+                                <i class="bi bi-shield-lock me-1"></i> Khusus Pilihan
                             </span>
                         @endif
                     </td>

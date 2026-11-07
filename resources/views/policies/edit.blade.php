@@ -65,14 +65,14 @@
                         <div class="col-12">
                             <div class="p-2 px-3 bg-light rounded-3 border">
                                 <label class="form-label fw-semibold small text-dark d-flex align-items-center justify-content-between mb-1" for="frp_admin_emails">
-                                    <span><i class="bi bi-shield-lock-fill text-teal me-1"></i> Enterprise FRP Admin Emails (Kunci Layar Setup Recovery)</span>
-                                    <span class="badge bg-teal bg-opacity-10 text-teal" style="font-size: 10px;">Anti Hard-Reset</span>
+                                    <span><i class="bi bi-shield-lock-fill text-teal me-1"></i> Email Pemulihan Saat Reset Paksa</span>
+                                    <span class="badge bg-teal bg-opacity-10 text-teal" style="font-size: 10px;">Proteksi Reset Fisik</span>
                                 </label>
                                 <input type="text" class="form-control form-control-sm" name="frp_admin_emails" id="frp_admin_emails"
                                        value="{{ old('frp_admin_emails', implode(', ', $policy->raw_policy_json['frpAdminEmails'] ?? ['devicekontrol450@gmail.com'])) }}"
                                        placeholder="devicekontrol450@gmail.com">
                                 <div class="text-muted mt-1" style="font-size: 11px;">
-                                    Jika nasabah mereset paksa HP lewat tombol rahasia (Recovery Mode), Google Setup Wizard akan terkunci dan <strong>hanya bisa dibuka</strong> dengan login akun Google ini.
+                                    Jika perangkat di-reset paksa lewat kombinasi tombol fisik HP, sistem akan terkunci otomatis dan <strong>hanya bisa dibuka</strong> dengan akun Google resmi ini.
                                 </div>
                             </div>
                         </div>
@@ -90,7 +90,7 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="safe_boot_disabled" value="1" id="safe_boot_disabled" {{ $policy->safe_boot_disabled ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="safe_boot_disabled">
-                                    Nonaktifkan Safe Boot
+                                    Cegah Masuk Mode Aman (Safe Mode)
                                 </label>
                             </div>
                         </div>
@@ -99,11 +99,11 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="usb_debugging_disabled" value="1" id="usb_debugging_disabled" {{ ($policy->usb_debugging_disabled ?? true) ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="usb_debugging_disabled">
-                                    Matikan USB Debugging & Opsi Pengembang <span class="badge bg-danger bg-opacity-10 text-danger ms-1" style="font-size: 10px;">Anti-ADB</span>
+                                    Kunci Opsi Pengembang & Sambungan PC <span class="badge bg-danger bg-opacity-10 text-danger ms-1" style="font-size: 10px;">Proteksi Komputer</span>
                                 </label>
                             </div>
                             <div class="text-muted small mt-1" style="font-size: 11px;">
-                                Memblokir Developer Options & koneksi ADB via PC/laptop agar MDM tidak bisa di-bypass teknisi servis.
+                                Mencegah HP dimodifikasi atau di-bypass menggunakan sambungan kabel komputer oleh pihak luar.
                             </div>
                         </div>
 
@@ -111,11 +111,11 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="usb_file_transfer_disabled" value="1" id="usb_file_transfer_disabled" {{ $policy->usb_file_transfer_disabled ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="usb_file_transfer_disabled">
-                                    Blokir Transfer Data Kabel USB (Charge Only)
+                                    Blokir Transfer File via Kabel USB (Hanya Cas)
                                 </label>
                             </div>
                             <div class="text-muted small mt-1" style="font-size: 11px;">
-                                Mematikan transfer file USB ke komputer sehingga kabel hanya bisa mengisi daya baterai.
+                                Kabel USB hanya dapat digunakan untuk mengisi daya baterai, tidak dapat membaca atau memindahkan file ke komputer.
                             </div>
                         </div>
 
@@ -132,11 +132,11 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="allow_untrusted_apps" value="1" id="allow_untrusted_apps" {{ $policy->allow_untrusted_apps ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="allow_untrusted_apps">
-                                    Izinkan Instalasi APK Luar (Sideloading)
+                                    Izinkan Pemasangan Aplikasi Mandiri
                                 </label>
                             </div>
                             <div class="text-muted small mt-1" style="font-size: 11px;">
-                                Izinkan pengguna memasang APK di luar Play Store (misal: APK ujian/CBT).
+                                Pengguna diizinkan memasang aplikasi pendukung secara langsung di luar toko aplikasi.
                             </div>
                         </div>
 
@@ -191,11 +191,11 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="kiosk_settings_blocked" value="1" id="kiosk_settings_blocked" {{ $policy->kiosk_settings_blocked ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="kiosk_settings_blocked">
-                                    Blokir Akses Menu Setelan (Settings HP)
+                                    Blokir Menu Pengaturan HP
                                 </label>
                             </div>
                             <div class="text-muted small mt-1" style="font-size: 11px;">
-                                Memblokir akses ke aplikasi Pengaturan / Settings HP dalam mode kiosk.
+                                Memblokir akses ke aplikasi Pengaturan / Setelan bawaan HP dalam mode kiosk.
                             </div>
                         </div>
 
@@ -203,11 +203,11 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="kiosk_navigation_disabled" value="1" id="kiosk_navigation_disabled" {{ $policy->kiosk_navigation_disabled ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="kiosk_navigation_disabled">
-                                    Matikan Tombol Navigasi Sistem
+                                    Matikan Tombol Navigasi Layar
                                 </label>
                             </div>
                             <div class="text-muted small mt-1" style="font-size: 11px;">
-                                Menonaktifkan tombol Home, Back, dan Recent Apps bawaan Android.
+                                Menonaktifkan tombol Beranda (Home), Kembali (Back), dan Aplikasi Terakhir bawaan HP.
                             </div>
                         </div>
 
@@ -227,11 +227,11 @@
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="keyguard_disabled" value="1" id="keyguard_disabled" {{ $policy->keyguard_disabled ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="keyguard_disabled">
-                                    Bypass Layar Kunci Ganda (Keyguard)
+                                    Buka Langsung Tanpa Kunci Ganda
                                 </label>
                             </div>
                             <div class="text-muted small mt-1" style="font-size: 11px;">
-                                Melewati lock screen bawaan HP sehingga langsung menampilkan layar kiosk saat tombol daya ditekan.
+                                Langsung menampilkan layar aplikasi utama tanpa layar kunci bawaan saat tombol daya ditekan.
                             </div>
                         </div>
                     </div>

@@ -23,7 +23,10 @@ class DeviceOwnerController extends Controller
             'catatan'    => ['nullable', 'string'],
         ]);
 
-        if (empty($validated['id_anggota']) || strtoupper(trim($validated['id_anggota'])) === 'AUTO') {
+        $existingOwner = DeviceOwner::where('device_id', $validated['device_id'])->first();
+        if ($existingOwner && !empty($existingOwner->id_anggota)) {
+            $validated['id_anggota'] = $existingOwner->id_anggota;
+        } elseif (empty($validated['id_anggota']) || strtoupper(trim($validated['id_anggota'])) === 'AUTO') {
             $validated['id_anggota'] = app(\App\Services\MemberIdGeneratorService::class)->generateNextId();
         }
 
