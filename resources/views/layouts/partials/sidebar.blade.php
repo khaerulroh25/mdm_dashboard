@@ -67,9 +67,9 @@
 
         @if(auth()->check() && auth()->user()->hasPermission('enrollment.manage'))
         <li class="nav-item">
-            <a href="{{ route('enrollment.index') }}" class="nav-link {{ request()->routeIs('enrollment.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Enrollment QR">
+            <a href="{{ route('enrollment.index') }}" class="nav-link {{ request()->routeIs('enrollment.*') ? 'active' : '' }}" data-bs-toggle="tooltip" data-bs-placement="right" title="Pendaftaran QR">
                 <i class="bi bi-qr-code-scan"></i>
-                <span>Enrollment QR</span>
+                <span>Pendaftaran QR</span>
             </a>
         </li>
         @endif

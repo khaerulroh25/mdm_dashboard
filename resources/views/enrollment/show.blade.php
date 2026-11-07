@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Scan QR Enrollment')
-@section('page_title', 'Pendaftaran Perangkat (Enrollment)')
+@section('title', 'Scan QR Pendaftaran Perangkat')
+@section('page_title', 'Pendaftaran Perangkat')
 
 @section('content')
 <!-- Harmonized QR Enrollment Result Card -->
@@ -10,12 +10,12 @@
     <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-2">
         <div>
             <h5 class="fw-bold mb-0 text-dark">Lembar QR Code Pendaftaran Perangkat</h5>
-            <span class="text-secondary small">Gunakan QR Code ini untuk pendaftaran instan perangkat baru Android Enterprise (Device Owner)</span>
+            <span class="text-secondary small">Gunakan QR Code ini untuk mendaftarkan dan mengunci HP baru ke dalam sistem perlindungan perusahaan</span>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('enrollment.index') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
                 <i class="bi bi-arrow-left"></i>
-                <span>Buat Token Lain</span>
+                <span>Buat QR Pendaftaran Baru</span>
             </a>
             <button type="button" class="btn btn-primary btn-sm d-flex align-items-center gap-1" onclick="window.print()">
                 <i class="bi bi-printer"></i>
@@ -32,7 +32,7 @@
                     <div>
                         <div class="mb-3">
                             <span class="badge bg-teal-subtle text-teal px-3 py-2 rounded-pill fw-semibold small text-uppercase">
-                                <i class="bi bi-shield-check me-1"></i> Android Enterprise Ready
+                                <i class="bi bi-shield-check me-1"></i> Siap Didaftarkan
                             </span>
                         </div>
 
@@ -41,7 +41,7 @@
                             <img src="{{ $base64Image }}" alt="Enrollment QR Code" class="img-fluid rounded-2" style="width: 250px; height: 250px; object-fit: contain;">
                             
                             <div class="mt-3 pt-2 border-top">
-                                <span class="text-muted small d-block mb-1" style="font-size: 11px;">Token Value (Manual Setup):</span>
+                                <span class="text-muted small d-block mb-1" style="font-size: 11px;">Kode Pendaftaran Alternatif:</span>
                                 <div class="font-mono fw-bold fs-6 text-dark user-select-all bg-light py-1 px-2 rounded border">
                                     {{ $tokenValue }}
                                 </div>
@@ -65,7 +65,7 @@
                         <div class="p-3 bg-white rounded-3 border mb-3">
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div>
-                                    <span class="text-muted small d-block" style="font-size: 11px;">Policy yang Akan Diterapkan:</span>
+                                    <span class="text-muted small d-block" style="font-size: 11px;">Aturan Keamanan yang Diterapkan:</span>
                                     <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
                                         <i class="bi bi-shield-lock-fill text-teal"></i>
                                         <span>{{ $policy->name ?? $token->getPolicyName() }}</span>
@@ -83,7 +83,7 @@
                                     </span>
                                     @endif
                                     <span class="badge bg-teal text-white font-mono px-3 py-2">
-                                        ID: {{ $policy->policy_id ?? 'default' }}
+                                        Kode: {{ $policy->policy_id ?? 'default' }}
                                     </span>
                                 </div>
                             </div>
@@ -94,7 +94,7 @@
                         <div class="p-3 bg-white rounded-3 border mb-3" style="border-left: 4px solid var(--bs-primary) !important;">
                             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div>
-                                    <span class="text-muted small d-block" style="font-size: 11px;">Calon Pemilik Perangkat (Otomatis Ditautkan Saat Scan):</span>
+                                    <span class="text-muted small d-block" style="font-size: 11px;">Pemilik Perangkat (Otomatis Terhubung):</span>
                                     <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2 mt-1">
                                         <i class="bi bi-person-check-fill text-teal"></i>
                                         <span>{{ $ownerPreview['nama'] }}</span>
@@ -107,7 +107,7 @@
                                     </div>
                                 </div>
                                 <span class="badge bg-warning bg-opacity-10 text-dark border border-warning-subtle px-2 py-1 small">
-                                    <i class="bi bi-1-circle-fill text-warning me-1"></i> Khusus 1 HP (Single-Use)
+                                    <i class="bi bi-1-circle-fill text-warning me-1"></i> Khusus 1 HP
                                 </span>
                             </div>
                         </div>
@@ -116,16 +116,16 @@
                         <!-- 3-Step Guided Instructions -->
                         <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
                             <i class="bi bi-info-circle-fill text-teal"></i>
-                            <span>Panduan Scan di HP Baru (3 Langkah Mudah):</span>
+                            <span>Panduan Pendaftaran di HP Baru (3 Langkah Mudah):</span>
                         </h6>
 
                         <div class="d-flex flex-column gap-3 mb-4">
                             <div class="bg-white p-3 rounded-3 border d-flex gap-3 align-items-start">
                                 <span class="badge bg-teal text-white rounded-circle p-2 px-3 fw-bold fs-6">1</span>
                                 <div>
-                                    <h6 class="fw-bold text-dark mb-1 small">Layar Pembuka ("Welcome")</h6>
+                                    <h6 class="fw-bold text-dark mb-1 small">Layar Awal ("Halo / Welcome")</h6>
                                     <p class="text-secondary mb-0" style="font-size: 12px;">
-                                        Nyalakan HP baru atau setelah factory reset di layar awal selamat datang / pemilihan bahasa.
+                                        Nyalakan HP di layar awal selamat datang / pemilihan bahasa (jangan lanjutkan ke pengaturan akun dulu).
                                     </p>
                                 </div>
                             </div>
@@ -135,7 +135,7 @@
                                 <div>
                                     <h6 class="fw-bold text-dark mb-1 small">Ketuk Layar Kosong 6 Kali</h6>
                                     <p class="text-secondary mb-0" style="font-size: 12px;">
-                                        Ketuk 6 kali berturut-turut di area kosong layar mana saja hingga kamera QR scanner terbuka otomatis.
+                                        Ketuk 6 kali berturut-turut di area kosong layar mana saja hingga kamera pembaca QR terbuka otomatis.
                                     </p>
                                 </div>
                             </div>
@@ -145,7 +145,7 @@
                                 <div>
                                     <h6 class="fw-bold text-dark mb-1 small">Pindai QR Code</h6>
                                     <p class="text-secondary mb-0" style="font-size: 12px;">
-                                        Arahkan kamera ke QR Code di sebelah kiri. Ikuti petunjuk koneksi Wi-Fi hingga proses enrollment selesai.
+                                        Arahkan kamera ke QR Code di sebelah kiri. Sambungkan ke Wi-Fi dan ikuti petunjuk di layar hingga proses pendaftaran selesai.
                                     </p>
                                 </div>
                             </div>
@@ -156,7 +156,7 @@
                     <div class="alert alert-light border rounded-3 p-3 mb-0 d-flex align-items-center gap-3">
                         <i class="bi bi-lightning-charge-fill text-warning fs-5 flex-shrink-0"></i>
                         <div class="small text-secondary">
-                            <strong>Tips Teknisi:</strong> Pastikan daya baterai perangkat minimal <strong>50%</strong> dan tersedia koneksi internet Wi-Fi yang stabil saat proses setup pertama kali.
+                            <strong>Tips Penting:</strong> Pastikan daya baterai HP minimal <strong>50%</strong> dan terhubung ke koneksi internet Wi-Fi yang lancar saat proses pendaftaran pertama kali.
                         </div>
                     </div>
                 </div>

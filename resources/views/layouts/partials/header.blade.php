@@ -50,8 +50,8 @@
         @if(auth()->check() && auth()->user()->hasPermission('enrollment.manage'))
         <a href="{{ route('enrollment.index') }}" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
             <i class="bi bi-plus-circle"></i>
-            <span class="d-none d-sm-inline">Enroll Device</span>
-            <span class="d-sm-none">Enroll</span>
+            <span class="d-none d-sm-inline">Daftarkan Perangkat</span>
+            <span class="d-sm-none">Daftar</span>
         </a>
         @endif
     </div>
