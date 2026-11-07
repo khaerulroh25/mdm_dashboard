@@ -88,6 +88,30 @@
 
                         <div class="col-12 col-md-6">
                             <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="mobile_networks_config_disabled" value="1" id="mobile_networks_config_disabled" {{ ($policy->mobile_networks_config_disabled ?? true) ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="mobile_networks_config_disabled">
+                                    Kunci Data Seluler (Anti-Matikan Data) <span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size: 10px;">Proteksi Jaringan</span>
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Mencegah pengguna mematikan koneksi data seluler atau mengubah pengaturan kartu SIM.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="airplane_mode_disabled" value="1" id="airplane_mode_disabled" {{ ($policy->airplane_mode_disabled ?? true) ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold small text-dark" for="airplane_mode_disabled">
+                                    Gembok Mode Pesawat (Anti-Airplane Mode) <span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size: 10px;">Proteksi Sinyal</span>
+                                </label>
+                            </div>
+                            <div class="text-muted small mt-1" style="font-size: 11px;">
+                                Mengunci tombol Mode Pesawat agar pengguna tidak dapat memutuskan transmisi sinyal HP.
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="safe_boot_disabled" value="1" id="safe_boot_disabled" {{ $policy->safe_boot_disabled ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="safe_boot_disabled">
                                     Cegah Masuk Mode Aman (Safe Mode)

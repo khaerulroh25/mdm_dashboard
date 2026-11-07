@@ -65,6 +65,8 @@ class PolicyController extends Controller
             'safe_boot_disabled'    => ['nullable', 'boolean'],
             'usb_debugging_disabled'     => ['nullable', 'boolean'],
             'usb_file_transfer_disabled' => ['nullable', 'boolean'],
+            'mobile_networks_config_disabled' => ['nullable', 'boolean'],
+            'airplane_mode_disabled'          => ['nullable', 'boolean'],
             'kiosk_status_bar_disabled' => ['nullable', 'boolean'],
             'kiosk_settings_blocked'    => ['nullable', 'boolean'],
             'kiosk_navigation_disabled' => ['nullable', 'boolean'],
@@ -78,6 +80,8 @@ class PolicyController extends Controller
         $allowUntrusted = $request->boolean('allow_untrusted_apps');
         $usbDebuggingDisabled = $request->boolean('usb_debugging_disabled');
         $usbFileTransferDisabled = $request->boolean('usb_file_transfer_disabled');
+        $mobileNetworksConfigDisabled = $request->boolean('mobile_networks_config_disabled');
+        $airplaneModeDisabled         = $request->boolean('airplane_mode_disabled');
         $kioskStatusBar = $request->boolean('kiosk_status_bar_disabled');
         $kioskSettings  = $request->boolean('kiosk_settings_blocked');
         $kioskNav       = $request->boolean('kiosk_navigation_disabled');
@@ -112,6 +116,11 @@ class PolicyController extends Controller
             'safeBootDisabled'          => $request->boolean('safe_boot_disabled'),
             'debuggingFeaturesAllowed'  => !$usbDebuggingDisabled,
             'usbFileTransferDisabled'   => $usbFileTransferDisabled,
+            'mobileNetworksConfigDisabled' => $mobileNetworksConfigDisabled,
+            'networkResetDisabled'         => $mobileNetworksConfigDisabled,
+            'deviceRadioState'             => [
+                'airplaneModeState' => $airplaneModeDisabled ? 'AIRPLANE_MODE_DISABLED' : 'AIRPLANE_MODE_USER_CHOICE',
+            ],
             'screenCaptureDisabled'     => $screenCapture,
             'keyguardDisabled'          => $keyguard,
             'locationMode'              => $request->input('location_mode') ?: null,
@@ -152,6 +161,8 @@ class PolicyController extends Controller
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
                 'usb_debugging_disabled'     => $usbDebuggingDisabled,
                 'usb_file_transfer_disabled' => $usbFileTransferDisabled,
+                'mobile_networks_config_disabled' => $mobileNetworksConfigDisabled,
+                'airplane_mode_disabled'          => $airplaneModeDisabled,
                 'kiosk_status_bar_disabled' => $kioskStatusBar,
                 'kiosk_settings_blocked'    => $kioskSettings,
                 'kiosk_navigation_disabled' => $kioskNav,
@@ -201,6 +212,8 @@ class PolicyController extends Controller
             'safe_boot_disabled'    => ['nullable', 'boolean'],
             'usb_debugging_disabled'     => ['nullable', 'boolean'],
             'usb_file_transfer_disabled' => ['nullable', 'boolean'],
+            'mobile_networks_config_disabled' => ['nullable', 'boolean'],
+            'airplane_mode_disabled'          => ['nullable', 'boolean'],
             'kiosk_status_bar_disabled' => ['nullable', 'boolean'],
             'kiosk_settings_blocked'    => ['nullable', 'boolean'],
             'kiosk_navigation_disabled' => ['nullable', 'boolean'],
@@ -214,6 +227,8 @@ class PolicyController extends Controller
         $allowUntrusted = $request->boolean('allow_untrusted_apps');
         $usbDebuggingDisabled = $request->boolean('usb_debugging_disabled');
         $usbFileTransferDisabled = $request->boolean('usb_file_transfer_disabled');
+        $mobileNetworksConfigDisabled = $request->boolean('mobile_networks_config_disabled');
+        $airplaneModeDisabled         = $request->boolean('airplane_mode_disabled');
         $kioskStatusBar = $request->boolean('kiosk_status_bar_disabled');
         $kioskSettings  = $request->boolean('kiosk_settings_blocked');
         $kioskNav       = $request->boolean('kiosk_navigation_disabled');
@@ -248,6 +263,11 @@ class PolicyController extends Controller
             'safeBootDisabled'          => $request->boolean('safe_boot_disabled'),
             'debuggingFeaturesAllowed'  => !$usbDebuggingDisabled,
             'usbFileTransferDisabled'   => $usbFileTransferDisabled,
+            'mobileNetworksConfigDisabled' => $mobileNetworksConfigDisabled,
+            'networkResetDisabled'         => $mobileNetworksConfigDisabled,
+            'deviceRadioState'             => [
+                'airplaneModeState' => $airplaneModeDisabled ? 'AIRPLANE_MODE_DISABLED' : 'AIRPLANE_MODE_USER_CHOICE',
+            ],
             'screenCaptureDisabled'     => $screenCapture,
             'keyguardDisabled'          => $keyguard,
             'locationMode'              => $request->input('location_mode') ?: null,
@@ -287,6 +307,8 @@ class PolicyController extends Controller
                 'safe_boot_disabled'    => $request->boolean('safe_boot_disabled'),
                 'usb_debugging_disabled'     => $usbDebuggingDisabled,
                 'usb_file_transfer_disabled' => $usbFileTransferDisabled,
+                'mobile_networks_config_disabled' => $mobileNetworksConfigDisabled,
+                'airplane_mode_disabled'          => $airplaneModeDisabled,
                 'kiosk_status_bar_disabled' => $kioskStatusBar,
                 'kiosk_settings_blocked'    => $kioskSettings,
                 'kiosk_navigation_disabled' => $kioskNav,

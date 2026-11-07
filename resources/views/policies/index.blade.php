@@ -78,6 +78,16 @@
                                     <i class="bi bi-wifi-off"></i> Kunci Wi-Fi
                                 </span>
                             @endif
+                            @if($policy->mobile_networks_config_disabled)
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle small" title="Pengaturan Data Seluler Dikunci (Anti-Matikan Data)">
+                                    <i class="bi bi-broadcast-pin"></i> Kunci Data
+                                </span>
+                            @endif
+                            @if($policy->airplane_mode_disabled)
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle small" title="Mode Pesawat Dinonaktifkan">
+                                    <i class="bi bi-airplane-fill"></i> Gembok Pesawat
+                                </span>
+                            @endif
                             @if($policy->allow_untrusted_apps)
                                 <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle small" title="Pemasangan Aplikasi Luar Diizinkan">
                                     <i class="bi bi-file-earmark-arrow-down"></i> Aplikasi Luar
