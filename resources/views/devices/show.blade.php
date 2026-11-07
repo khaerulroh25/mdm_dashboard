@@ -769,8 +769,14 @@
                         <input type="text" name="nama" id="nama" class="form-control" value="{{ $device->owner->nama ?? '' }}" required>
                     </div>
                     <div class="mb-3">
-                        <label for="id_anggota" class="form-label small fw-semibold">ID Anggota / Agen</label>
-                        <input type="text" name="id_anggota" id="id_anggota" class="form-control font-mono" value="{{ $device->owner->id_anggota ?? '' }}" required>
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <label for="id_anggota" class="form-label small fw-semibold mb-0">ID Anggota / Pengguna</label>
+                            <span class="text-muted font-mono" style="font-size: 11px;">Format: YYYYMMDD0001</span>
+                        </div>
+                        <input type="text" name="id_anggota" id="id_anggota" class="form-control font-mono" value="{{ $device->owner->id_anggota ?? '' }}" placeholder="Biarkan kosong untuk generate otomatis">
+                        <div class="text-muted mt-1" style="font-size: 11px;">
+                            <i class="bi bi-info-circle me-1"></i>Jika dikosongkan, sistem akan mengalokasikan nomor urut hari ini secara otomatis (anti-bentrok).
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="telepon" class="form-label small fw-semibold">Nomor Telepon</label>

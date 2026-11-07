@@ -89,6 +89,7 @@ Route::middleware('auth')->group(function () {
     // Enrollment QR
     Route::prefix('enrollment')->name('enrollment.')->group(function () {
         Route::get('/', [EnrollmentController::class, 'index'])->name('index')->middleware('permission:enrollment.manage');
+        Route::get('/preview-id', [EnrollmentController::class, 'previewId'])->name('preview-id')->middleware('permission:enrollment.manage');
         Route::post('/generate', [EnrollmentController::class, 'generate'])->name('generate')->middleware('permission:enrollment.manage');
     });
 

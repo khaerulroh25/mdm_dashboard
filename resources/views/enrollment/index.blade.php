@@ -152,13 +152,31 @@
                                     </div>
 
                                     <div class="col-12 col-md-6">
-                                        <label for="id_anggota" class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">
-                                            ID Pengguna / Nomor Identitas <span class="text-muted fw-normal">(Wajib jika nama diisi)</span>
-                                        </label>
-                                        <input type="text" name="id_anggota" id="id_anggota"
-                                            class="form-control form-control-sm font-mono @error('id_anggota') is-invalid @enderror"
-                                            value="{{ old('id_anggota') }}"
-                                            placeholder="Contoh: USR-2026001 / NIK">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <label for="id_anggota" class="form-label small fw-semibold text-secondary mb-0" style="font-size: 11.5px;">
+                                                ID Pengguna (Format: YYYYMMDD0001)
+                                            </label>
+                                            <div class="form-check form-check-inline m-0">
+                                                <input class="form-check-input" type="checkbox" id="manual_id_toggle" name="manual_id" value="1" {{ old('manual_id') ? 'checked' : '' }} style="cursor: pointer;">
+                                                <label class="form-check-label text-muted" for="manual_id_toggle" style="font-size: 11px; cursor: pointer;">
+                                                    Kustom / Manual
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="id_anggota" id="id_anggota"
+                                                class="form-control font-mono @error('id_anggota') is-invalid @enderror"
+                                                value="{{ old('id_anggota', $suggestedId) }}"
+                                                placeholder="{{ $suggestedId }}"
+                                                {{ old('manual_id') ? '' : 'readonly' }}
+                                                style="{{ old('manual_id') ? '' : 'background-color: #f8fafc;' }}">
+                                            <span class="input-group-text bg-light text-muted font-mono" id="id_status_badge" style="font-size: 10.5px;">
+                                                <i class="bi bi-shield-check text-teal me-1"></i>Otomatis
+                                            </span>
+                                        </div>
+                                        <div class="text-muted mt-1" id="id_help_text" style="font-size: 10.5px;">
+                                            <i class="bi bi-info-circle me-1"></i>Otomatis: Tanggal hari ini + No. urut 4 digit (anti bentrok & race condition).
+                                        </div>
                                         @error('id_anggota')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                         @enderror
@@ -255,4 +273,34 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const manualToggle = document.getElementById('manual_id_toggle');
+    const idInput = document.getElementById('id_anggota');
+    const statusBadge = document.getElementById('id_status_badge');
+    const helpText = document.getElementById('id_help_text');
+    const defaultAutoId = "{{ $suggestedId }}";
+
+    if (manualToggle && idInput) {
+        manualToggle.addEventListener('change', function () {
+            if (this.checked) {
+                idInput.removeAttribute('readonly');
+                idInput.style.backgroundColor = '#ffffff';
+                idInput.focus();
+                if (statusBadge) statusBadge.innerHTML = '<i class="bi bi-pencil-square text-warning me-1"></i>Manual';
+                if (helpText) helpText.innerHTML = '<i class="bi bi-exclamation-circle text-warning me-1"></i>Mode manual: masukkan NIK / ID kontrak kustom.';
+            } else {
+                idInput.setAttribute('readonly', 'readonly');
+                idInput.style.backgroundColor = '#f8fafc';
+                idInput.value = defaultAutoId;
+                if (statusBadge) statusBadge.innerHTML = '<i class="bi bi-shield-check text-teal me-1"></i>Otomatis';
+                if (helpText) helpText.innerHTML = '<i class="bi bi-info-circle me-1"></i>Otomatis: Tanggal hari ini + No. urut 4 digit (anti bentrok & race condition).';
+            }
+        });
+    }
+});
+</script>
+@endpush
 @endsection

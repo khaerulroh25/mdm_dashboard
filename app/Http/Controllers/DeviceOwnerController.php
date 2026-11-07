@@ -17,11 +17,15 @@ class DeviceOwnerController extends Controller
         $validated = $request->validate([
             'device_id'  => ['required', 'string'],
             'nama'       => ['required', 'string', 'max:255'],
-            'id_anggota' => ['required', 'string', 'max:100'],
+            'id_anggota' => ['nullable', 'string', 'max:100'],
             'telepon'    => ['nullable', 'string', 'max:50'],
             'departemen' => ['nullable', 'string', 'max:100'],
             'catatan'    => ['nullable', 'string'],
         ]);
+
+        if (empty($validated['id_anggota']) || strtoupper(trim($validated['id_anggota'])) === 'AUTO') {
+            $validated['id_anggota'] = app(\App\Services\MemberIdGeneratorService::class)->generateNextId();
+        }
 
         $device = Device::with('branch')->where('device_id', $validated['device_id'])->first();
         if ($device && !$device->canBeAccessedBy()) {

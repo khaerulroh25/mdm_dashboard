@@ -41,8 +41,18 @@ class EnrollmentController extends Controller
         }
 
         $policies = Policy::where('policy_id', '!=', 'Lunas')->get();
+        $suggestedId = app(\App\Services\MemberIdGeneratorService::class)->previewNextId();
 
-        return view('enrollment.index', compact('policies', 'branches', 'enterprises', 'selectedBranch', 'activeEnterprise', 'defaultPolicy'));
+        return view('enrollment.index', compact('policies', 'branches', 'enterprises', 'selectedBranch', 'activeEnterprise', 'defaultPolicy', 'suggestedId'));
+    }
+
+    /**
+     * Return next preview candidate member ID.
+     */
+    public function previewId()
+    {
+        $suggestedId = app(\App\Services\MemberIdGeneratorService::class)->previewNextId();
+        return response()->json(['id' => $suggestedId]);
     }
 
     /**
@@ -55,11 +65,10 @@ class EnrollmentController extends Controller
             'enterprise_id' => ['nullable', 'string'],
             'branch_id'     => ['nullable', 'exists:branches,id'],
             'owner_name'    => ['nullable', 'string', 'max:150'],
-            'id_anggota'    => ['nullable', 'string', 'max:100', 'required_with:owner_name'],
+            'id_anggota'    => ['nullable', 'string', 'max:100'],
+            'manual_id'     => ['nullable', 'boolean'],
             'owner_phone'   => ['nullable', 'string', 'max:50'],
             'owner_notes'   => ['nullable', 'string', 'max:250'],
-        ], [
-            'id_anggota.required_with' => 'ID Pengguna / Nomor Identitas wajib diisi apabila Nama Calon Pemilik diisi.',
         ]);
 
         $user = auth()->user();
@@ -81,9 +90,19 @@ class EnrollmentController extends Controller
 
         $ownerPreview = null;
         if (!empty($validated['owner_name'])) {
+            $isManual = $request->boolean('manual_id');
+            $customId = !empty($validated['id_anggota']) ? trim($validated['id_anggota']) : null;
+
+            if ($isManual && $customId) {
+                $finalId = $customId;
+            } else {
+                // Generate atomic sequential ID with race condition protection (YYYYMMDD0001)
+                $finalId = app(\App\Services\MemberIdGeneratorService::class)->generateNextId();
+            }
+
             $ownerPreview = [
                 'nama'       => trim($validated['owner_name']),
-                'id_anggota' => trim($validated['id_anggota']),
+                'id_anggota' => $finalId,
                 'telepon'    => !empty($validated['owner_phone']) ? trim($validated['owner_phone']) : null,
                 'catatan'    => !empty($validated['owner_notes']) ? trim($validated['owner_notes']) : null,
             ];
