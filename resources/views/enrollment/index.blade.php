@@ -153,21 +153,13 @@
 
                                     <div class="col-12 col-md-6">
                                         <label for="id_anggota" class="form-label small fw-semibold text-secondary mb-1" style="font-size: 11.5px;">
-                                            ID Pengguna (Dihasilkan Otomatis oleh Sistem)
+                                            ID Pengguna
                                         </label>
-                                        <div class="input-group input-group-sm">
-                                            <input type="text" name="id_anggota" id="id_anggota"
-                                                class="form-control font-mono"
-                                                value="{{ $suggestedId }}"
-                                                readonly
-                                                style="background-color: #f8fafc;">
-                                            <span class="input-group-text bg-light text-muted font-mono" style="font-size: 10.5px;">
-                                                <i class="bi bi-shield-check text-teal me-1"></i>Otomatis
-                                            </span>
-                                        </div>
-                                        <div class="text-muted mt-1" style="font-size: 10.5px;">
-                                            <i class="bi bi-info-circle me-1"></i>Format terstandar: <strong>YYYYMMDD0001</strong> (Tahun, Bulan, Tanggal, No. Urut 4 digit).
-                                        </div>
+                                        <input type="text" name="id_anggota" id="id_anggota"
+                                            class="form-control form-control-sm font-mono"
+                                            value="{{ $suggestedId }}"
+                                            readonly
+                                            style="background-color: #f8fafc;">
                                     </div>
 
                                     <div class="col-12 col-md-6">

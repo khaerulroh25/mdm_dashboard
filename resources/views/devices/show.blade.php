@@ -769,11 +769,8 @@
                         <input type="text" name="nama" id="nama" class="form-control" value="{{ $device->owner->nama ?? '' }}" required>
                     </div>
                     <div class="mb-3">
-                        <label for="id_anggota" class="form-label small fw-semibold">ID Pengguna (Sistem)</label>
-                        <input type="text" name="id_anggota" id="id_anggota" class="form-control font-mono bg-light text-muted" value="{{ $device->owner->id_anggota ?? '' }}" readonly placeholder="Dihasilkan otomatis oleh sistem">
-                        <div class="text-muted mt-1" style="font-size: 11px;">
-                            <i class="bi bi-lock-fill text-secondary me-1"></i>ID Pengguna ditetapkan secara permanen oleh sistem untuk menjaga kerapian data.
-                        </div>
+                        <label for="id_anggota" class="form-label small fw-semibold">ID Pengguna</label>
+                        <input type="text" name="id_anggota" id="id_anggota" class="form-control font-mono bg-light text-muted" value="{{ $device->owner->id_anggota ?? '' }}" readonly>
                     </div>
                     <div class="mb-3">
                         <label for="telepon" class="form-label small fw-semibold">Nomor Telepon</label>
