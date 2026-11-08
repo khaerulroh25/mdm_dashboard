@@ -599,63 +599,37 @@
 <!-- Installed Applications Card -->
 @php
     $appReports = $device->raw_device_data['applicationReports'] ?? [];
-    $playStoreApps = [];
-    $systemApps = [];
+    $userApps = [];
     
     foreach ($appReports as $app) {
         $src = $app['applicationSource'] ?? '';
         if ($src === 'INSTALLED_FROM_PLAY_STORE' || ($app['userFacingType'] ?? '') === 'USER_FACING' || ($app['installerPackageName'] ?? '') === 'com.android.vending') {
-            $playStoreApps[] = $app;
-        } else {
-            $systemApps[] = $app;
+            $userApps[] = $app;
         }
     }
     
-    usort($playStoreApps, fn($a, $b) => strcasecmp($a['displayName'] ?? $a['packageName'] ?? '', $b['displayName'] ?? $b['packageName'] ?? ''));
-    usort($systemApps, fn($a, $b) => strcasecmp($a['displayName'] ?? $a['packageName'] ?? '', $b['displayName'] ?? $b['packageName'] ?? ''));
-    
-    $totalAppsCount = count($appReports);
-    $userAppsCount = count($playStoreApps);
+    usort($userApps, fn($a, $b) => strcasecmp($a['displayName'] ?? $a['packageName'] ?? '', $b['displayName'] ?? $b['packageName'] ?? ''));
+    $userAppsCount = count($userApps);
 @endphp
 
 <div class="card card-mdm border-0 overflow-hidden mb-4">
     <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-2 flex-wrap">
+        <div class="d-flex align-items-center gap-2">
             <h6 class="fw-bold mb-0 text-dark">
                 <i class="bi bi-grid-fill text-teal me-2"></i>Daftar Aplikasi Terpasang
             </h6>
-            @if($totalAppsCount > 0)
+            @if($userAppsCount > 0)
                 <span class="badge bg-teal bg-opacity-10 text-teal fw-semibold">
-                    {{ $userAppsCount }} Aplikasi Pengguna / Play Store
-                </span>
-                <span class="badge bg-light text-secondary border">
-                    Total {{ $totalAppsCount }} Termasuk Sistem
+                    {{ $userAppsCount }} Aplikasi Pengguna
                 </span>
             @endif
         </div>
-        
-        @if($totalAppsCount > 0)
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <div class="input-group input-group-sm" style="max-width: 250px;">
-                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-                <input type="text" id="installedAppSearch" class="form-control border-start-0" placeholder="Cari nama aplikasi...">
-            </div>
-            <div class="btn-group btn-group-sm" role="group">
-                <button type="button" class="btn btn-outline-teal active" id="btnFilterUserApps" onclick="filterAppList('user')">
-                    Pengguna ({{ $userAppsCount }})
-                </button>
-                <button type="button" class="btn btn-outline-teal" id="btnFilterAllApps" onclick="filterAppList('all')">
-                    Semua ({{ $totalAppsCount }})
-                </button>
-            </div>
-        </div>
-        @endif
     </div>
 
-    @if($totalAppsCount > 0)
-    <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+    @if($userAppsCount > 0)
+    <div class="table-responsive">
         <table class="table table-hover align-middle mb-0" id="installedAppsTable">
-            <thead class="table-tosca sticky-top">
+            <thead class="table-tosca">
                 <tr>
                     <th scope="col" class="ps-4">Aplikasi & Nama Paket</th>
                     <th scope="col">Tipe / Sumber</th>
@@ -664,17 +638,14 @@
                     <th scope="col" class="pe-4 text-end">Status</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach(array_merge($playStoreApps, $systemApps) as $idx => $app)
+            <tbody id="installedAppsTbody">
+                @foreach($userApps as $idx => $app)
                     @php
-                        $isUser = in_array($app, $playStoreApps, true);
                         $src = $app['applicationSource'] ?? '';
                         $events = $app['events'] ?? [];
                         $latestEvent = !empty($events) ? end($events) : null;
                     @endphp
-                    <tr class="app-row {{ $isUser ? 'app-type-user' : 'app-type-system d-none' }}" 
-                        data-app-type="{{ $isUser ? 'user' : 'system' }}"
-                        data-app-name="{{ strtolower(($app['displayName'] ?? '') . ' ' . ($app['packageName'] ?? '')) }}">
+                    <tr class="user-app-row" data-index="{{ $idx }}">
                         <td class="ps-4">
                             <div class="d-flex align-items-center gap-2">
                                 <div class="rounded-3 p-2 bg-light border text-center" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
@@ -692,10 +663,8 @@
                                         <i class="bi bi-google text-primary fs-5"></i>
                                     @elseif(stripos($app['packageName'] ?? '', 'amanin') !== false)
                                         <i class="bi bi-shield-check text-teal fs-5"></i>
-                                    @elseif($isUser)
-                                        <i class="bi bi-app text-teal fs-5"></i>
                                     @else
-                                        <i class="bi bi-cpu text-secondary fs-5"></i>
+                                        <i class="bi bi-app text-teal fs-5"></i>
                                     @endif
                                 </div>
                                 <div>
@@ -783,57 +752,111 @@
                         </td>
                     </tr>
                 @endforeach
-                <tr id="noAppFoundRow" class="d-none">
-                    <td colspan="5" class="text-center py-4 text-muted small">
-                        Tidak ada aplikasi yang sesuai dengan pencarian Anda.
-                    </td>
-                </tr>
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination Footer -->
+    <div class="card-footer bg-white border-top py-3 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="small text-muted" id="appPaginationInfo">
+            Menampilkan <span class="fw-semibold text-dark" id="appPageStart">1</span>-<span class="fw-semibold text-dark" id="appPageEnd">{{ min(5, $userAppsCount) }}</span> dari <span class="fw-semibold text-dark">{{ $userAppsCount }}</span> aplikasi pengguna
+        </div>
+        <nav aria-label="Aplikasi Pagination">
+            <ul class="pagination pagination-sm mb-0" id="appPaginationUl">
+                <!-- Injected via JavaScript -->
+            </ul>
+        </nav>
+    </div>
+
     <script>
-        let currentAppFilter = 'user';
-        function filterAppList(filter) {
-            currentAppFilter = filter;
-            document.getElementById('btnFilterUserApps').classList.toggle('active', filter === 'user');
-            document.getElementById('btnFilterAllApps').classList.toggle('active', filter === 'all');
-            applyAppSearchAndFilter();
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const pageSize = 5;
+            const rows = Array.from(document.querySelectorAll('#installedAppsTbody .user-app-row'));
+            const totalRows = rows.length;
+            const totalPages = Math.ceil(totalRows / pageSize) || 1;
+            let currentPage = 1;
 
-        function applyAppSearchAndFilter() {
-            const query = (document.getElementById('installedAppSearch')?.value || '').toLowerCase().trim();
-            const rows = document.querySelectorAll('#installedAppsTable .app-row');
-            let visibleCount = 0;
+            function renderAppPage(page) {
+                if (page < 1) page = 1;
+                if (page > totalPages) page = totalPages;
+                currentPage = page;
 
-            rows.forEach(row => {
-                const type = row.getAttribute('data-app-type');
-                const name = row.getAttribute('data-app-name') || '';
-                
-                const matchesType = (currentAppFilter === 'all') || (currentAppFilter === 'user' && type === 'user');
-                const matchesQuery = !query || name.includes(query);
+                const startIdx = (currentPage - 1) * pageSize;
+                const endIdx = Math.min(startIdx + pageSize, totalRows);
 
-                if (matchesType && matchesQuery) {
-                    row.classList.remove('d-none');
-                    visibleCount++;
-                } else {
-                    row.classList.add('d-none');
-                }
-            });
+                rows.forEach((row, idx) => {
+                    if (idx >= startIdx && idx < endIdx) {
+                        row.classList.remove('d-none');
+                    } else {
+                        row.classList.add('d-none');
+                    }
+                });
 
-            const noRow = document.getElementById('noAppFoundRow');
-            if (noRow) {
-                noRow.classList.toggle('d-none', visibleCount > 0);
+                const startSpan = document.getElementById('appPageStart');
+                const endSpan = document.getElementById('appPageEnd');
+                if (startSpan) startSpan.textContent = totalRows > 0 ? (startIdx + 1) : 0;
+                if (endSpan) endSpan.textContent = endIdx;
+
+                renderPaginationButtons();
             }
-        }
 
-        document.getElementById('installedAppSearch')?.addEventListener('input', applyAppSearchAndFilter);
+            function renderPaginationButtons() {
+                const ul = document.getElementById('appPaginationUl');
+                if (!ul) return;
+                ul.innerHTML = '';
+
+                if (totalPages <= 1) return;
+
+                // Prev Button
+                const prevLi = document.createElement('li');
+                prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+                prevLi.innerHTML = `<button type="button" class="page-link py-1 px-2.5"><i class="bi bi-chevron-left me-1"></i>Sebelumnya</button>`;
+                prevLi.onclick = function (e) {
+                    e.preventDefault();
+                    if (currentPage > 1) renderAppPage(currentPage - 1);
+                };
+                ul.appendChild(prevLi);
+
+                // Page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                        const pageLi = document.createElement('li');
+                        pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                        pageLi.innerHTML = `<button type="button" class="page-link py-1 px-2.5">${i}</button>`;
+                        const targetPage = i;
+                        pageLi.onclick = function (e) {
+                            e.preventDefault();
+                            renderAppPage(targetPage);
+                        };
+                        ul.appendChild(pageLi);
+                    } else if (i === currentPage - 2 || i === currentPage + 2) {
+                        const dotsLi = document.createElement('li');
+                        dotsLi.className = 'page-item disabled';
+                        dotsLi.innerHTML = `<span class="page-link py-1 px-2">...</span>`;
+                        ul.appendChild(dotsLi);
+                    }
+                }
+
+                // Next Button
+                const nextLi = document.createElement('li');
+                nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+                nextLi.innerHTML = `<button type="button" class="page-link py-1 px-2.5">Selanjutnya<i class="bi bi-chevron-right ms-1"></i></button>`;
+                nextLi.onclick = function (e) {
+                    e.preventDefault();
+                    if (currentPage < totalPages) renderAppPage(currentPage + 1);
+                };
+                ul.appendChild(nextLi);
+            }
+
+            renderAppPage(1);
+        });
     </script>
     @else
     <div class="p-4 text-center text-secondary bg-light bg-opacity-50">
         <i class="bi bi-grid text-muted fs-2 d-block mb-2"></i>
-        <div class="fw-semibold text-dark mb-1">Data Aplikasi Belum Tersedia</div>
+        <div class="fw-semibold text-dark mb-1">Belum Ada Aplikasi Pengguna Terpasang</div>
         <p class="small text-secondary mb-0 mx-auto" style="max-width: 580px;">
-            Laporan aplikasi akan muncul secara otomatis saat perangkat terhubung ke server dan mengirimkan pembaruan status sistem.
+            Aplikasi yang dipasang pengguna atau melalui Google Play Store akan ditampilkan di sini.
         </p>
     </div>
     @endif
