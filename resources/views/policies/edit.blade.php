@@ -88,7 +88,7 @@
 
                         <div class="col-12 col-md-6">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="mobile_networks_config_disabled" value="1" id="mobile_networks_config_disabled" {{ ($policy->mobile_networks_config_disabled ?? true) ? 'checked' : '' }}>
+                                <input class="form-check-input" type="checkbox" name="mobile_networks_config_disabled" value="1" id="mobile_networks_config_disabled" {{ ($policy->mobile_networks_config_disabled ?? false) ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="mobile_networks_config_disabled">
                                     Kunci Data Seluler (Anti-Matikan Data) <span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size: 10px;">Proteksi Jaringan</span>
                                 </label>
@@ -100,7 +100,7 @@
 
                         <div class="col-12 col-md-6">
                             <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="airplane_mode_disabled" value="1" id="airplane_mode_disabled" {{ ($policy->airplane_mode_disabled ?? true) ? 'checked' : '' }}>
+                                <input class="form-check-input" type="checkbox" name="airplane_mode_disabled" value="1" id="airplane_mode_disabled" {{ ($policy->airplane_mode_disabled ?? false) ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold small text-dark" for="airplane_mode_disabled">
                                     Gembok Mode Pesawat (Anti-Airplane Mode) <span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size: 10px;">Proteksi Sinyal</span>
                                 </label>

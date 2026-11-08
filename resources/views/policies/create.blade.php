@@ -202,13 +202,13 @@
                             <div class="col-12 col-md-6">
                                 <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">
                                     <div class="form-check form-switch mb-1">
-                                        <input class="form-check-input" type="checkbox" name="mobile_networks_config_disabled" value="1" id="mobile_networks_config_disabled" {{ old('mobile_networks_config_disabled', true) ? 'checked' : '' }}>
+                                        <input class="form-check-input" type="checkbox" name="mobile_networks_config_disabled" value="1" id="mobile_networks_config_disabled" {{ old('mobile_networks_config_disabled') ? 'checked' : '' }}>
                                         <label class="form-check-label fw-bold small text-dark d-flex align-items-center justify-content-between" for="mobile_networks_config_disabled">
                                             <span>Kunci Data Seluler</span>
                                             <span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size: 10px;">Anti-Matikan Data</span>
                                         </label>
                                     </div>
-                                    <div class="text-secondary" style="font-size: 11px;">Mencegah pengguna mematikan koneksi data seluler atau mengubah pengaturan kartu SIM. <strong>(Sangat disarankan)</strong></div>
+                                    <div class="text-secondary" style="font-size: 11px;">Mencegah pengguna mematikan koneksi data seluler atau mengubah pengaturan kartu SIM.</div>
                                 </div>
                             </div>
 
@@ -216,13 +216,13 @@
                             <div class="col-12 col-md-6">
                                 <div class="bg-white p-3 rounded-3 border h-100 d-flex flex-column justify-content-between">
                                     <div class="form-check form-switch mb-1">
-                                        <input class="form-check-input" type="checkbox" name="airplane_mode_disabled" value="1" id="airplane_mode_disabled" {{ old('airplane_mode_disabled', true) ? 'checked' : '' }}>
+                                        <input class="form-check-input" type="checkbox" name="airplane_mode_disabled" value="1" id="airplane_mode_disabled" {{ old('airplane_mode_disabled') ? 'checked' : '' }}>
                                         <label class="form-check-label fw-bold small text-dark d-flex align-items-center justify-content-between" for="airplane_mode_disabled">
                                             <span>Gembok Mode Pesawat</span>
                                             <span class="badge bg-primary bg-opacity-10 text-primary ms-1" style="font-size: 10px;">Anti-Airplane Mode</span>
                                         </label>
                                     </div>
-                                    <div class="text-secondary" style="font-size: 11px;">Mengunci tombol Mode Pesawat agar pengguna tidak dapat memutuskan sinyal transmisi HP. <strong>(Sangat disarankan)</strong></div>
+                                    <div class="text-secondary" style="font-size: 11px;">Mengunci tombol Mode Pesawat agar pengguna tidak dapat memutuskan sinyal transmisi HP.</div>
                                 </div>
                             </div>
 
