@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/{device}/lock', [DeviceController::class, 'lockDevice'])->name('lock')->middleware('permission:devices.command');
         Route::post('/{device}/unlock', [DeviceController::class, 'unlockDevice'])->name('unlock')->middleware('permission:devices.command');
         Route::post('/{device}/release', [DeviceController::class, 'releaseDevice'])->name('release')->middleware('permission:devices.release');
+        Route::post('/{device}/restore-installment', [DeviceController::class, 'restoreInstallment'])->name('restore-installment')->middleware('permission:devices.release');
         Route::post('/{device}/branch', [DeviceController::class, 'updateBranch'])->name('branch')->middleware('permission:branches.manage,devices.edit');
         Route::post('/{device}/rename-model', [DeviceController::class, 'updateMarketingName'])->name('rename-model')->middleware('permission:devices.edit');
         Route::delete('/{device}', [DeviceController::class, 'unenroll'])->name('unenroll')->middleware('permission:devices.delete');

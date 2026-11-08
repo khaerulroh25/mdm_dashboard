@@ -418,6 +418,44 @@ class DeviceController extends Controller
     }
 
     /**
+     * Restore device from Lunas status back to active installment (Mode_kiosk policy).
+     */
+    public function restoreInstallment(Request $request, $id)
+    {
+        $device = Device::findOrFail($id);
+
+        if (!$device->canBeAccessedBy()) {
+            abort(403, 'Anda tidak memiliki akses ke perangkat dari cabang lain.');
+        }
+
+        if ($device->state === 'DELETED') {
+            return back()->with('error', 'Perangkat yang sudah di-unenroll tidak dapat diubah.');
+        }
+
+        if ($device->policy_id !== 'Lunas') {
+            return back()->with('error', 'Perangkat saat ini tidak dalam status Lunas.');
+        }
+
+        try {
+            $this->amapi->patchDevicePolicy($device->device_id, 'Mode_kiosk');
+
+            $device->update(['policy_id' => 'Mode_kiosk']);
+
+            AuditLog::log('RESTORE_DEVICE_INSTALLMENT', 'Device', $device->device_id, [
+                'policy'      => 'Mode_kiosk',
+                'restored_by' => auth()->user()->name ?? auth()->user()->username ?? auth()->user()->email,
+                'branch'      => $device->branch?->name ?? 'Pusat',
+            ]);
+
+            return redirect()->route('devices.show', $device->id)
+                ->with('success', "Perangkat nasabah berhasil dikembalikan ke <strong>Status Cicilan Aktif (Mode Kiosk)</strong>. Kebijakan proteksi dan pelacakan MDM telah diaktifkan kembali.");
+
+        } catch (Exception $e) {
+            return back()->with('error', "Gagal mengembalikan perangkat ke status cicilan di Google AMAPI: " . $e->getMessage());
+        }
+    }
+
+    /**
      * Unenroll / Wipe device (Superadmin Only).
      */
     public function unenroll(Request $request, $id)

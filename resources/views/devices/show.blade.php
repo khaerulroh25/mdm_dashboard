@@ -76,6 +76,14 @@
             @endif
         </div>
         <div class="d-flex flex-wrap gap-2">
+            @if($device->policy_id === 'Lunas' && auth()->user()->hasPermission('devices.release'))
+            <!-- Tombol Kembalikan ke Status Cicilan -->
+            <button type="button" class="btn btn-sm btn-teal d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#restoreInstallmentModal">
+                <i class="bi bi-arrow-repeat"></i>
+                <span>Kembalikan ke Status Cicilan</span>
+            </button>
+            @endif
+
             @if($device->policy_id !== 'Lunas' && auth()->user()->hasPermission('devices.release'))
             <!-- Tombol Lepaskan Perangkat (Lunas) -->
             <button type="button" class="btn btn-sm btn-success d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#releaseLunasModal">
@@ -1135,6 +1143,53 @@
                     <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-success btn-sm fw-semibold d-inline-flex align-items-center gap-1">
                         <i class="bi bi-patch-check-fill"></i> Ya, Lepaskan Perangkat (Lunas)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Modal Konfirmasi Pengembalian ke Status Cicilan (Mode Kiosk) -->
+@if($device->state !== 'DELETED' && $device->policy_id === 'Lunas')
+<div class="modal fade" id="restoreInstallmentModal" tabindex="-1" aria-labelledby="restoreInstallmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <form action="{{ route('devices.restore-installment', $device->id) }}" method="POST">
+                @csrf
+                <div class="modal-header border-bottom bg-teal bg-opacity-10 py-3">
+                    <h5 class="modal-title fw-bold text-teal d-flex align-items-center gap-2" id="restoreInstallmentModalLabel">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span>Konfirmasi Pengembalian ke Status Cicilan</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-info d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-info-circle-fill fs-5 mt-1 text-teal"></i>
+                        <div class="small text-dark">
+                            Perangkat nasabah <strong>{{ $device->owner?->nama ?? 'Nasabah' }}</strong> (Model: <strong>{{ $device->human_model_name }}</strong>) akan dikembalikan dari status <strong>Lunas</strong> ke <strong>Masa Cicilan Aktif (Mode Kiosk)</strong>.
+                        </div>
+                    </div>
+
+                    <p class="text-secondary small mb-2">
+                        Dengan mengembalikan ke status cicilan:
+                    </p>
+                    <ul class="text-secondary small mb-3 ps-3">
+                        <li><strong class="text-dark"><i class="bi bi-shield-check text-teal me-1"></i>Proteksi Enterprise Aktif:</strong> Akun FRP kantor akan kembali melindungi perangkat dari reset tanpa izin.</li>
+                        <li><strong class="text-dark"><i class="bi bi-geo-alt text-teal me-1"></i>Pelacak Lokasi Diwajibkan:</strong> Aplikasi agen pelacak akan otomatis kembali berstatus wajib (FORCE_INSTALLED).</li>
+                        <li><strong class="text-dark"><i class="bi bi-phone text-teal me-1"></i>Mode Kiosk Diterapkan:</strong> Kebijakan cicilan normal kembali mengontrol perangkat nasabah.</li>
+                    </ul>
+
+                    <p class="text-muted small fst-italic mb-0">
+                        Pastikan perangkat nasabah terhubung ke jaringan internet agar kebijakan baru dapat langsung disinkronkan oleh Google.
+                    </p>
+                </div>
+                <div class="modal-footer border-top bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-teal btn-sm fw-semibold d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-arrow-repeat"></i> Ya, Kembalikan ke Cicilan (Mode Kiosk)
                     </button>
                 </div>
             </form>
