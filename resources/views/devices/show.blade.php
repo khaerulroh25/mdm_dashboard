@@ -59,35 +59,35 @@
 @elseif(auth()->user()->hasPermission(['devices.command', 'devices.delete']) || $device->policy_id === 'Lunas')
 <!-- Remote Command Quick Action Toolbar -->
 <div class="card card-mdm border-0 p-3 mb-4">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div class="d-flex align-items-center gap-2">
             @if($device->policy_id === 'Lunas')
-                <span class="badge bg-success py-2 px-3 d-inline-flex align-items-center gap-1 font-mono fs-6 shadow-sm">
-                    <i class="bi bi-patch-check-fill"></i> STATUS: LUNAS / BEBAS KONTROL
+                <span class="badge bg-success d-inline-flex align-items-center gap-2 font-mono shadow-sm" style="height: 38px; font-size: 13px; padding: 0 14px; border-radius: 8px; letter-spacing: 0.3px;">
+                    <i class="bi bi-patch-check-fill fs-6"></i> STATUS: LUNAS / BEBAS KONTROL
                 </span>
             @elseif($device->policy_id === 'Gagal_bayar')
-                <span class="badge bg-danger py-2 px-3 d-inline-flex align-items-center gap-1 font-mono fs-6 shadow-sm">
-                    <i class="bi bi-lock-fill"></i> STATUS: TERKUNCI (GAGAL BAYAR)
+                <span class="badge bg-danger d-inline-flex align-items-center gap-2 font-mono shadow-sm" style="height: 38px; font-size: 13px; padding: 0 14px; border-radius: 8px; letter-spacing: 0.3px;">
+                    <i class="bi bi-lock-fill fs-6"></i> STATUS: TERKUNCI (GAGAL BAYAR)
                 </span>
             @else
-                <span class="badge bg-teal text-white py-2 px-3 d-inline-flex align-items-center gap-1 font-mono fs-6 shadow-sm">
-                    <i class="bi bi-shield-check"></i> STATUS: AKTIF (MODE KIOSK)
+                <span class="badge bg-teal text-white d-inline-flex align-items-center gap-2 font-mono shadow-sm" style="height: 38px; font-size: 13px; padding: 0 14px; border-radius: 8px; letter-spacing: 0.3px;">
+                    <i class="bi bi-shield-check fs-6"></i> STATUS: AKTIF (MODE KIOSK)
                 </span>
             @endif
         </div>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="d-flex flex-wrap align-items-center gap-2">
             @if($device->policy_id === 'Lunas' && auth()->user()->hasPermission('devices.release'))
             <!-- Tombol Kembalikan ke Status Cicilan -->
-            <button type="button" class="btn btn-sm btn-teal d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#restoreInstallmentModal">
-                <i class="bi bi-arrow-repeat"></i>
+            <button type="button" class="btn btn-teal d-inline-flex align-items-center gap-2 shadow-sm" style="height: 38px; font-size: 13px; padding: 0 16px; border-radius: 8px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#restoreInstallmentModal">
+                <i class="bi bi-arrow-repeat fs-6"></i>
                 <span>Kembalikan ke Status Cicilan</span>
             </button>
             @endif
 
             @if($device->policy_id !== 'Lunas' && auth()->user()->hasPermission('devices.release'))
             <!-- Tombol Lepaskan Perangkat (Lunas) -->
-            <button type="button" class="btn btn-sm btn-success d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#releaseLunasModal">
-                <i class="bi bi-patch-check-fill"></i>
+            <button type="button" class="btn btn-success d-inline-flex align-items-center gap-2 shadow-sm" style="height: 38px; font-size: 13px; padding: 0 16px; border-radius: 8px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#releaseLunasModal">
+                <i class="bi bi-patch-check-fill fs-6"></i>
                 <span>Lepaskan Perangkat (Lunas)</span>
             </button>
             @endif
@@ -96,40 +96,40 @@
                 @if($device->policy_id !== 'Lunas')
                     @if($device->policy_id === 'Gagal_bayar')
                     <!-- Tombol Buka Kunci Perangkat (Kembali ke Mode_kiosk) -->
-                    <button type="button" class="btn btn-sm btn-warning text-dark fw-semibold d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#unlockDeviceModal">
-                        <i class="bi bi-unlock-fill"></i>
+                    <button type="button" class="btn btn-warning text-dark fw-semibold d-inline-flex align-items-center gap-2 shadow-sm" style="height: 38px; font-size: 13px; padding: 0 16px; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#unlockDeviceModal">
+                        <i class="bi bi-unlock-fill fs-6"></i>
                         <span>Buka Kunci Perangkat</span>
                     </button>
                     @else
                     <!-- Tombol Kunci Perangkat (Ubah ke Gagal_bayar) -->
-                    <button type="button" class="btn btn-sm btn-danger d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#lockDeviceModal">
-                        <i class="bi bi-lock-fill"></i>
+                    <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-2 shadow-sm" style="height: 38px; font-size: 13px; padding: 0 16px; border-radius: 8px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#lockDeviceModal">
+                        <i class="bi bi-lock-fill fs-6"></i>
                         <span>Kunci Perangkat</span>
                     </button>
                     @endif
                 @endif
 
                 <!-- Reboot -->
-                <form action="{{ route('devices.command', $device->id) }}" method="POST" class="d-inline">
+                <form action="{{ route('devices.command', $device->id) }}" method="POST" class="d-inline-flex align-items-center m-0">
                     @csrf
                     <input type="hidden" name="command_type" value="REBOOT">
-                    <button type="submit" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" onclick="return confirm('Yakin ingin mereboot perangkat ini secara remote?')">
-                        <i class="bi bi-arrow-clockwise"></i>
+                    <button type="submit" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 shadow-sm" style="height: 38px; font-size: 13px; padding: 0 14px; border-radius: 8px; font-weight: 500;" onclick="return confirm('Yakin ingin mereboot perangkat ini secara remote?')">
+                        <i class="bi bi-arrow-clockwise fs-6"></i>
                         <span>Reboot</span>
                     </button>
                 </form>
 
                 <!-- Reset PIN Modal Trigger -->
-                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#resetPinModal">
-                    <i class="bi bi-key"></i>
+                <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 shadow-sm" style="height: 38px; font-size: 13px; padding: 0 14px; border-radius: 8px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#resetPinModal">
+                    <i class="bi bi-key fs-6"></i>
                     <span>Reset PIN</span>
                 </button>
             @endif
 
             <!-- Unenroll Modal Trigger (Superadmin Only) -->
             @if(auth()->user()->isAdmin())
-            <button type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#unenrollModal">
-                <i class="bi bi-trash3"></i>
+            <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center gap-2 shadow-sm" style="height: 38px; font-size: 13px; padding: 0 14px; border-radius: 8px; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#unenrollModal">
+                <i class="bi bi-trash3 fs-6"></i>
                 <span>Unenroll</span>
             </button>
             @endif
