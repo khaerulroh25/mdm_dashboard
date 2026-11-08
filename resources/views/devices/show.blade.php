@@ -570,6 +570,244 @@
     </div>
 </div>
 
+<!-- Installed Applications Card -->
+@php
+    $appReports = $device->raw_device_data['applicationReports'] ?? [];
+    $playStoreApps = [];
+    $systemApps = [];
+    
+    foreach ($appReports as $app) {
+        $src = $app['applicationSource'] ?? '';
+        if ($src === 'INSTALLED_FROM_PLAY_STORE' || ($app['userFacingType'] ?? '') === 'USER_FACING' || ($app['installerPackageName'] ?? '') === 'com.android.vending') {
+            $playStoreApps[] = $app;
+        } else {
+            $systemApps[] = $app;
+        }
+    }
+    
+    usort($playStoreApps, fn($a, $b) => strcasecmp($a['displayName'] ?? $a['packageName'] ?? '', $b['displayName'] ?? $b['packageName'] ?? ''));
+    usort($systemApps, fn($a, $b) => strcasecmp($a['displayName'] ?? $a['packageName'] ?? '', $b['displayName'] ?? $b['packageName'] ?? ''));
+    
+    $totalAppsCount = count($appReports);
+    $userAppsCount = count($playStoreApps);
+@endphp
+
+<div class="card card-mdm border-0 overflow-hidden mb-4">
+    <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <h6 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-grid-fill text-teal me-2"></i>Daftar Aplikasi Terpasang
+            </h6>
+            @if($totalAppsCount > 0)
+                <span class="badge bg-teal bg-opacity-10 text-teal fw-semibold">
+                    {{ $userAppsCount }} Aplikasi Pengguna / Play Store
+                </span>
+                <span class="badge bg-light text-secondary border">
+                    Total {{ $totalAppsCount }} Termasuk Sistem
+                </span>
+            @endif
+        </div>
+        
+        @if($totalAppsCount > 0)
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div class="input-group input-group-sm" style="max-width: 250px;">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" id="installedAppSearch" class="form-control border-start-0" placeholder="Cari nama aplikasi...">
+            </div>
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-outline-teal active" id="btnFilterUserApps" onclick="filterAppList('user')">
+                    Pengguna ({{ $userAppsCount }})
+                </button>
+                <button type="button" class="btn btn-outline-teal" id="btnFilterAllApps" onclick="filterAppList('all')">
+                    Semua ({{ $totalAppsCount }})
+                </button>
+            </div>
+        </div>
+        @endif
+    </div>
+
+    @if($totalAppsCount > 0)
+    <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+        <table class="table table-hover align-middle mb-0" id="installedAppsTable">
+            <thead class="table-tosca sticky-top">
+                <tr>
+                    <th scope="col" class="ps-4">Aplikasi & Nama Paket</th>
+                    <th scope="col">Tipe / Sumber</th>
+                    <th scope="col">Versi</th>
+                    <th scope="col">Aktivitas Terakhir</th>
+                    <th scope="col" class="pe-4 text-end">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(array_merge($playStoreApps, $systemApps) as $idx => $app)
+                    @php
+                        $isUser = in_array($app, $playStoreApps, true);
+                        $src = $app['applicationSource'] ?? '';
+                        $events = $app['events'] ?? [];
+                        $latestEvent = !empty($events) ? end($events) : null;
+                    @endphp
+                    <tr class="app-row {{ $isUser ? 'app-type-user' : 'app-type-system d-none' }}" 
+                        data-app-type="{{ $isUser ? 'user' : 'system' }}"
+                        data-app-name="{{ strtolower(($app['displayName'] ?? '') . ' ' . ($app['packageName'] ?? '')) }}">
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-3 p-2 bg-light border text-center" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                                    @if(stripos($app['packageName'] ?? '', 'whatsapp') !== false)
+                                        <i class="bi bi-whatsapp text-success fs-5"></i>
+                                    @elseif(stripos($app['packageName'] ?? '', 'youtube') !== false)
+                                        <i class="bi bi-youtube text-danger fs-5"></i>
+                                    @elseif(stripos($app['packageName'] ?? '', 'facebook') !== false)
+                                        <i class="bi bi-facebook text-primary fs-5"></i>
+                                    @elseif(stripos($app['packageName'] ?? '', 'instagram') !== false)
+                                        <i class="bi bi-instagram text-danger fs-5"></i>
+                                    @elseif(stripos($app['packageName'] ?? '', 'tiktok') !== false)
+                                        <i class="bi bi-tiktok text-dark fs-5"></i>
+                                    @elseif(stripos($app['packageName'] ?? '', 'google') !== false || stripos($app['packageName'] ?? '', 'chrome') !== false)
+                                        <i class="bi bi-google text-primary fs-5"></i>
+                                    @elseif(stripos($app['packageName'] ?? '', 'amanin') !== false)
+                                        <i class="bi bi-shield-check text-teal fs-5"></i>
+                                    @elseif($isUser)
+                                        <i class="bi bi-app text-teal fs-5"></i>
+                                    @else
+                                        <i class="bi bi-cpu text-secondary fs-5"></i>
+                                    @endif
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark small">
+                                        {{ $app['displayName'] ?? $app['packageName'] }}
+                                    </div>
+                                    <div class="text-muted font-mono" style="font-size: 11px;">
+                                        {{ $app['packageName'] }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @if($src === 'INSTALLED_FROM_PLAY_STORE')
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle small">
+                                    <i class="bi bi-google-play me-1"></i>Play Store
+                                </span>
+                            @elseif($src === 'SYSTEM_APP_UPDATED_VERSION')
+                                <span class="badge bg-info bg-opacity-10 text-info border border-info-subtle small">
+                                    <i class="bi bi-arrow-repeat me-1"></i>Sistem (Update)
+                                </span>
+                            @elseif($src === 'SYSTEM_APP_FACTORY_VERSION')
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border small">
+                                    <i class="bi bi-cpu me-1"></i>Bawaan Pabrik
+                                </span>
+                            @else
+                                <span class="badge bg-light text-secondary border small">
+                                    {{ $src ?: 'Lokal' }}
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="text-secondary small font-mono">
+                                {{ $app['versionName'] ?? $app['versionCode'] ?? '-' }}
+                            </span>
+                        </td>
+                        <td>
+                            @if($latestEvent)
+                                <div class="d-flex align-items-center gap-1">
+                                    @php
+                                        $evType = $latestEvent['eventType'] ?? '';
+                                        $evBadge = match($evType) {
+                                            'INSTALLED' => 'bg-success bg-opacity-10 text-success',
+                                            'REPLACED'  => 'bg-primary bg-opacity-10 text-primary',
+                                            'CHANGED'   => 'bg-warning bg-opacity-10 text-warning',
+                                            'REMOVED'   => 'bg-danger bg-opacity-10 text-danger',
+                                            default     => 'bg-light text-secondary border'
+                                        };
+                                        $evLabel = match($evType) {
+                                            'INSTALLED' => 'Dipasang',
+                                            'REPLACED'  => 'Diperbarui',
+                                            'CHANGED'   => 'Diubah',
+                                            'REMOVED'   => 'Dihapus',
+                                            default     => $evType
+                                        };
+                                    @endphp
+                                    <span class="badge {{ $evBadge }}" style="font-size: 10px;">
+                                        {{ $evLabel }}
+                                    </span>
+                                    @if(!empty($latestEvent['createTime']))
+                                        <span class="text-muted small" style="font-size: 11px;">
+                                            {{ \Carbon\Carbon::parse($latestEvent['createTime'])->timezone('Asia/Jakarta')->format('d/m/y H:i') }}
+                                        </span>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-muted small">-</span>
+                            @endif
+                        </td>
+                        <td class="pe-4 text-end">
+                            @if(($app['state'] ?? 'INSTALLED') === 'INSTALLED')
+                                <span class="badge bg-success-subtle text-success small">
+                                    <i class="bi bi-check2-circle me-1"></i>Terpasang
+                                </span>
+                            @else
+                                <span class="badge bg-danger-subtle text-danger small">
+                                    <i class="bi bi-x-circle me-1"></i>{{ $app['state'] ?? 'Nonaktif' }}
+                                </span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+                <tr id="noAppFoundRow" class="d-none">
+                    <td colspan="5" class="text-center py-4 text-muted small">
+                        Tidak ada aplikasi yang sesuai dengan pencarian Anda.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        let currentAppFilter = 'user';
+        function filterAppList(filter) {
+            currentAppFilter = filter;
+            document.getElementById('btnFilterUserApps').classList.toggle('active', filter === 'user');
+            document.getElementById('btnFilterAllApps').classList.toggle('active', filter === 'all');
+            applyAppSearchAndFilter();
+        }
+
+        function applyAppSearchAndFilter() {
+            const query = (document.getElementById('installedAppSearch')?.value || '').toLowerCase().trim();
+            const rows = document.querySelectorAll('#installedAppsTable .app-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const type = row.getAttribute('data-app-type');
+                const name = row.getAttribute('data-app-name') || '';
+                
+                const matchesType = (currentAppFilter === 'all') || (currentAppFilter === 'user' && type === 'user');
+                const matchesQuery = !query || name.includes(query);
+
+                if (matchesType && matchesQuery) {
+                    row.classList.remove('d-none');
+                    visibleCount++;
+                } else {
+                    row.classList.add('d-none');
+                }
+            });
+
+            const noRow = document.getElementById('noAppFoundRow');
+            if (noRow) {
+                noRow.classList.toggle('d-none', visibleCount > 0);
+            }
+        }
+
+        document.getElementById('installedAppSearch')?.addEventListener('input', applyAppSearchAndFilter);
+    </script>
+    @else
+    <div class="p-4 text-center text-secondary bg-light bg-opacity-50">
+        <i class="bi bi-grid text-muted fs-2 d-block mb-2"></i>
+        <div class="fw-semibold text-dark mb-1">Data Aplikasi Belum Tersedia</div>
+        <p class="small text-secondary mb-0 mx-auto" style="max-width: 580px;">
+            Laporan aplikasi akan muncul secara otomatis saat perangkat terhubung ke server dan mengirimkan pembaruan status sistem.
+        </p>
+    </div>
+    @endif
+</div>
+
 <!-- Command History Audit Table -->
 <div class="card card-mdm border-0 overflow-hidden mb-4">
     <div class="card-header bg-white py-3 px-4 border-bottom">
