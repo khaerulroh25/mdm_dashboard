@@ -331,7 +331,7 @@ class AndroidManagementService
 
         if ($packageName === 'com.amanin.mdm.locationagent') {
             $entry['autoUpdateMode'] = 'AUTO_UPDATE_HIGH_PRIORITY';
-            $entry['minimumVersionCode'] = 8;
+            $entry['minimumVersionCode'] = 11;
             if ($installType !== 'KIOSK') {
                 $entry['userControlSettings'] = 'USER_CONTROL_DISALLOWED';
             }
