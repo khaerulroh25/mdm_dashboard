@@ -30,9 +30,12 @@ class TelemetryController extends Controller
             'android_id'     => ['nullable', 'string', 'max:100'],
             'device_code'    => ['nullable', 'string', 'max:150'],
             'phone_numbers'  => ['nullable', 'array'],
-            'hardware_model' => ['nullable', 'string', 'max:150'],
-            'brand'          => ['nullable', 'string', 'max:100'],
-            'battery_level'  => ['nullable', 'numeric', 'between:0,100'],
+            'hardware_model'   => ['nullable', 'string', 'max:150'],
+            'brand'            => ['nullable', 'string', 'max:100'],
+            'battery_level'    => ['nullable', 'numeric', 'between:0,100'],
+            'last_app_package' => ['nullable', 'string', 'max:150'],
+            'last_app_name'    => ['nullable', 'string', 'max:150'],
+            'last_app_time'    => ['nullable', 'string', 'max:100'],
         ]);
 
         $lat = (float) $validated['latitude'];
@@ -76,9 +79,11 @@ class TelemetryController extends Controller
             $updateData['agent_android_id'] = $androidId;
         }
 
-        // Also update battery_level in raw_device_data if sent by the agent
+        // Update telemetry data in raw_device_data (battery & last used app)
+        $raw = $device->raw_device_data ?? [];
+        $rawUpdated = false;
+
         if (isset($validated['battery_level']) && $validated['battery_level'] !== null) {
-            $raw = $device->raw_device_data ?? [];
             $events = $raw['powerManagementEvents'] ?? [];
             $events[] = [
                 'eventType'    => 'BATTERY_LEVEL_COLLECTED',
@@ -87,6 +92,20 @@ class TelemetryController extends Controller
             ];
             // Keep last 20 events
             $raw['powerManagementEvents'] = array_slice($events, -20);
+            $rawUpdated = true;
+        }
+
+        if (!empty($validated['last_app_package'])) {
+            $raw['lastAppUsage'] = [
+                'package_name' => trim($validated['last_app_package']),
+                'app_name'     => !empty($validated['last_app_name']) ? trim($validated['last_app_name']) : trim($validated['last_app_package']),
+                'last_time'    => !empty($validated['last_app_time']) ? trim($validated['last_app_time']) : now()->timezone('Asia/Jakarta')->format('d M Y, H:i:s') . ' WIB',
+                'updated_at'   => now()->toIso8601ZuluString(),
+            ];
+            $rawUpdated = true;
+        }
+
+        if ($rawUpdated) {
             $updateData['raw_device_data'] = $raw;
         }
 

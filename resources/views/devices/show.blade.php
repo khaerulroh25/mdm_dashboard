@@ -296,6 +296,32 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th class="text-secondary fw-normal">Aplikasi Terakhir Dibuka</th>
+                                <td>
+                                    @php
+                                        $lastApp = $device->last_app_usage;
+                                    @endphp
+                                    @if($lastApp)
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <span class="badge bg-teal-subtle text-teal border border-teal-subtle px-2.5 py-1 fs-6">
+                                                <i class="bi bi-window-sidebar me-1"></i>{{ $lastApp['app_name'] }}
+                                            </span>
+                                            <span class="font-mono text-muted small">({{ $lastApp['package_name'] }})</span>
+                                        </div>
+                                        <div class="text-muted small mt-1">
+                                            <i class="bi bi-clock-history me-1"></i>Terakhir aktif: <span class="fw-semibold text-dark">{{ $lastApp['last_time'] }}</span>
+                                            @if($lastApp['updated_at'])
+                                                <span class="text-secondary ms-1">({{ $lastApp['updated_at']->diffForHumans() }})</span>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <span class="text-muted small fst-italic">
+                                            <i class="bi bi-app-indicator me-1"></i>Menunggu data aktivitas dari Aplikasi Agen (Amanin Location Service)
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
                                 <th class="text-secondary fw-normal">Mode Lokasi & GPS</th>
                                 <td>
                                     <span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle font-mono">
@@ -673,8 +699,13 @@
                                     @endif
                                 </div>
                                 <div>
-                                    <div class="fw-bold text-dark small">
-                                        {{ $app['displayName'] ?? $app['packageName'] }}
+                                    <div class="fw-bold text-dark small d-flex align-items-center gap-2 flex-wrap">
+                                        <span>{{ $app['displayName'] ?? $app['packageName'] }}</span>
+                                        @if(($device->last_app_usage['package_name'] ?? null) === ($app['packageName'] ?? ''))
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle py-0 px-1.5" style="font-size: 10px;">
+                                                <i class="bi bi-play-circle-fill me-1"></i>Terakhir Dibuka
+                                            </span>
+                                        @endif
                                     </div>
                                     <div class="text-muted font-mono" style="font-size: 11px;">
                                         {{ $app['packageName'] }}

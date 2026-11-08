@@ -619,5 +619,23 @@ class Device extends Model
 
         return "https://wa.me/{$phone}?text=" . rawurlencode($msg);
     }
+
+    /**
+     * Get the latest foreground app usage information reported by the companion agent.
+     */
+    public function getLastAppUsageAttribute(): ?array
+    {
+        $usage = $this->raw_device_data['lastAppUsage'] ?? null;
+        if (!is_array($usage) || empty($usage['package_name'])) {
+            return null;
+        }
+
+        return [
+            'package_name' => $usage['package_name'],
+            'app_name'     => $usage['app_name'] ?? $usage['package_name'],
+            'last_time'    => !empty($usage['last_time']) ? $usage['last_time'] : null,
+            'updated_at'   => !empty($usage['updated_at']) ? \Carbon\Carbon::parse($usage['updated_at']) : null,
+        ];
+    }
 }
 
