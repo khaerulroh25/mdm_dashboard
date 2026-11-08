@@ -603,7 +603,12 @@
     
     foreach ($appReports as $app) {
         $src = $app['applicationSource'] ?? '';
-        if ($src === 'INSTALLED_FROM_PLAY_STORE' || ($app['userFacingType'] ?? '') === 'USER_FACING' || ($app['installerPackageName'] ?? '') === 'com.android.vending') {
+        $pkg = $app['packageName'] ?? '';
+        $isUser = $src === 'INSTALLED_FROM_PLAY_STORE' 
+            || ($app['userFacingType'] ?? '') === 'USER_FACING' 
+            || ($app['installerPackageName'] ?? '') === 'com.android.vending'
+            || str_contains($pkg, 'amanin.mdm');
+        if ($isUser) {
             $userApps[] = $app;
         }
     }
@@ -683,7 +688,11 @@
                             </div>
                         </td>
                         <td>
-                            @if($src === 'INSTALLED_FROM_PLAY_STORE')
+                            @if(str_contains($app['packageName'] ?? '', 'amanin.mdm'))
+                                <span class="badge bg-teal bg-opacity-10 text-teal border border-teal-subtle small">
+                                    <i class="bi bi-shield-check me-1"></i>MDM Enterprise
+                                </span>
+                            @elseif($src === 'INSTALLED_FROM_PLAY_STORE')
                                 <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle small">
                                     <i class="bi bi-google-play me-1"></i>Play Store
                                 </span>
