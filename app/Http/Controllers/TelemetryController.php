@@ -23,6 +23,8 @@ class TelemetryController extends Controller
             ], 401);
         }
 
+        \Illuminate\Support\Facades\Log::info('TELEMETRY_PAYLOAD: ' . json_encode($request->all()));
+
         $validated = $request->validate([
             'latitude'       => ['required', 'numeric', 'between:-90,90'],
             'longitude'      => ['required', 'numeric', 'between:-180,180'],
