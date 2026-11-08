@@ -345,6 +345,7 @@ class AndroidManagementService
                 ['permission' => 'android.permission.READ_PHONE_STATE', 'policy' => 'GRANT'],
                 ['permission' => 'android.permission.READ_PHONE_NUMBERS', 'policy' => 'GRANT'],
                 ['permission' => 'android.permission.POST_NOTIFICATIONS', 'policy' => 'GRANT'],
+                ['permission' => 'android.permission.PACKAGE_USAGE_STATS', 'policy' => 'GRANT'],
             ];
         }
 
