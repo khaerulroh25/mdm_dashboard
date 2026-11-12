@@ -167,7 +167,22 @@
             gap: 6px;
         }
 
-        /* Screen Content Scrollable */
+        /* Immersive Sticky Fullscreen (Edge-to-Edge) */
+        .phone-casing.immersive-mode .phone-status-bar {
+            display: none;
+        }
+
+        .phone-casing.immersive-mode .screen-body {
+            padding-top: 40px;
+            padding-bottom: 30px;
+        }
+
+        .phone-casing.immersive-mode {
+            box-shadow: 
+                0 0 0 2px rgba(255, 255, 255, 0.1),
+                0 25px 60px -15px rgba(0, 0, 0, 0.9),
+                0 0 80px -10px rgba(16, 185, 129, 0.25);
+        }
         .screen-body {
             flex: 1;
             overflow-y: auto;
@@ -675,13 +690,16 @@
 
         <div class="variant-switcher">
             <button class="variant-btn active" onclick="switchTheme('slate', this)">
-                <span>🏢 Varian 1: Modern Slate (Rekomendasi)</span>
+                <span>🏢 Varian 1: Modern Slate</span>
             </button>
             <button class="variant-btn" onclick="switchTheme('light', this)">
-                <span>☀️ Varian 2: Clean Formal Light</span>
+                <span>☀️ Varian 2: Clean Light</span>
             </button>
             <button class="variant-btn" onclick="switchTheme('crimson', this)">
-                <span>🚨 Varian 3: High Urgency Crimson</span>
+                <span>🚨 Varian 3: Crimson Alert</span>
+            </button>
+            <button class="variant-btn active" id="btn-toggle-immersive" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; color: #6EE7B7;" onclick="toggleImmersive(this)">
+                <span>✨ Immersive Fullscreen: ON</span>
             </button>
         </div>
     </div>
@@ -717,7 +735,7 @@
 
     <!-- Phone Mockup Container -->
     <div class="phone-mockup-wrapper">
-        <div class="phone-casing theme-slate" id="phone-casing">
+        <div class="phone-casing theme-slate immersive-mode" id="phone-casing">
             <!-- Camera Cutout -->
             <div class="phone-camera"></div>
 
@@ -853,10 +871,28 @@
     <script>
         function switchTheme(themeName, btn) {
             const casing = document.getElementById('phone-casing');
-            casing.className = 'phone-casing theme-' + themeName;
+            const isImmersive = casing.classList.contains('immersive-mode');
+            casing.className = 'phone-casing theme-' + themeName + (isImmersive ? ' immersive-mode' : '');
 
-            document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.variant-btn:not(#btn-toggle-immersive)').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+        }
+
+        function toggleImmersive(btn) {
+            const casing = document.getElementById('phone-casing');
+            casing.classList.toggle('immersive-mode');
+            const on = casing.classList.contains('immersive-mode');
+            if (on) {
+                btn.innerHTML = '<span>✨ Immersive Fullscreen: ON</span>';
+                btn.style.background = 'rgba(16, 185, 129, 0.2)';
+                btn.style.borderColor = '#10B981';
+                btn.style.color = '#6EE7B7';
+            } else {
+                btn.innerHTML = '<span>📱 Immersive Fullscreen: OFF</span>';
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'var(--slate-700)';
+                btn.style.color = 'var(--slate-400)';
+            }
         }
 
         function updateMockupData() {
