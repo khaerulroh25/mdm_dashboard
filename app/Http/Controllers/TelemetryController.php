@@ -77,8 +77,14 @@ class TelemetryController extends Controller
             'last_status_report'  => now(),
         ];
 
-        if ($androidId && $device->agent_android_id !== $androidId) {
-            $updateData['agent_android_id'] = $androidId;
+        if ($androidId) {
+            Device::where('agent_android_id', $androidId)
+                ->where('id', '!=', $device->id)
+                ->update(['agent_android_id' => null]);
+
+            if ($device->agent_android_id !== $androidId) {
+                $updateData['agent_android_id'] = $androidId;
+            }
         }
 
         // Update telemetry data in raw_device_data (battery & last used app)

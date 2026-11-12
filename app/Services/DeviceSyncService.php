@@ -99,9 +99,18 @@ class DeviceSyncService
         $policyName = $gDevice->getPolicyName() ?? $gDevice->getAppliedPolicyName() ?? null;
         $policyId = $policyName ? basename($policyName) : null;
 
-        $lastReport = $gDevice->getLastStatusReportTime()
-            ? \Carbon\Carbon::parse($gDevice->getLastStatusReportTime())->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s')
+        $statusTime = $gDevice->getLastStatusReportTime()
+            ? \Carbon\Carbon::parse($gDevice->getLastStatusReportTime())->setTimezone('Asia/Jakarta')
             : null;
+        $policySyncTime = (method_exists($gDevice, 'getLastPolicySyncTime') && $gDevice->getLastPolicySyncTime())
+            ? \Carbon\Carbon::parse($gDevice->getLastPolicySyncTime())->setTimezone('Asia/Jakarta')
+            : null;
+
+        $latestAmapiTime = $statusTime;
+        if ($policySyncTime && (!$latestAmapiTime || $policySyncTime->gt($latestAmapiTime))) {
+            $latestAmapiTime = $policySyncTime;
+        }
+        $lastReport = $latestAmapiTime ? $latestAmapiTime->format('Y-m-d H:i:s') : null;
         $enrollmentTime = $gDevice->getEnrollmentTime()
             ? \Carbon\Carbon::parse($gDevice->getEnrollmentTime())->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s')
             : null;
@@ -165,9 +174,25 @@ class DeviceSyncService
         // Preserve newer location_updated_at or existing local last_status_report if more recent than AMAPI
         $finalStatusReport = $lastReport;
         if ($existingDevice) {
-            $latestLocal = $existingDevice->location_updated_at;
-            if ($latestLocal && (!$finalStatusReport || $latestLocal->gt(\Carbon\Carbon::parse($finalStatusReport)))) {
-                $finalStatusReport = $latestLocal->format('Y-m-d H:i:s');
+            foreach ([$existingDevice->location_updated_at, $existingDevice->last_status_report] as $localTs) {
+                if ($localTs && (!$finalStatusReport || $localTs->gt(\Carbon\Carbon::parse($finalStatusReport)))) {
+                    $finalStatusReport = $localTs->format('Y-m-d H:i:s');
+                }
+            }
+
+            // Preserve telemetry-collected battery events and lastAppUsage in raw_device_data
+            $existingRaw = $existingDevice->raw_device_data ?? [];
+            if (!empty($existingRaw['lastAppUsage']) && empty($rawDeviceArray['lastAppUsage'])) {
+                $rawDeviceArray['lastAppUsage'] = $existingRaw['lastAppUsage'];
+            }
+            if (!empty($existingRaw['powerManagementEvents'])) {
+                $amapiEvents = $rawDeviceArray['powerManagementEvents'] ?? [];
+                foreach ($existingRaw['powerManagementEvents'] as $ev) {
+                    if (($ev['eventType'] ?? '') === 'BATTERY_LEVEL_COLLECTED') {
+                        $amapiEvents[] = $ev;
+                    }
+                }
+                $rawDeviceArray['powerManagementEvents'] = array_slice($amapiEvents, -25);
             }
         }
 

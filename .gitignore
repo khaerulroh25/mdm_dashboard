@@ -23,4 +23,15 @@ yarn-error.log
 /storage/app/credentials/*
 !/storage/app/credentials/.gitkeep
 /storage/app/*.json
+*.ppk
+*.pem
+*.keystore
+
+# Temporary APKs & OS artifacts
+/clouddpc.apk
+/public/downloads/
+Microsoft/
+Thumbs.db
+[Dd]esktop.ini
+
 
